@@ -42,7 +42,7 @@ function App() {
 
   // Cargar Contador de Visitas al abrir la página
   useEffect(() => {
-    fetch('https://kura-backend-04do.onrender.com/api/visits')
+    fetch('https://kura-api-mm3u.onrender.com/api/visits')
       .then(res => res.json())
       .then(data => setVisitCount(data.visits))
       .catch(err => console.error('Error cargando visitas:', err));
@@ -138,7 +138,7 @@ function App() {
     }
 
     try {
-      const response = await fetch(`https://kura-backend-04do.onrender.com/api/search?q=${encodeURIComponent(queryToFetch)}`);
+      const response = await fetch(`https://kura-api-mm3u.onrender.com/api/search?q=${encodeURIComponent(queryToFetch)}`);
       const json = await response.json();
       
       let rawData = json.data || [];
@@ -248,7 +248,7 @@ function App() {
   const handleProductClick = (productName, fullProduct = null) => {
     if (fullProduct) markAsViewed(fullProduct);
     
-    fetch('https://kura-backend-04do.onrender.com/api/track-click', {
+    fetch('https://kura-api-mm3u.onrender.com/api/track-click', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ productName })
