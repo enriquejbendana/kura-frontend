@@ -748,7 +748,7 @@ function App() {
                         {hasExactMatches && relatedMatches.length > 0 && (
                           <>
                             <div style={{ gridColumn: '1 / -1', margin: '2rem 0 1rem', paddingBottom: '0.5rem', borderBottom: '2px solid var(--border)', textAlign: 'center' }}>
-                              <h3 style={{ color: 'var(--text-muted)', fontSize: '1.25rem', fontWeight: 600 }}>Otras variantes relacionadas</h3>
+                              <h3 style={{ color: 'var(--text-muted)', fontSize: '1.25rem', fontWeight: 600 }}>Otras presentaciones relacionadas</h3>
                             </div>
                             
                             {(showAllVariants ? relatedMatches : relatedMatches.slice(0, 4)).map(renderProductCard)}
@@ -760,7 +760,7 @@ function App() {
                                   className="tag-btn"
                                   style={{ padding: '0.75rem 2rem', fontWeight: 600, fontSize: '1rem' }}
                                 >
-                                  {showAllVariants ? 'Ocultar variantes' : `Ver ${relatedMatches.length - 4} variantes más`}
+                                  {showAllVariants ? 'Ocultar presentaciones' : `Ver ${relatedMatches.length - 4} presentaciones más`}
                                 </button>
                               </div>
                             )}
