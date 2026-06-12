@@ -216,12 +216,36 @@ function App() {
         const savings = maxPrice - minPrice;
         const savingsPercent = Math.max(0, Math.round((savings / maxPrice) * 100)) || 0;
 
+        const nameLower = product.commercialName.toLowerCase();
+        const searchWord = (cleanTerm || searchTerm).toLowerCase().trim();
+        
+        // Extraer la "esencia" del nombre (sin mg, ml, cajas, números, etc.)
+        const baseName = nameLower
+          .replace(/\b(\d+(mg|ml|g|mcg|ui|kg|l|cm)\b|comp|cáps|caps|caja|sobre|amp|iny|jbe|susp|gotas|grageas|env|fco|comprimidos|comprimido)\b/gi, '')
+          .replace(/[0-9]+/g, '')
+          .replace(/\bx\b/gi, '')
+          .replace(/[^a-zñáéíóú\s]/gi, '')
+          .trim()
+          .replace(/\s+/g, ' ');
+
+        let relevanceScore = 4;
+        if (baseName === searchWord) {
+          relevanceScore = 1;
+        } else if (baseName.startsWith(searchWord)) {
+          relevanceScore = 2;
+        } else if (baseName.endsWith(searchWord)) {
+          relevanceScore = 3;
+        } else {
+          relevanceScore = 4;
+        }
+
         return {
           ...product,
           sortedPrices,
           savings,
           savingsPercent,
-          clicks: product.clicks || 0
+          clicks: product.clicks || 0,
+          relevanceScore
         };
       });
 
@@ -258,6 +282,12 @@ function App() {
   const quickTags = ['Paracetamol', 'Ibuprofeno', 'Loratadina', 'Losartán', 'Alergia', 'Fuerte'];
 
   const sortedResults = [...results].sort((a, b) => {
+    // 1. PRIORIDAD ABSOLUTA: Puntuación de Relevancia (1 a 4)
+    if (a.relevanceScore !== b.relevanceScore) {
+      return a.relevanceScore - b.relevanceScore;
+    }
+
+    // 2. Luego se aplica el ordenamiento secundario (Precio, Nombre, etc.)
     if (sortBy === 'price_asc') return a.sortedPrices[0].price - b.sortedPrices[0].price;
     if (sortBy === 'price_desc') return b.sortedPrices[0].price - a.sortedPrices[0].price;
     if (sortBy === 'name_asc') return a.commercialName.localeCompare(b.commercialName);
