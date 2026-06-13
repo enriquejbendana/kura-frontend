@@ -551,19 +551,19 @@ function App() {
                 </h3>
                 <div className="promos-grid" style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
                   <div className="promo-card ghost-card ghost-itau">
-                    <div className="promo-bank">Itaú</div>
+                    <div className="promo-bank">Punto Farma</div>
                     <div className="promo-discount">30% OFF</div>
-                    <div className="promo-location">en Punto Farma</div>
+                    <div className="promo-location">con Itaú</div>
                   </div>
                   <div className="promo-card ghost-card ghost-ueno">
-                    <div className="promo-bank">Ueno Bank</div>
+                    <div className="promo-bank">Catedral</div>
                     <div className="promo-discount">25% OFF</div>
-                    <div className="promo-location">en Catedral</div>
+                    <div className="promo-location">con Ueno Bank</div>
                   </div>
                   <div className="promo-card ghost-card ghost-familiar">
-                    <div className="promo-bank">Familiar</div>
+                    <div className="promo-bank">Vicente Scavone</div>
                     <div className="promo-discount">20% OFF</div>
-                    <div className="promo-location">en Vicente Scavone</div>
+                    <div className="promo-location">con Familiar</div>
                   </div>
                 </div>
               </div>
