@@ -650,6 +650,74 @@ input {
   scrollbar-width: none;  /* Firefox */
 }
 
+/* Ghost Cards para Promociones */
+.ghost-card {
+  flex: 1;
+  min-width: 200px;
+  background-color: transparent;
+  color: var(--text-dark);
+  padding: 1.25rem;
+  border-radius: 1rem;
+  border: 1px solid var(--border-color);
+  box-shadow: none;
+  transition: all 0.2s ease-in-out;
+  cursor: default;
+}
+
+.ghost-card .promo-bank {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.ghost-card .promo-discount {
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin-bottom: 0.25rem;
+  color: var(--text-main);
+  transition: color 0.2s;
+}
+
+.ghost-card .promo-location {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+/* Hover Effects (Toman color al pasar el mouse) */
+.ghost-itau:hover {
+  background: linear-gradient(135deg, #ec4899, #f43f5e);
+  border-color: transparent;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(244, 63, 94, 0.3);
+}
+
+.ghost-ueno:hover {
+  background: linear-gradient(135deg, #0ea5e9, #3b82f6);
+  border-color: transparent;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+}
+
+.ghost-familiar:hover {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-color: transparent;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+}
+
+.ghost-card:hover .promo-bank,
+.ghost-card:hover .promo-discount,
+.ghost-card:hover .promo-location {
+  color: white;
+}
+
+
 
 .recent-card-img {
   height: 80px;

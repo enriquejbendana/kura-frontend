@@ -550,20 +550,20 @@ function App() {
                   💳 Promociones del Día
                 </h3>
                 <div className="promos-grid" style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
-                  <div className="promo-card" style={{ flex: 1, minWidth: '200px', background: 'linear-gradient(135deg, #ec4899, #f43f5e)', color: 'white', padding: '1.25rem', borderRadius: '1rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', opacity: 0.9 }}>Itaú</div>
-                    <div style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '0.25rem' }}>30% OFF</div>
-                    <div style={{ fontSize: '0.95rem', fontWeight: 500, opacity: 0.95 }}>en Punto Farma</div>
+                  <div className="promo-card ghost-card ghost-itau">
+                    <div className="promo-bank">Itaú</div>
+                    <div className="promo-discount">30% OFF</div>
+                    <div className="promo-location">en Punto Farma</div>
                   </div>
-                  <div className="promo-card" style={{ flex: 1, minWidth: '200px', background: 'linear-gradient(135deg, #0ea5e9, #3b82f6)', color: 'white', padding: '1.25rem', borderRadius: '1rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', opacity: 0.9 }}>Ueno Bank</div>
-                    <div style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '0.25rem' }}>25% OFF</div>
-                    <div style={{ fontSize: '0.95rem', fontWeight: 500, opacity: 0.95 }}>en Catedral</div>
+                  <div className="promo-card ghost-card ghost-ueno">
+                    <div className="promo-bank">Ueno Bank</div>
+                    <div className="promo-discount">25% OFF</div>
+                    <div className="promo-location">en Catedral</div>
                   </div>
-                  <div className="promo-card" style={{ flex: 1, minWidth: '200px', background: 'linear-gradient(135deg, #10b981, #059669)', color: 'white', padding: '1.25rem', borderRadius: '1rem', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
-                    <div style={{ fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', opacity: 0.9 }}>Familiar</div>
-                    <div style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '0.25rem' }}>20% OFF</div>
-                    <div style={{ fontSize: '0.95rem', fontWeight: 500, opacity: 0.95 }}>en Vicente Scavone</div>
+                  <div className="promo-card ghost-card ghost-familiar">
+                    <div className="promo-bank">Familiar</div>
+                    <div className="promo-discount">20% OFF</div>
+                    <div className="promo-location">en Vicente Scavone</div>
                   </div>
                 </div>
               </div>
