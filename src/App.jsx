@@ -563,31 +563,29 @@ function App() {
               </div>
             )}
             
-            {!hasSearched && (
-              <div className="home-dashboard">
-                <div className="symptom-tip-bar">
-                  <span>¿Tenés síntomas y no sabés qué buscar? <button className="btn-open-symptom-tip" onClick={() => setIsSymptomModalOpen(true)}>Abrí nuestro Asistente Médico Inteligente</button></span>
-                </div>
+            <div className="home-dashboard">
+              <div className="symptom-tip-bar">
+                <span>¿Tenés síntomas y no sabés qué buscar? <button className="btn-open-symptom-tip" onClick={() => setIsSymptomModalOpen(true)}>Abrí nuestro Asistente Médico Inteligente</button></span>
+              </div>
 
-                <div className="popular-categories-section">
-                  <h3>Categorías Populares</h3>
-                  <div className="categories-grid">
-                    <button className="category-pill" onClick={() => { setSearchTerm('antigripal'); executeSearch('antigripal'); }}>
-                      Gripe y Resfriado
-                    </button>
-                    <button className="category-pill" onClick={() => { setSearchTerm('vitamina'); executeSearch('vitamina'); }}>
-                      Vitaminas
-                    </button>
-                    <button className="category-pill" onClick={() => { setSearchTerm('analgésico'); executeSearch('analgésico'); }}>
-                      Analgésicos
-                    </button>
-                    <button className="category-pill" onClick={() => { setSearchTerm('bebé'); executeSearch('bebé'); }}>
-                      Cuidado Infantil
-                    </button>
-                  </div>
+              <div className="popular-categories-section">
+                <h3>Categorías Populares</h3>
+                <div className="categories-grid">
+                  <button className="category-pill" onClick={() => { setSearchTerm('antigripal'); executeSearch('antigripal'); }}>
+                    Gripe y Resfriado
+                  </button>
+                  <button className="category-pill" onClick={() => { setSearchTerm('vitamina'); executeSearch('vitamina'); }}>
+                    Vitaminas
+                  </button>
+                  <button className="category-pill" onClick={() => { setSearchTerm('analgésico'); executeSearch('analgésico'); }}>
+                    Analgésicos
+                  </button>
+                  <button className="category-pill" onClick={() => { setSearchTerm('bebé'); executeSearch('bebé'); }}>
+                    Cuidado Infantil
+                  </button>
                 </div>
               </div>
-            )}
+            </div>
 
             <p className="update-notice">Última actualización de precios: Hoy, 08:30 hrs</p>
           </div>
