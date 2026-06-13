@@ -24,14 +24,6 @@ function App() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('idle'); // idle, scanning, success
 
-  // Estado del Symptom Checker
-  const [isSymptomModalOpen, setIsSymptomModalOpen] = useState(false);
-  const [symptomInput, setSymptomInput] = useState('');
-  const [symptomMessages, setSymptomMessages] = useState([
-    { role: 'bot', text: '¡Hola! Soy tu asistente de bienestar Kura. Contame en tus propias palabras qué te anda pasando o qué sentís.' }
-  ]);
-  const [isSymptomLoading, setIsSymptomLoading] = useState(false);
-
   // Estado para Loading Falso
   const [scannedPharmacies, setScannedPharmacies] = useState(0);
   const [loadingMessageIdx, setLoadingMessageIdx] = useState(0);
@@ -123,35 +115,6 @@ function App() {
       isMonoDrug
     };
   };
-
-  const handleSymptomSubmit = async () => {
-    if (!symptomInput.trim()) return;
-    
-    const userMsg = { role: 'user', text: symptomInput };
-    setSymptomMessages(prev => [...prev, userMsg]);
-    setSymptomInput('');
-    setIsSymptomLoading(true);
-
-    try {
-      const res = await fetch('https://kura-api-mm3u.onrender.com/api/symptom-checker', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ symptoms: userMsg.text })
-      });
-      const data = await res.json();
-      
-      const botMsg = { 
-        role: data.isEmergency ? 'emergency' : 'bot', 
-        text: data.message,
-        isEmergency: data.isEmergency,
-        suggestedSearch: data.suggestedSearch
-      };
-      setSymptomMessages(prev => [...prev, botMsg]);
-    } catch (e) {
-      setSymptomMessages(prev => [...prev, { role: 'emergency', text: 'Error de conexión con el cerebro médico.' }]);
-    } finally {
-      setIsSymptomLoading(false);
-    }
   };
 
   const executeSearch = async (rawTerm) => {
@@ -564,9 +527,6 @@ function App() {
             )}
             
             <div className="home-dashboard">
-              <div className="symptom-tip-bar">
-                <span>¿Tenés síntomas y no sabés qué buscar? <button className="btn-open-symptom-tip" onClick={() => setIsSymptomModalOpen(true)}>Abrí nuestro Asistente Médico Inteligente</button></span>
-              </div>
 
               <div className="popular-categories-section">
                 <h3>Categorías Populares</h3>
@@ -929,69 +889,6 @@ function App() {
               >
                 Entendido
               </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Symptom Checker Modal */}
-      {isSymptomModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsSymptomModalOpen(false)}>
-          <div className="symptom-modal" onClick={e => e.stopPropagation()}>
-            <div className="symptom-header">
-              <h2>👨‍⚕️ Asistente de Bienestar Kura</h2>
-              <button className="close-btn" onClick={() => setIsSymptomModalOpen(false)}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              </button>
-            </div>
-            
-            <div className="symptom-body">
-              {symptomMessages.map((msg, idx) => (
-                <div key={idx} className={`chat-msg ${msg.role}`}>
-                  {msg.text}
-                  {msg.suggestedSearch && (
-                    <button 
-                      className="symptom-action-btn"
-                      onClick={() => {
-                        setSearchTerm(msg.suggestedSearch);
-                        setSearchType('principio');
-                        setPresentation('cualquiera');
-                        setIsSymptomModalOpen(false);
-                        executeSearch(msg.suggestedSearch);
-                      }}
-                    >
-                      Ver productos para aliviar esto
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                    </button>
-                  )}
-                </div>
-              ))}
-              {isSymptomLoading && (
-                <div className="chat-msg bot" style={{ opacity: 0.7 }}>
-                  Analizando síntomas...
-                </div>
-              )}
-            </div>
-
-            <div className="symptom-footer">
-              <input 
-                type="text" 
-                className="symptom-input" 
-                placeholder="Ej: Me duele mucho la cabeza y tengo fiebre..."
-                value={symptomInput}
-                onChange={e => setSymptomInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleSymptomSubmit()}
-                disabled={isSymptomLoading}
-              />
-              <button 
-                className="symptom-send-btn"
-                onClick={handleSymptomSubmit}
-                disabled={!symptomInput.trim() || isSymptomLoading}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-              </button>
-            </div>
-            <div className="disclaimer-text">
-              *Las sugerencias son orientativas y no reemplazan una consulta médica profesional.
             </div>
           </div>
         </div>
