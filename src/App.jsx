@@ -527,7 +527,25 @@ function App() {
             
             <div className="home-dashboard">
               
-              <div className="bank-promos-section" style={{ marginBottom: '2rem' }}>
+              <div className="popular-categories-section">
+                <h3>Categorías Populares</h3>
+                <div className="categories-grid">
+                  <button className="category-pill" onClick={() => { setSearchTerm('antigripal'); executeSearch('antigripal'); }}>
+                    Gripe y Resfriado
+                  </button>
+                  <button className="category-pill" onClick={() => { setSearchTerm('vitamina'); executeSearch('vitamina'); }}>
+                    Vitaminas
+                  </button>
+                  <button className="category-pill" onClick={() => { setSearchTerm('analgésico'); executeSearch('analgésico'); }}>
+                    Analgésicos
+                  </button>
+                  <button className="category-pill" onClick={() => { setSearchTerm('bebé'); executeSearch('bebé'); }}>
+                    Cuidado Infantil
+                  </button>
+                </div>
+              </div>
+
+              <div className="bank-promos-section" style={{ marginTop: '2rem' }}>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   💳 Promociones del Día
                 </h3>
@@ -547,24 +565,6 @@ function App() {
                     <div style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '0.25rem' }}>20% OFF</div>
                     <div style={{ fontSize: '0.95rem', fontWeight: 500, opacity: 0.95 }}>en Vicente Scavone</div>
                   </div>
-                </div>
-              </div>
-
-              <div className="popular-categories-section">
-                <h3>Categorías Populares</h3>
-                <div className="categories-grid">
-                  <button className="category-pill" onClick={() => { setSearchTerm('antigripal'); executeSearch('antigripal'); }}>
-                    Gripe y Resfriado
-                  </button>
-                  <button className="category-pill" onClick={() => { setSearchTerm('vitamina'); executeSearch('vitamina'); }}>
-                    Vitaminas
-                  </button>
-                  <button className="category-pill" onClick={() => { setSearchTerm('analgésico'); executeSearch('analgésico'); }}>
-                    Analgésicos
-                  </button>
-                  <button className="category-pill" onClick={() => { setSearchTerm('bebé'); executeSearch('bebé'); }}>
-                    Cuidado Infantil
-                  </button>
                 </div>
               </div>
             </div>
