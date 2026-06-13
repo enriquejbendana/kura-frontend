@@ -636,6 +636,12 @@ input {
   border-color: var(--primary-light);
 }
 
+/* Dashboard elements */
+.home-dashboard {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
 /* Symptom Checker Sutil (Tip Bar) */
 .symptom-tip-bar {
   display: flex;
