@@ -115,7 +115,6 @@ function App() {
       isMonoDrug
     };
   };
-  };
 
   const executeSearch = async (rawTerm) => {
     if (!rawTerm.trim()) {
