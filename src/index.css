@@ -642,6 +642,14 @@ input {
   margin: 0 auto;
 }
 
+.promos-grid::-webkit-scrollbar {
+  display: none;
+}
+.promos-grid {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
 
 .recent-card-img {
   height: 80px;
