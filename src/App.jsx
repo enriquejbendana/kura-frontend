@@ -565,24 +565,9 @@ function App() {
             
             {!hasSearched && (
               <div className="home-dashboard">
-                <div className="symptom-hero-card" onClick={() => setIsSymptomModalOpen(true)}>
-                  <div className="symptom-hero-content">
-                    <span className="symptom-tag">Symptom Checker</span>
-                    <h2 className="symptom-hero-title">¿No te sientes bien? Descubre qué te pasa al instante.</h2>
-                    <p className="symptom-hero-desc">Usá nuestro asistente virtual gratuito para entender tus síntomas y explorar opciones de alivio en minutos.</p>
-                    <button className="btn-start-checker" onClick={(e) => { e.stopPropagation(); setIsSymptomModalOpen(true); }}>
-                      Empezar Evaluación 
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                    </button>
-                  </div>
-                  <div className="symptom-hero-illustration">
-                    <svg width="240" height="240" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.8 }}>
-                      <path d="M12 2a4 4 0 0 1 4 4v1h1.5a2.5 2.5 0 0 1 2.5 2.5v9a2.5 2.5 0 0 1-2.5 2.5H6.5A2.5 2.5 0 0 1 4 18.5v-9A2.5 2.5 0 0 1 6.5 7H8V6a4 4 0 0 1 4-4z"/>
-                      <path d="M12 12v4"/>
-                      <path d="M10 14h4"/>
-                      <path d="M9.5 7V6a2.5 2.5 0 0 1 5 0v1"/>
-                    </svg>
-                  </div>
+                <div className="symptom-tip-bar">
+                  <span className="icon">💡</span>
+                  <span>¿Tenés síntomas y no sabés qué buscar? <button className="btn-open-symptom-tip" onClick={() => setIsSymptomModalOpen(true)}>Abrí nuestro Asistente Médico Inteligente 👨‍⚕️</button></span>
                 </div>
 
                 <div className="popular-categories-section">
