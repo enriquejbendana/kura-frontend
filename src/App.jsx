@@ -566,8 +566,7 @@ function App() {
             {!hasSearched && (
               <div className="home-dashboard">
                 <div className="symptom-tip-bar">
-                  <span className="icon">💡</span>
-                  <span>¿Tenés síntomas y no sabés qué buscar? <button className="btn-open-symptom-tip" onClick={() => setIsSymptomModalOpen(true)}>Abrí nuestro Asistente Médico Inteligente 👨‍⚕️</button></span>
+                  <span>¿Tenés síntomas y no sabés qué buscar? <button className="btn-open-symptom-tip" onClick={() => setIsSymptomModalOpen(true)}>Abrí nuestro Asistente Médico Inteligente</button></span>
                 </div>
 
                 <div className="popular-categories-section">
