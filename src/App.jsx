@@ -594,14 +594,6 @@ function App() {
               </div>
             )}
 
-            <div className="quick-tags" style={{ marginTop: '1rem' }}>
-              {quickTags.map(tag => (
-                <button key={tag} type="button" className="tag-btn" onClick={() => handleTagClick(tag)}>
-                  {tag}
-                </button>
-              ))}
-            </div>
-
             <p className="update-notice">Última actualización de precios: Hoy, 08:30 hrs</p>
           </div>
           
