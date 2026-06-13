@@ -574,19 +574,15 @@ function App() {
                   <h3>Categorías Populares</h3>
                   <div className="categories-grid">
                     <button className="category-pill" onClick={() => { setSearchTerm('antigripal'); executeSearch('antigripal'); }}>
-                      <div className="category-icon">❄️</div>
                       Gripe y Resfriado
                     </button>
                     <button className="category-pill" onClick={() => { setSearchTerm('vitamina'); executeSearch('vitamina'); }}>
-                      <div className="category-icon">💊</div>
                       Vitaminas
                     </button>
                     <button className="category-pill" onClick={() => { setSearchTerm('analgésico'); executeSearch('analgésico'); }}>
-                      <div className="category-icon">🦴</div>
                       Analgésicos
                     </button>
                     <button className="category-pill" onClick={() => { setSearchTerm('bebé'); executeSearch('bebé'); }}>
-                      <div className="category-icon">👶</div>
                       Cuidado Infantil
                     </button>
                   </div>
