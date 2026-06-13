@@ -545,28 +545,7 @@ function App() {
                 </div>
               </div>
 
-              <div className="bank-promos-section" style={{ marginTop: '2rem' }}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  💳 Promociones del Día
-                </h3>
-                <div className="promos-grid" style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
-                  <div className="promo-card ghost-card ghost-itau">
-                    <div className="promo-bank">Punto Farma</div>
-                    <div className="promo-discount">30% OFF</div>
-                    <div className="promo-location">con Itaú</div>
-                  </div>
-                  <div className="promo-card ghost-card ghost-ueno">
-                    <div className="promo-bank">Catedral</div>
-                    <div className="promo-discount">25% OFF</div>
-                    <div className="promo-location">con Ueno Bank</div>
-                  </div>
-                  <div className="promo-card ghost-card ghost-familiar">
-                    <div className="promo-bank">Vicente Scavone</div>
-                    <div className="promo-discount">20% OFF</div>
-                    <div className="promo-location">con Familiar</div>
-                  </div>
-                </div>
-              </div>
+
             </div>
 
             <p className="update-notice">Última actualización de precios: Hoy, 08:30 hrs</p>
@@ -603,6 +582,29 @@ function App() {
               </div>
             </div>
           )}
+
+          <div className="bank-promos-section" style={{ marginTop: '2rem', maxWidth: '700px', margin: '2rem auto 0' }}>
+            <h3 className="section-title" style={{ fontSize: '1.25rem', color: 'var(--text)', marginBottom: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              💳 Promociones del Día
+            </h3>
+            <div className="promos-grid" style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+              <div className="promo-card ghost-card ghost-itau">
+                <div className="promo-bank">Punto Farma</div>
+                <div className="promo-discount">30% OFF</div>
+                <div className="promo-location">con Itaú</div>
+              </div>
+              <div className="promo-card ghost-card ghost-ueno">
+                <div className="promo-bank">Catedral</div>
+                <div className="promo-discount">25% OFF</div>
+                <div className="promo-location">con Ueno Bank</div>
+              </div>
+              <div className="promo-card ghost-card ghost-familiar">
+                <div className="promo-bank">Vicente Scavone</div>
+                <div className="promo-discount">20% OFF</div>
+                <div className="promo-location">con Familiar</div>
+              </div>
+            </div>
+          </div>
         </section>
 
         {hasSearched && (
