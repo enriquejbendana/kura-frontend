@@ -731,7 +731,7 @@ function App() {
                     const hasExactMatches = exactMatches.length > 0;
                     
                     const renderProductCard = (product) => (
-                      <div key={product.id} className="product-card" style={{ display: 'flex', flexDirection: 'column' }}>
+                      <div key={product.id} className="product-card">
                         <div className="card-header" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                           <div className="product-image-container" style={{ flexShrink: 0, width: '80px', height: '80px', backgroundColor: 'var(--surface)', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.25rem' }}>
                             {product.imageUrl ? (

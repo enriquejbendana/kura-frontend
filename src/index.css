@@ -211,7 +211,7 @@ input {
 
 .results-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
   gap: 1.5rem;
 }
 
@@ -222,9 +222,18 @@ input {
   border-radius: var(--radius-lg);
   overflow: hidden;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   box-shadow: var(--shadow-sm);
   transition: box-shadow 0.2s;
+}
+
+@media (max-width: 768px) {
+  .results-grid {
+    grid-template-columns: 1fr;
+  }
+  .product-card {
+    flex-direction: column;
+  }
 }
 
 .product-card:hover {
@@ -234,6 +243,7 @@ input {
 .card-header {
   padding: 1.25rem 1.25rem 0.75rem;
   position: relative;
+  flex: 1;
 }
 
 .laboratory-name {
@@ -274,10 +284,21 @@ input {
 
 /* Price Table internal */
 .price-table-container {
-  background-color: var(--bg-color); /* Light gray distinguishing table area */
-  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-color);
+  border-left: 1px solid var(--border-color);
   padding: 1rem 0;
-  flex-grow: 1;
+  flex: 0 0 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .price-table-container {
+    border-left: none;
+    border-top: 1px solid var(--border-color);
+    flex: auto;
+  }
 }
 
 .pharmacy-row {
