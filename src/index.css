@@ -211,7 +211,7 @@ input {
 
 .results-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 1.5rem;
 }
 
@@ -232,7 +232,7 @@ input {
 }
 
 .card-header {
-  padding: 1.5rem 1.5rem 1rem;
+  padding: 1.25rem 1.25rem 0.75rem;
   position: relative;
 }
 
@@ -247,7 +247,7 @@ input {
 }
 
 .product-title {
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: var(--primary);
   margin-bottom: 0.25rem;
