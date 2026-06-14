@@ -523,30 +523,29 @@ function App() {
               </div>
             )}
             
-            <div className="home-dashboard">
-              
-              <div className="popular-categories-section">
-                <h3>Categorías Populares</h3>
-                <div className="categories-grid">
-                  <button className="category-pill" onClick={() => { setSearchTerm('antigripal'); executeSearch('antigripal'); }}>
-                    Gripe y Resfriado
-                  </button>
-                  <button className="category-pill" onClick={() => { setSearchTerm('vitamina'); executeSearch('vitamina'); }}>
-                    Vitaminas
-                  </button>
-                  <button className="category-pill" onClick={() => { setSearchTerm('analgésico'); executeSearch('analgésico'); }}>
-                    Analgésicos
-                  </button>
-                  <button className="category-pill" onClick={() => { setSearchTerm('bebé'); executeSearch('bebé'); }}>
-                    Cuidado Infantil
-                  </button>
+            {!hasSearched && (
+              <div className="home-dashboard">
+                <div className="popular-categories-section">
+                  <h3>Categorías Populares</h3>
+                  <div className="categories-grid">
+                    <button className="category-pill" onClick={() => { setSearchTerm('antigripal'); executeSearch('antigripal'); }}>
+                      Gripe y Resfriado
+                    </button>
+                    <button className="category-pill" onClick={() => { setSearchTerm('vitamina'); executeSearch('vitamina'); }}>
+                      Vitaminas
+                    </button>
+                    <button className="category-pill" onClick={() => { setSearchTerm('analgésico'); executeSearch('analgésico'); }}>
+                      Analgésicos
+                    </button>
+                    <button className="category-pill" onClick={() => { setSearchTerm('bebé'); executeSearch('bebé'); }}>
+                      Cuidado Infantil
+                    </button>
+                  </div>
                 </div>
               </div>
+            )}
 
-
-            </div>
-
-            <p className="update-notice">Última actualización de precios: Hoy, 08:30 hrs</p>
+            {!hasSearched && <p className="update-notice">Última actualización de precios: Hoy, 08:30 hrs</p>}
           </div>
           
           {/* SECCIÓN VISTOS RECIENTEMENTE */}
@@ -581,28 +580,30 @@ function App() {
             </div>
           )}
 
-          <div className="bank-promos-section" style={{ marginTop: '2rem', maxWidth: '700px', margin: '2rem auto 0' }}>
-            <h3 className="section-title" style={{ fontSize: '1.25rem', color: 'var(--text)', marginBottom: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              💳 Promociones del Día
-            </h3>
-            <div className="promos-grid" style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
-              <div className="promo-card ghost-card ghost-itau">
-                <div className="promo-bank">Punto Farma</div>
-                <div className="promo-discount">30% OFF</div>
-                <div className="promo-location">con Itaú</div>
-              </div>
-              <div className="promo-card ghost-card ghost-ueno">
-                <div className="promo-bank">Catedral</div>
-                <div className="promo-discount">25% OFF</div>
-                <div className="promo-location">con Ueno Bank</div>
-              </div>
-              <div className="promo-card ghost-card ghost-familiar">
-                <div className="promo-bank">Vicente Scavone</div>
-                <div className="promo-discount">20% OFF</div>
-                <div className="promo-location">con Familiar</div>
+          {!hasSearched && (
+            <div className="bank-promos-section" style={{ marginTop: '2rem', maxWidth: '700px', margin: '2rem auto 0' }}>
+              <h3 className="section-title" style={{ fontSize: '1.25rem', color: 'var(--text)', marginBottom: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                💳 Promociones del Día
+              </h3>
+              <div className="promos-grid" style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+                <div className="promo-card ghost-card ghost-itau">
+                  <div className="promo-bank">Punto Farma</div>
+                  <div className="promo-discount">30% OFF</div>
+                  <div className="promo-location">con Itaú</div>
+                </div>
+                <div className="promo-card ghost-card ghost-ueno">
+                  <div className="promo-bank">Catedral</div>
+                  <div className="promo-discount">25% OFF</div>
+                  <div className="promo-location">con Ueno Bank</div>
+                </div>
+                <div className="promo-card ghost-card ghost-familiar">
+                  <div className="promo-bank">Vicente Scavone</div>
+                  <div className="promo-discount">20% OFF</div>
+                  <div className="promo-location">con Familiar</div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </section>
 
         {hasSearched && (
