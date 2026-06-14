@@ -2,6 +2,42 @@ import { useState, useEffect } from 'react';
 import { MOCK_PRODUCTS, formatGs } from './mockData';
 import './App.css'; // This is empty now
 
+const normalizeProductName = (rawName) => {
+  const nameLower = rawName.toLowerCase().trim();
+  
+  // Extract main brand (first word)
+  const brandMatch = nameLower.match(/^[a-zñáéíóú]+/i);
+  let brand = brandMatch ? brandMatch[0] : '';
+  brand = brand.charAt(0).toUpperCase() + brand.slice(1);
+
+  // Extract dosage (e.g. 10 mg, 10/20)
+  const dosageMatch = nameLower.match(/\b(\d+(?:\/\d+)?(?:\.\d+)?)\s*(?:mg|ml|g|mcg|ui|kg)\b/i) || nameLower.match(/\b(\d+(?:\/\d+)?)\b/);
+  let dosage = dosageMatch ? dosageMatch[0].replace(/\s+/g, '').toLowerCase() : '';
+  // Si dosage es solo un número, agregarle mg por defecto si no lo tiene
+  if (/^\d+$/.test(dosage)) dosage += 'mg';
+
+  // Extract quantity (e.g. x 30, caja 30, 30 comp)
+  let quantity = '';
+  const qtyMatch1 = nameLower.match(/(?:x|caja|cont|de|env|fco)\s*(\d{1,3})\b/i);
+  const qtyMatch2 = nameLower.match(/\b(\d{1,3})\s*(?:comp|caps|cáps|tab|sobres|amp)\b/i);
+  
+  if (qtyMatch1) {
+    quantity = qtyMatch1[1];
+  } else if (qtyMatch2) {
+    quantity = qtyMatch2[1];
+  }
+
+  // Generate a grouping key
+  const groupingKey = `${brand.toLowerCase()}-${dosage}-${quantity}`.replace(/[^a-z0-9-]/g, '');
+
+  // Generate a display name
+  let displayName = brand;
+  if (dosage) displayName += ` ${dosage}`;
+  if (quantity) displayName += ` - Caja x${quantity}`;
+
+  return { groupingKey, displayName };
+};
+
 function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
@@ -189,11 +225,12 @@ function App() {
 
       const grouped = {};
       rawData.forEach(item => {
-        const normalizedName = item.commercialName.toLowerCase().trim();
-        if (!grouped[normalizedName]) {
-          grouped[normalizedName] = {
+        const { groupingKey, displayName } = normalizeProductName(item.commercialName);
+        
+        if (!grouped[groupingKey]) {
+          grouped[groupingKey] = {
             id: item.id,
-            commercialName: item.commercialName,
+            commercialName: displayName, // Usamos el nombre limpio!
             composition: item.composition,
             laboratory: item.laboratory,
             details: item.details,
@@ -202,10 +239,10 @@ function App() {
             prices: []
           };
         }
-        if (!grouped[normalizedName].imageUrl && item.imageUrl) {
-          grouped[normalizedName].imageUrl = item.imageUrl;
+        if (!grouped[groupingKey].imageUrl && item.imageUrl) {
+          grouped[groupingKey].imageUrl = item.imageUrl;
         }
-        item.prices.forEach(p => grouped[normalizedName].prices.push(p));
+        item.prices.forEach(p => grouped[groupingKey].prices.push(p));
       });
 
       const matchedProducts = Object.values(grouped);
