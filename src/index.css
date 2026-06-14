@@ -334,7 +334,7 @@ input {
 
 .price-text {
   font-weight: 700;
-  font-size: 1.6rem; /* Aumento de tamaño para los números */
+  font-size: 1.25rem;
   color: var(--text-main);
 }
 
