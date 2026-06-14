@@ -242,7 +242,7 @@ function App() {
         if (!grouped[groupingKey].imageUrl && item.imageUrl) {
           grouped[groupingKey].imageUrl = item.imageUrl;
         }
-        item.prices.forEach(p => grouped[groupingKey].prices.push(p));
+        item.prices.forEach(p => grouped[groupingKey].prices.push({ ...p, originalName: item.commercialName }));
       });
 
       const matchedProducts = Object.values(grouped);
@@ -741,7 +741,9 @@ function App() {
                             )}
                           </div>
                           <div className="product-info-wrapper">
-                            <span className="laboratory-name">{product.laboratory}</span>
+                            {product.laboratory && product.laboratory.toLowerCase() !== 'desconocido' && (
+                              <span className="laboratory-name">{product.laboratory}</span>
+                            )}
                             <h3 className="product-title">{product.commercialName}</h3>
                             <p className="product-subtitle">{product.composition} • {product.details}</p>
                             
@@ -787,7 +789,7 @@ function App() {
                               className={`pharmacy-row ${priceEntry.pharmacy.class} ${isBestPrice ? 'best-price' : ''}`}
                               onClick={() => handleProductClick(product.commercialName, product)}
                             >
-                              <div className="row-pharmacy-info" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <div className="row-pharmacy-info" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                                 <img 
                                   src={`/logos/${priceEntry.pharmacy.id}.png`} 
                                   alt={priceEntry.pharmacy.name} 
@@ -798,6 +800,12 @@ function App() {
                                     e.target.parentElement.innerHTML = priceEntry.pharmacy.name; 
                                   }} 
                                 />
+                                {priceEntry.originalName && (
+                                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '0.4rem', maxWidth: '180px', lineHeight: '1.2' }}>
+                                    {priceEntry.originalName}
+                                  </span>
+                                )}
+                              </div>
                               </div>
                               <div className="row-price-info">
                                 {isBestPrice && (
