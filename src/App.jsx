@@ -741,7 +741,7 @@ function App() {
                             )}
                           </div>
                           <div className="product-info-wrapper">
-                            {product.laboratory && product.laboratory.toLowerCase() !== 'desconocido' && (
+                            {product.laboratory && product.laboratory.trim().toLowerCase() !== 'desconocido' && (
                               <span className="laboratory-name">{product.laboratory}</span>
                             )}
                             <h3 className="product-title">{product.commercialName}</h3>
