@@ -790,16 +790,9 @@ function App() {
                               onClick={() => handleProductClick(product.commercialName, product)}
                             >
                               <div className="row-pharmacy-info" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                <img 
-                                  src={`/logos/${priceEntry.pharmacy.id}.png`} 
-                                  alt={priceEntry.pharmacy.name} 
-                                  style={{ maxHeight: '40px', maxWidth: '140px', objectFit: 'contain' }}
-                                  onError={(e) => { 
-                                    e.target.onerror = null; 
-                                    e.target.style.display = 'none'; 
-                                    e.target.parentElement.innerHTML = priceEntry.pharmacy.name; 
-                                  }} 
-                                />
+                                <span style={{ fontWeight: '600', fontSize: '0.95rem', color: 'var(--text-main)', textAlign: 'center', letterSpacing: '-0.01em' }}>
+                                  {priceEntry.pharmacy.name}
+                                </span>
                                 {priceEntry.originalName && (
                                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '0.4rem', maxWidth: '180px', lineHeight: '1.2' }}>
                                     {priceEntry.originalName}
