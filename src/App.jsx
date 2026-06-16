@@ -808,14 +808,27 @@ function App() {
                                   </span>
                                 )}
                               </div>
-                              <div className="row-price-info">
-                                {isBestPrice && (
-                                  <svg className="best-price-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                              <div className="row-price-info" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.2rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                  {isBestPrice && (
+                                    <svg className="best-price-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                                  )}
+                                  <span className="price-text" style={{color: isBestPrice ? 'var(--primary-dark)' : 'inherit'}}>
+                                    {formatGs(priceEntry.price)}
+                                  </span>
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{color: 'var(--text-muted)', marginLeft: '0.25rem'}}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                </div>
+                                {priceEntry.specialPrice && (
+                                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginTop: '-0.2rem' }}>
+                                    <span style={{ fontSize: '0.9rem', fontWeight: '700', color: '#0288d1', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                                      {formatGs(priceEntry.specialPrice)}
+                                    </span>
+                                    <span style={{ fontSize: '0.65rem', color: '#0288d1', fontWeight: '600', textTransform: 'uppercase' }}>
+                                      {priceEntry.specialMethod}
+                                    </span>
+                                  </div>
                                 )}
-                                <span className="price-text" style={{color: isBestPrice ? 'var(--primary-dark)' : 'inherit'}}>
-                                  {formatGs(priceEntry.price)}
-                                </span>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{color: 'var(--text-muted)', marginLeft: '0.25rem'}}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                               </div>
                             </a>
                           );
