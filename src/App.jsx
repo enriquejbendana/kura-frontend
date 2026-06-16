@@ -242,7 +242,16 @@ function App() {
         if (!grouped[groupingKey].imageUrl && item.imageUrl) {
           grouped[groupingKey].imageUrl = item.imageUrl;
         }
-        item.prices.forEach(p => grouped[groupingKey].prices.push({ ...p, originalName: item.commercialName }));
+        item.prices.forEach(p => {
+          const existingIdx = grouped[groupingKey].prices.findIndex(ep => ep.pharmacy.id === p.pharmacy.id);
+          if (existingIdx >= 0) {
+            if (p.price < grouped[groupingKey].prices[existingIdx].price) {
+              grouped[groupingKey].prices[existingIdx] = { ...p, originalName: item.commercialName };
+            }
+          } else {
+            grouped[groupingKey].prices.push({ ...p, originalName: item.commercialName });
+          }
+        });
       });
 
       const matchedProducts = Object.values(grouped);
