@@ -514,24 +514,26 @@ function App() {
           <div className="hero-section">
             <div className="hero-content">
               <h1 className="hero-title">Encontrá tu bienestar<br/>al mejor precio</h1>
-              <p className="hero-subtitle">Buscá y compará medicamentos en todas las farmacias del país, sin salir de tu casa.</p>
+              <p className="hero-subtitle">Buscá y compará medicamentos en las mejores farmacias del país, sin salir de tu casa.</p>
               
               <div className="search-container" style={{ margin: 0, width: '100%', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
                 <form onSubmit={handleSearchSubmit} className="search-input-wrapper">
                   <svg className="search-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                  <input 
-                    type="text" 
-                    className="search-input" 
-                    placeholder="Escribí la composición o marca..." 
+                  <textarea 
+                    className="search-input multiline-search" 
+                    placeholder="Decime en palabras qué querés encontrar, escribí la composición o marca, o bien, hace click en..." 
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSearchSubmit(e);
+                      }
+                    }}
+                    rows={3}
                   />
-                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'nowrap', flexShrink: 0 }}>
                     <button type="submit" className="search-button">Buscar</button>
-                    <button type="button" className="btn-upload-prescription" onClick={() => setIsUploadModalOpen(true)}>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                      Subir
-                    </button>
                   </div>
                 </form>
               </div>
@@ -546,19 +548,15 @@ function App() {
           <div className="search-container" style={{ marginBottom: '2rem' }}>
             <form onSubmit={handleSearchSubmit} className="search-input-wrapper">
               <svg className="search-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-              <input 
-                type="text" 
-                className="search-input" 
-                placeholder="Decime en palabras qué querés encontrar, o escribí la composición o marca..." 
-                value={searchTerm}
+                  <textarea 
+                    className="search-input multiline-search" 
+                    placeholder="Decime en palabras qué querés encontrar, escribí la composición o marca, o bien, hace click en..." 
+                    value={searchTerm}
+                    rows={3}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'nowrap', flexShrink: 0 }}>
                 <button type="submit" className="search-button">Buscar</button>
-                <button type="button" className="btn-upload-prescription" onClick={() => setIsUploadModalOpen(true)}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                  Subir
-                </button>
               </div>
             </form>
 
@@ -608,18 +606,30 @@ function App() {
               <div className="home-dashboard">
                 <div className="popular-categories-section">
                   <h3>Categorías Populares</h3>
-                  <div className="categories-grid">
-                    <button className="category-pill" onClick={() => { setSearchTerm('antigripal'); executeSearch('antigripal'); }}>
-                      Gripe y Resfriado
+                  <div className="categories-icons-grid">
+                    <button className="category-item" onClick={() => { setSearchTerm('antigripal'); executeSearch('antigripal'); }}>
+                      <div className="category-icon-wrapper squircle-blue">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m10.5 20.5 7 17l5-5-3.5-3.5L12 5l7 7-3.5 3.5Z"/><path d="M14 9.5 9.5 14"/></svg>
+                      </div>
+                      <span className="category-label text-blue">Gripe y Resfriado</span>
                     </button>
-                    <button className="category-pill" onClick={() => { setSearchTerm('vitamina'); executeSearch('vitamina'); }}>
-                      Vitaminas
+                    <button className="category-item" onClick={() => { setSearchTerm('vitamina'); executeSearch('vitamina'); }}>
+                      <div className="category-icon-wrapper squircle-green">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="7" y="7" width="10" height="14" rx="2" ry="2"/><path d="M6 7h12"/><path d="M10 3v4"/><path d="M14 3v4"/><path d="M12 11v4"/><path d="M10 13h4"/></svg>
+                      </div>
+                      <span className="category-label text-green">Vitaminas</span>
                     </button>
-                    <button className="category-pill" onClick={() => { setSearchTerm('analgésico'); executeSearch('analgésico'); }}>
-                      Analgésicos
+                    <button className="category-item" onClick={() => { setSearchTerm('analgésico'); executeSearch('analgésico'); }}>
+                      <div className="category-icon-wrapper squircle-purple">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M8 11h8"/><path d="M12 7v8"/></svg>
+                      </div>
+                      <span className="category-label text-purple">Analgésicos</span>
                     </button>
-                    <button className="category-pill" onClick={() => { setSearchTerm('bebé'); executeSearch('bebé'); }}>
-                      Cuidado Infantil
+                    <button className="category-item" onClick={() => { setSearchTerm('bebé'); executeSearch('bebé'); }}>
+                      <div className="category-icon-wrapper squircle-orange">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                      </div>
+                      <span className="category-label text-orange">Cuidado Infantil</span>
                     </button>
                   </div>
                 </div>
@@ -627,7 +637,6 @@ function App() {
             )}
 
             {!hasSearched && <p className="update-notice">Última actualización de precios: Hoy, 08:30 hrs</p>}
-          </div>
           
           {/* SECCIÓN VISTOS RECIENTEMENTE */}
           {!hasSearched && recentlyViewed.length > 0 && (
@@ -685,7 +694,6 @@ function App() {
               </div>
             </div>
           )}
-        </section>
 
         {hasSearched && (
           <section className="results-section">
@@ -1010,6 +1018,15 @@ function App() {
           </div>
         </div>
       )}
+      {/* Footer / Disclaimer */}
+      <footer className="app-footer" style={{ marginTop: '5rem', padding: '3rem 0', backgroundColor: '#0f172a', color: '#94a3b8' }}>
+        <div className="container" style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
+          <p style={{ fontSize: '0.9rem', lineHeight: '1.7', margin: 0 }}>
+            <span style={{ color: '#f8fafc', fontWeight: 600 }}>El objetivo de Kura es contribuir al ahorro en tus gastos de salud. </span> 
+            Somos una plataforma de búsqueda y comparación de precios, no una farmacia ni un proveedor médico. Los precios y la disponibilidad mostrados son estimaciones basadas en información pública y pueden no reflejar actualizaciones en tiempo real. El precio final y el stock real están sujetos a variaciones en el mostrador dependiendo de la sucursal, políticas internas o la presentación exacta del medicamento. Te recomendamos verificar el precio directamente con la farmacia antes de tu compra.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
