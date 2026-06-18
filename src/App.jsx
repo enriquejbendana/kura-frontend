@@ -501,7 +501,16 @@ function App() {
       <header className="app-header">
         <div className="container header-content">
 
-          <div className="logo">
+          <div 
+            className="logo" 
+            onClick={() => {
+              setHasSearched(false);
+              setSearchTerm('');
+              setResults([]);
+            }}
+            style={{ cursor: 'pointer' }}
+            title="Volver al inicio"
+          >
             Kura <span className="logo-tag">PY</span>
           </div>
           <div style={{width: '24px'}}></div> {/* Placeholder for balance */}
