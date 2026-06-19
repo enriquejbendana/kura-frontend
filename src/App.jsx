@@ -312,6 +312,19 @@ function App() {
     executeSearch(searchTerm);
   };
 
+  const handleClearSearch = () => {
+    setSearchTerm('');
+    setHasSearched(false);
+    setResults([]);
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    if (e.target.value.trim() === '') {
+      handleClearSearch();
+    }
+  };
+
   const handleTagClick = (tag) => {
     setSearchTerm(tag);
     executeSearch(tag);
@@ -523,7 +536,7 @@ function App() {
                     className="search-input multiline-search" 
                     placeholder="Decime en palabras qué querés encontrar, escribí la composición o marca, o bien, hace click en..." 
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={handleSearchChange}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
@@ -532,6 +545,11 @@ function App() {
                     }}
                     rows={3}
                   />
+                  {searchTerm && (
+                    <button type="button" onClick={handleClearSearch} className="clear-search-btn" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem', color: 'var(--text-muted)', position: 'absolute', right: '110px', top: '50%', transform: 'translateY(-50%)' }}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                  )}
                   <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'nowrap', flexShrink: 0 }}>
                     <button type="submit" className="search-button">Buscar</button>
                   </div>
@@ -553,8 +571,13 @@ function App() {
                     placeholder="Decime en palabras qué querés encontrar, escribí la composición o marca, o bien, hace click en..." 
                     value={searchTerm}
                     rows={3}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+                    onChange={handleSearchChange}
+                  />
+                  {searchTerm && (
+                    <button type="button" onClick={handleClearSearch} className="clear-search-btn" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem', color: 'var(--text-muted)', position: 'absolute', right: '110px', top: '50%', transform: 'translateY(-50%)' }}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                  )}
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'nowrap', flexShrink: 0 }}>
                 <button type="submit" className="search-button">Buscar</button>
               </div>
@@ -564,9 +587,9 @@ function App() {
               <button 
                 type="button" 
                 onClick={() => setShowAdvanced(!showAdvanced)}
-                style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
+                style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: '1.1rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: showAdvanced ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: showAdvanced ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"/></svg>
                 Búsqueda Avanzada
               </button>
             </div>
@@ -697,6 +720,18 @@ function App() {
 
         {hasSearched && (
           <section className="results-section">
+            <div className="breadcrumbs" style={{ marginBottom: '1.5rem', fontSize: '1.15rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <button 
+                onClick={handleClearSearch}
+                style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', padding: 0, fontWeight: 600, fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                Inicio
+              </button>
+              <span style={{ fontSize: '1.15rem' }}>/</span>
+              <span style={{ fontWeight: 500, color: 'var(--text)', fontSize: '1.15rem' }}>Resultados para "{searchTerm}"</span>
+            </div>
+
             <div className="results-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                 <h2 className="results-title" style={{ margin: 0 }}>Resultados de búsqueda</h2>
