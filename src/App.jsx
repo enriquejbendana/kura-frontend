@@ -1,44 +1,22 @@
 import { useState, useEffect } from 'react';
+import { supabase } from './lib/supabase';
 import { MOCK_PRODUCTS, formatGs } from './mockData';
+import { drugDictionary as localDrugDictionary } from './drugDictionary';
+import { diccionarioAnatomico } from './data/diccionarioAnatomico';
+import { cadenasFarmacias as localCadenasFarmacias } from './data/cadenasFarmacias';
+import { diasSemana, alianzasDescuentos as localAlianzasDescuentos } from './data/ofertasBancarias';
+import AnatomyMap from './components/AnatomyMap';
 import './App.css'; // This is empty now
 
-const normalizeProductName = (rawName) => {
-  const nameLower = rawName.toLowerCase().trim();
-  
-  // Extract main brand (first word)
-  const brandMatch = nameLower.match(/^[a-zñáéíóú]+/i);
-  let brand = brandMatch ? brandMatch[0] : '';
-  brand = brand.charAt(0).toUpperCase() + brand.slice(1);
-
-  // Extract dosage (e.g. 10 mg, 10/20)
-  const dosageMatch = nameLower.match(/\b(\d+(?:\/\d+)?(?:\.\d+)?)\s*(?:mg|ml|g|mcg|ui|kg)\b/i) || nameLower.match(/\b(\d+(?:\/\d+)?)\b/);
-  let dosage = dosageMatch ? dosageMatch[0].replace(/\s+/g, '').toLowerCase() : '';
-  // Si dosage es solo un número, agregarle mg por defecto si no lo tiene
-  if (/^\d+$/.test(dosage)) dosage += 'mg';
-
-  // Extract quantity (e.g. x 30, caja 30, 30 comp)
-  let quantity = '';
-  const qtyMatch1 = nameLower.match(/(?:x|caja|cont|de|env|fco)\s*(\d{1,3})\b/i);
-  const qtyMatch2 = nameLower.match(/\b(\d{1,3})\s*(?:comp|caps|cáps|tab|sobres|amp)\b/i);
-  
-  if (qtyMatch1) {
-    quantity = qtyMatch1[1];
-  } else if (qtyMatch2) {
-    quantity = qtyMatch2[1];
-  }
-
-  // Generate a grouping key
-  const groupingKey = `${brand.toLowerCase()}-${dosage}-${quantity}`.replace(/[^a-z0-9-]/g, '');
-
-  // Generate a display name
-  let displayName = brand;
-  if (dosage) displayName += ` ${dosage}`;
-  if (quantity) displayName += ` - Caja x${quantity}`;
-
-  return { groupingKey, displayName };
-};
+// normalizeProductName removido para evitar agrupación agresiva de marcas
 
 function App() {
+  // Estados de Base de Datos
+  const [cadenasFarmacias, setCadenasFarmacias] = useState(localCadenasFarmacias);
+  const [alianzasDescuentos, setAlianzasDescuentos] = useState(localAlianzasDescuentos);
+  const [drugDictionary, setDrugDictionary] = useState(localDrugDictionary);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
+
   const [searchTerm, setSearchTerm] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
   const [results, setResults] = useState([]);
@@ -56,9 +34,27 @@ function App() {
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
+  // Estados del Vademécum Anatómico
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedDrugDetails, setSelectedDrugDetails] = useState(null);
+  
+  // Estados del Directorio de Farmacias
+  const [selectedPharmacy, setSelectedPharmacy] = useState(null);
+
+  // Estados del Radar de Ofertas
+  const [selectedDay, setSelectedDay] = useState(new Date().getDay());
+  const [offerCategory, setOfferCategory] = useState('bancos'); // 'bancos', 'seguros', 'cooperativas', 'eventos'
+
   // Estados de Carga de Receta (OCR IA)
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('idle'); // idle, scanning, success
+  
+  // Estado de Navegación por Pestañas
+  const [activeTab, setActiveTab] = useState('inicio');
+
+  // Estado para Ofertas Dinámicas
+  const [topOffers, setTopOffers] = useState([]);
+  const [loadingOffers, setLoadingOffers] = useState(false);
 
   // Estado para Loading Falso
   const [scannedPharmacies, setScannedPharmacies] = useState(0);
@@ -77,6 +73,74 @@ function App() {
     localStorage.setItem('farmacompara_recently_viewed', JSON.stringify(recentlyViewed));
   }, [recentlyViewed]);
 
+  // Carga inicial de datos desde Supabase
+  useEffect(() => {
+    async function loadDbData() {
+      try {
+        const [pharmaciesRes, discountsRes, principlesRes] = await Promise.all([
+          supabase.from('pharmacies').select('*'),
+          supabase.from('discounts').select('*'),
+          supabase.from('active_principles').select('*')
+        ]);
+        
+        if (pharmaciesRes.data && pharmaciesRes.data.length > 0) {
+          const mappedPharmacies = pharmaciesRes.data.map(p => {
+            const local = localCadenasFarmacias.find(l => l.id === p.id) || { data: {} };
+            return {
+              id: p.id,
+              name: p.name || local.name,
+              themeColor: p.theme_color || local.themeColor,
+              textColor: p.text_color || local.textColor,
+              status: p.status || local.status || 'Conectado',
+              data: {
+                delivery: p.delivery || local.data.delivery || '',
+                horarios: p.horarios || local.data.horarios || '',
+                seguros: p.seguros || local.data.seguros || '',
+                fidelidad: p.fidelidad || local.data.fidelidad || '',
+                whatsapp: p.whatsapp || local.data.whatsapp || '',
+                pagos: p.pagos || local.data.pagos || '',
+                cobertura: p.cobertura || local.data.cobertura || '',
+                mapsQuery: p.maps_query || local.data.mapsQuery || ''
+              }
+            };
+          });
+          setCadenasFarmacias(mappedPharmacies);
+        }
+        
+        if (discountsRes.data && discountsRes.data.length > 0) {
+          // Normalizar snake_case a camelCase para la app
+          const mappedDiscounts = discountsRes.data.map(d => ({
+            id: d.id,
+            category: d.category,
+            bank: d.bank,
+            bankColor: d.bank_color,
+            bankHighlight: d.bank_highlight,
+            pharmacy: d.pharmacy_id,
+            pharmacyColor: d.pharmacy_color,
+            discount: d.discount,
+            type: d.type,
+            dayIds: d.day_ids
+          }));
+          setAlianzasDescuentos(mappedDiscounts);
+        }
+
+        if (principlesRes.data && principlesRes.data.length > 0) {
+          const dict = {};
+          principlesRes.data.forEach(p => {
+             if (!dict[p.uses]) dict[p.uses] = { category: p.uses, description: "", drugs: [] };
+             dict[p.uses].drugs.push({ name: p.name, action: p.description, warnings: p.warnings });
+          });
+          setDrugDictionary(Object.values(dict));
+        }
+
+        setIsDataLoaded(true);
+      } catch (err) {
+        console.error("Error al cargar datos de Supabase:", err);
+      }
+    }
+    loadDbData();
+  }, []);
+
   // Cargar Contador de Visitas al abrir la página
   useEffect(() => {
     fetch('https://kura-api-mm3u.onrender.com/api/visits')
@@ -84,6 +148,42 @@ function App() {
       .then(data => setVisitCount(data.visits))
       .catch(err => console.error('Error cargando visitas:', err));
   }, []);
+
+  // Cargar Top Ofertas cuando se abre la pestaña
+  useEffect(() => {
+    if (activeTab === 'ofertas' && topOffers.length === 0) {
+      const fetchOffers = async () => {
+        setLoadingOffers(true);
+        try {
+          const { data, error } = await supabase
+            .from('medicamentos_cache')
+            .select('*')
+            .gt('discount_percentage', 0)
+            .order('discount_percentage', { ascending: false })
+            .limit(12);
+
+          if (!error && data) {
+            // Eliminar duplicados por nombre comercial para no mostrar 5 variantes del mismo producto
+            const uniqueOffers = [];
+            const seen = new Set();
+            for (const item of data) {
+              const simpleName = (item.commercial_name || '').toLowerCase().substring(0, 15);
+              if (!seen.has(simpleName)) {
+                seen.add(simpleName);
+                uniqueOffers.push(item);
+              }
+            }
+            setTopOffers(uniqueOffers);
+          }
+        } catch (e) {
+          console.error(e);
+        } finally {
+          setLoadingOffers(false);
+        }
+      };
+      fetchOffers();
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     let pharmacyInterval;
@@ -176,12 +276,45 @@ function App() {
     }
 
     try {
-      const response = await fetch(`https://kura-api-mm3u.onrender.com/api/search?q=${encodeURIComponent(queryToFetch)}`);
-      const json = await response.json();
+      // Búsqueda en Supabase usando ilike en commercial_name o composition
+      const { data: dbProducts, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          product_prices (
+            price,
+            pharmacies (
+              id,
+              name,
+              logo
+            )
+          )
+        `)
+        .or(`commercial_name.ilike.%${cleanTerm}%,composition.ilike.%${cleanTerm}%`);
+
+      if (error) throw error;
       
-      let rawData = json.data || [];
-      if (json.errors && json.errors.length > 0) {
-        setBackendErrors(json.errors);
+      let rawData = [];
+      
+      if (dbProducts) {
+        // Mapear la estructura de Supabase a la que esperaba el frontend
+        rawData = dbProducts.map(p => ({
+          id: p.id,
+          commercialName: p.commercial_name,
+          composition: p.composition,
+          laboratory: p.laboratory,
+          details: p.details,
+          imageUrl: p.image_url,
+          clicks: 0, // o agregar clicks a la tabla luego
+          prices: p.product_prices.map(pp => ({
+            price: pp.price,
+            pharmacy: {
+              id: pp.pharmacies.id,
+              name: pp.pharmacies.name,
+              logo: pp.pharmacies.logo
+            }
+          }))
+        }));
       }
 
       if (isMonoDrug) {
@@ -209,9 +342,7 @@ function App() {
         });
       }
 
-      // Filtro Estricto Anti-Falsos Positivos:
-      // Las farmacias a veces devuelven basura (ej. buscan "gotas" e ignoran el principio activo).
-      // Obligamos a que la palabra principal de búsqueda esté en el nombre comercial o composición.
+      // Filtro Estricto Anti-Falsos Positivos
       if (cleanTerm) {
         const mainSearchWord = cleanTerm.toLowerCase().split(/\s+/).filter(w => w.length > 2)[0];
         if (mainSearchWord) {
@@ -225,12 +356,12 @@ function App() {
 
       const grouped = {};
       rawData.forEach(item => {
-        const { groupingKey, displayName } = normalizeProductName(item.commercialName);
+        const groupingKey = item.id;
         
         if (!grouped[groupingKey]) {
           grouped[groupingKey] = {
             id: item.id,
-            commercialName: displayName, // Usamos el nombre limpio!
+            commercialName: item.commercialName, // Mantenemos el nombre real completo
             composition: item.composition,
             laboratory: item.laboratory,
             details: item.details,
@@ -514,16 +645,43 @@ function App() {
       <header className="app-header">
         <div className="container header-content">
 
-          <div className="logo">
+          <div className="logo" onClick={() => setActiveTab('inicio')} style={{ cursor: 'pointer' }}>
             Kura <span className="logo-tag">PY</span>
           </div>
+          
+          <nav className="header-nav" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <button 
+              onClick={() => setActiveTab('inicio')} 
+              style={{ background: 'none', border: 'none', padding: '0.8rem 1.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '1.2rem', color: activeTab === 'inicio' ? 'var(--primary)' : 'var(--text)', borderBottom: activeTab === 'inicio' ? '4px solid var(--primary)' : '4px solid transparent', transition: 'all 0.2s' }}>
+              Inicio
+            </button>
+            <button 
+              onClick={() => setActiveTab('farmacias')} 
+              style={{ background: 'none', border: 'none', padding: '0.8rem 1.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '1.2rem', color: activeTab === 'farmacias' ? 'var(--primary)' : 'var(--text)', borderBottom: activeTab === 'farmacias' ? '4px solid var(--primary)' : '4px solid transparent', transition: 'all 0.2s' }}>
+              Farmacias
+            </button>
+            <button 
+              onClick={() => setActiveTab('principios')} 
+              style={{ background: 'none', border: 'none', padding: '0.8rem 1.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '1.2rem', color: activeTab === 'principios' ? 'var(--primary)' : 'var(--text)', borderBottom: activeTab === 'principios' ? '4px solid var(--primary)' : '4px solid transparent', transition: 'all 0.2s' }}>
+              Principios Activos
+            </button>
+            <button 
+              onClick={() => setActiveTab('ofertas')} 
+              style={{ background: 'none', border: 'none', padding: '0.8rem 1.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '1.2rem', color: activeTab === 'ofertas' ? 'var(--primary)' : 'var(--text)', borderBottom: activeTab === 'ofertas' ? '4px solid var(--primary)' : '4px solid transparent', transition: 'all 0.2s' }}>
+              Ofertas
+            </button>
+          </nav>
+
           <div style={{width: '24px'}}></div> {/* Placeholder for balance */}
         </div>
       </header>
 
       <main className="main-content container">
 
-        {!hasSearched && (
+        {/* ===================== TAB: INICIO ===================== */}
+        {activeTab === 'inicio' && (
+          <>
+            {!hasSearched && (
           <div className="hero-section">
             <div className="hero-content">
               <h1 className="hero-title">Encontrá tu bienestar<br/>al mejor precio</h1>
@@ -699,21 +857,24 @@ function App() {
                 💳 Promociones del Día
               </h3>
               <div className="promos-grid" style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
-                <div className="promo-card ghost-card ghost-itau">
-                  <div className="promo-bank">Punto Farma</div>
-                  <div className="promo-discount">30% OFF</div>
-                  <div className="promo-location">con Itaú</div>
-                </div>
-                <div className="promo-card ghost-card ghost-ueno">
-                  <div className="promo-bank">Catedral</div>
-                  <div className="promo-discount">25% OFF</div>
-                  <div className="promo-location">con Ueno Bank</div>
-                </div>
-                <div className="promo-card ghost-card ghost-familiar">
-                  <div className="promo-bank">Vicente Scavone</div>
-                  <div className="promo-discount">20% OFF</div>
-                  <div className="promo-location">con Familiar</div>
-                </div>
+                {(() => {
+                  const today = new Date().getDay();
+                  const promosHoy = alianzasDescuentos.filter(o => o.category === 'bancos' && o.dayIds.includes(today)).slice(0, 3);
+                  if (promosHoy.length === 0) {
+                     return <p style={{ color: 'var(--text-muted)' }}>No hay promociones bancarias cargadas para hoy.</p>;
+                  }
+                  return promosHoy.map((promo, idx) => (
+                    <div key={`promo-${idx}`} className="promo-card ghost-card" style={{
+                      backgroundColor: 'var(--surface)', 
+                      border: `1px solid ${promo.bankColor}40`,
+                      borderLeft: `4px solid ${promo.bankColor}`
+                    }}>
+                      <div className="promo-bank" style={{ color: promo.pharmacyColor }}>{promo.pharmacy}</div>
+                      <div className="promo-discount" style={{ color: promo.bankHighlight || promo.bankColor, fontWeight: 800 }}>{promo.discount}</div>
+                      <div className="promo-location" style={{ color: 'var(--text-muted)' }}>con {promo.bank}</div>
+                    </div>
+                  ));
+                })()}
               </div>
             </div>
           )}
@@ -952,6 +1113,557 @@ function App() {
             )}
           </section>
         )}
+          </>
+        )}
+
+        {/* ===================== TAB: FARMACIAS ===================== */}
+        {activeTab === 'farmacias' && (
+          <div className="tab-content" style={{ animation: 'fadeIn 0.3s' }}>
+            <div style={{ marginBottom: '3rem', textAlign: 'center' }}>
+              <h2 style={{ color: 'var(--text)', fontSize: '2.5rem', marginBottom: '0.5rem', fontWeight: 800 }}>
+                Directorio de Farmacias
+              </h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: '1.8' }}>
+                Conocé las zonas de cobertura, costos de delivery, seguros médicos y encuentra las sucursales más cercanas a tu ubicación ingresando en la cadena de tu preferencia o{' '}
+                <a 
+                  href="https://www.google.com/maps/search/?api=1&query=farmacias+cerca+de+mi" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style={{ 
+                    color: 'white', 
+                    background: 'linear-gradient(135deg, #4285F4 0%, #34A853 100%)', 
+                    padding: '0.4rem 1.2rem', 
+                    borderRadius: '2rem', /* Píldora */
+                    textDecoration: 'none', 
+                    fontWeight: '800',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    margin: '0.2rem 0.5rem',
+                    boxShadow: '0 4px 15px rgba(66, 133, 244, 0.4)',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    verticalAlign: 'middle'
+                  }}
+                  onMouseOver={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(66, 133, 244, 0.6)'; }}
+                  onMouseOut={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(66, 133, 244, 0.4)'; }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  haciendo click aquí
+                </a>
+              </p>
+            </div>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+              {cadenasFarmacias.map((pharma) => (
+                <div 
+                  key={pharma.id} 
+                  onClick={() => setSelectedPharmacy(pharma)}
+                  style={{ backgroundColor: pharma.themeColor, padding: '3rem 2rem', borderRadius: '1.5rem', cursor: 'pointer', transition: 'transform 0.3s, box-shadow 0.3s', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '220px', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)', position: 'relative', overflow: 'hidden' }}
+                  onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-8px)'; e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.2)'; }}
+                  onMouseOut={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.1)'; }}
+                >
+                  <div style={{ position: 'absolute', top: '10px', right: '15px', display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'rgba(255,255,255,0.2)', padding: '0.3rem 0.8rem', borderRadius: '2rem' }}>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#4ade80', boxShadow: '0 0 10px #4ade80' }}></div>
+                    <span style={{ color: 'white', fontSize: '0.8rem', fontWeight: 600 }}>{pharma.status}</span>
+                  </div>
+                  <h3 style={{ margin: 0, fontSize: '2.5rem', color: pharma.textColor, fontWeight: 900, textAlign: 'center', letterSpacing: '-0.5px' }}>{pharma.name}</h3>
+                  <p style={{ margin: '1rem 0 0 0', color: 'rgba(255,255,255,0.8)', fontSize: '1rem', fontWeight: 500 }}>Toca para ver información ➔</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ===================== MODAL DE FARMACIA ===================== */}
+        {selectedPharmacy && (
+          <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(255, 255, 255, 0.7)', backdropFilter: 'blur(10px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'fadeIn 0.2s' }} onClick={() => setSelectedPharmacy(null)}>
+            <div style={{ width: '90%', maxWidth: '800px', backgroundColor: 'white', borderRadius: '2rem', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)', maxHeight: '85vh', display: 'flex', flexDirection: 'column', animation: 'slideUp 0.3s' }} onClick={e => e.stopPropagation()}>
+              
+              <div style={{ padding: '2rem 3rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: selectedPharmacy.themeColor, borderTopLeftRadius: '2rem', borderTopRightRadius: '2rem' }}>
+                <h2 style={{ fontSize: '2.5rem', color: selectedPharmacy.textColor, margin: 0, fontWeight: 900 }}>{selectedPharmacy.name}</h2>
+                <button onClick={() => setSelectedPharmacy(null)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', width: '40px', height: '40px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+              </div>
+              
+              <div style={{ padding: '3rem', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
+                  
+                  <div style={{ padding: '1.5rem', backgroundColor: '#f8fafc', borderRadius: '1rem', borderLeft: `4px solid ${selectedPharmacy.themeColor}` }}>
+                    <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={selectedPharmacy.themeColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 18H3c-.6 0-1-.4-1-1V7c0-.6.4-1 1-1h10c.6 0 1 .4 1 1v11"/><path d="M14 9h4l4 4v5c0 .6-.4 1-1 1h-2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
+                      Delivery
+                    </h4>
+                    <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: 1.5 }}>{selectedPharmacy.data.delivery}</p>
+                  </div>
+
+                  <div style={{ padding: '1.5rem', backgroundColor: '#f8fafc', borderRadius: '1rem', borderLeft: `4px solid ${selectedPharmacy.themeColor}` }}>
+                    <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={selectedPharmacy.themeColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      Horarios de Atención
+                    </h4>
+                    <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: 1.5 }}>{selectedPharmacy.data.horarios}</p>
+                  </div>
+
+                  <div style={{ padding: '1.5rem', backgroundColor: '#f8fafc', borderRadius: '1rem', borderLeft: `4px solid ${selectedPharmacy.themeColor}` }}>
+                    <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={selectedPharmacy.themeColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                      Métodos de Pago
+                    </h4>
+                    <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: 1.5 }}>{selectedPharmacy.data.pagos}</p>
+                  </div>
+
+                  <div style={{ padding: '1.5rem', backgroundColor: '#f8fafc', borderRadius: '1rem', borderLeft: `4px solid ${selectedPharmacy.themeColor}` }}>
+                    <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={selectedPharmacy.themeColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                      Seguros Médicos Asociados
+                    </h4>
+                    <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: 1.5 }}>{selectedPharmacy.data.seguros}</p>
+                  </div>
+
+                  <div style={{ padding: '1.5rem', backgroundColor: '#f8fafc', borderRadius: '1rem', borderLeft: `4px solid ${selectedPharmacy.themeColor}` }}>
+                    <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={selectedPharmacy.themeColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                      Contacto WhatsApp
+                    </h4>
+                    <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: 1.5 }}>{selectedPharmacy.data.whatsapp}</p>
+                  </div>
+                </div>
+
+                <a 
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedPharmacy.data.mapsQuery)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ width: '100%', padding: '1.5rem', backgroundColor: '#4285F4', color: 'white', borderRadius: '1rem', border: 'none', fontSize: '1.2rem', fontWeight: 700, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.8rem', boxShadow: '0 4px 15px rgba(66, 133, 244, 0.3)', textDecoration: 'none', transition: 'background-color 0.2s', marginTop: 'auto' }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Ver sucursal más cercana en Google Maps
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ===================== TAB: PRINCIPIOS ACTIVOS (ANATÓMICO) ===================== */}
+        {activeTab === 'principios' && (
+          <div className="tab-content" style={{ animation: 'fadeIn 0.3s' }}>
+            <div style={{ marginBottom: '3rem', textAlign: 'center' }}>
+              <h2 style={{ color: 'var(--text)', fontSize: '2.5rem', marginBottom: '0.5rem', fontWeight: 800 }}>
+                Directorio Médico
+              </h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Buscá por nombre, interactuá con el cuerpo humano o explorá por categorías.</p>
+            </div>
+
+            {/* Búsqueda Rápida de Principios Activos */}
+            <div style={{ maxWidth: '600px', margin: '0 auto 4rem auto', position: 'relative' }}>
+              <input 
+                type="text" 
+                placeholder="Buscar principio activo por nombre (ej: Ibuprofeno, Omeprazol)..."
+                onChange={(e) => {
+                  const val = e.target.value.toLowerCase();
+                  if (val.length > 2) {
+                    for (const cat of diccionarioAnatomico) {
+                      const found = cat.drugs.find(d => d.name.toLowerCase().includes(val));
+                      if (found) {
+                        setSelectedCategory(cat);
+                        setSelectedDrugDetails(found);
+                        return;
+                      }
+                    }
+                  }
+                }}
+                style={{ width: '100%', padding: '1.2rem 1.5rem', paddingLeft: '3.5rem', borderRadius: '1.5rem', border: '1px solid var(--border)', fontSize: '1.1rem', backgroundColor: 'var(--surface)', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', color: 'var(--text)' }}
+              />
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: 'absolute', left: '1.2rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            </div>
+
+            {/* Sección: Cuerpo Humano + Detalles */}
+            <div id="anatomy-section" style={{ display: 'flex', gap: '3rem', maxWidth: '1200px', margin: '0 auto', flexWrap: 'wrap' }}>
+              
+              {/* Columna Izquierda: Cuerpo Interactivo */}
+              <div style={{ flex: '1', minWidth: '300px', display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}>
+                <AnatomyMap 
+                  selectedPart={selectedCategory ? selectedCategory.id : null}
+                  onPartClick={(partId) => {
+                    const category = diccionarioAnatomico.find(c => c.id === partId);
+                    if (category) {
+                      setSelectedCategory(category);
+                      setSelectedDrugDetails(null);
+                    }
+                  }}
+                />
+              </div>
+
+              {/* Columna Derecha: Detalles / Lista de Medicamentos */}
+              <div style={{ flex: '2', minWidth: '350px', display: 'flex', flexDirection: 'column' }}>
+                {!selectedCategory ? (
+                  <div style={{ padding: '4rem', textAlign: 'center', backgroundColor: 'var(--surface)', borderRadius: '1.5rem', border: '1px dashed var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.3, marginBottom: '1rem', color: 'var(--primary)' }}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    <h3 style={{ fontSize: '1.5rem', color: 'var(--text)', marginBottom: '0.5rem' }}>Seleccioná una zona</h3>
+                    <p style={{ color: 'var(--text-muted)' }}>Interactuá con el mapa anatómico de la izquierda para ver los principios activos relacionados.</p>
+                  </div>
+                ) : !selectedDrugDetails ? (
+                  // VISTA 1: Lista de medicamentos de la zona anatómica
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', animation: 'fadeIn 0.3s' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)', marginBottom: '1rem' }}>
+                      <div style={{ backgroundColor: `${selectedCategory.colorHex}`, padding: '1rem', borderRadius: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <img src={selectedCategory.iconPath} alt={selectedCategory.name} style={{ width: '32px', height: '32px' }} onError={(e) => e.target.style.display = 'none'} />
+                      </div>
+                      <div>
+                        <h3 style={{ margin: 0, fontSize: '1.8rem', color: 'var(--text)' }}>{selectedCategory.name}</h3>
+                        <p style={{ margin: 0, color: 'var(--text-muted)' }}>{selectedCategory.description}</p>
+                      </div>
+                    </div>
+                    
+                    <h4 style={{ color: 'var(--text)', marginBottom: '0.5rem' }}>Principios Activos Frecuentes:</h4>
+                    {selectedCategory.drugs.map((drug, idx) => (
+                      <button 
+                        key={idx}
+                        onClick={() => setSelectedDrugDetails(drug)}
+                        style={{ padding: '1rem 1.5rem', backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '1rem', cursor: 'pointer', textAlign: 'left', fontWeight: 600, color: 'var(--text)', fontSize: '1.1rem', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                        onMouseOver={e => { e.currentTarget.style.borderColor = selectedCategory.iconColor; e.currentTarget.style.color = selectedCategory.iconColor; }}
+                        onMouseOut={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text)'; }}
+                      >
+                        {drug.name}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5 }}><path d="m9 18 6-6-6-6"/></svg>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  // VISTA 2: Ficha Técnica Médica del Medicamento Seleccionado
+                  <div style={{ overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                    <button 
+                      onClick={() => setSelectedDrugDetails(null)} 
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)', fontSize: '1.1rem', fontWeight: 600, padding: 0, marginBottom: '2rem', transition: 'color 0.2s' }}
+                      onMouseOver={e => e.currentTarget.style.color = selectedCategory.iconColor}
+                      onMouseOut={e => e.currentTarget.style.color = 'var(--text-muted)'}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                      Volver a la lista de {selectedCategory.name}
+                    </button>
+
+                    <h1 style={{ fontSize: '3rem', fontWeight: 900, color: 'var(--text)', margin: '0 0 2rem 0' }}>{selectedDrugDetails.name}</h1>
+                    
+                    <div style={{ display: 'grid', gap: '1.5rem', marginBottom: '3rem' }}>
+                      <div style={{ padding: '1.5rem', backgroundColor: '#f8fafc', borderRadius: '1rem', borderLeft: `4px solid ${selectedCategory.iconColor}` }}>
+                        <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={selectedCategory.iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                          Acción Terapéutica
+                        </h4>
+                        <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: 1.5 }}>{selectedDrugDetails.accion}</p>
+                      </div>
+
+                      <div style={{ padding: '1.5rem', backgroundColor: '#f8fafc', borderRadius: '1rem', borderLeft: `4px solid ${selectedCategory.iconColor}` }}>
+                        <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={selectedCategory.iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
+                          Indicaciones
+                        </h4>
+                        <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: 1.5 }}>{selectedDrugDetails.indicaciones}</p>
+                      </div>
+
+                      {selectedDrugDetails.efectos && (
+                        <div style={{ padding: '1.5rem', backgroundColor: '#f8fafc', borderRadius: '1rem', borderLeft: '4px solid #f59e0b' }}>
+                          <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+                            Efectos Secundarios Comunes
+                          </h4>
+                          <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: 1.5 }}>{selectedDrugDetails.efectos}</p>
+                        </div>
+                      )}
+
+                      {selectedDrugDetails.contraindicaciones && (
+                        <div style={{ padding: '1.5rem', backgroundColor: '#fff1f2', borderRadius: '1rem', borderLeft: '4px solid #e11d48' }}>
+                          <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+                            Contraindicaciones
+                          </h4>
+                          <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: 1.5 }}>{selectedDrugDetails.contraindicaciones}</p>
+                        </div>
+                      )}
+
+                      {selectedDrugDetails.embarazo && (
+                        <div style={{ padding: '1.5rem', backgroundColor: '#f0fdf4', borderRadius: '1rem', borderLeft: '4px solid #10b981' }}>
+                          <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                            Embarazo y Lactancia
+                          </h4>
+                          <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: 1.5 }}>{selectedDrugDetails.embarazo}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <button 
+                      onClick={() => {
+                        setSearchTerm(selectedDrugDetails.name);
+                        setActiveTab('inicio');
+                        setSelectedDrugDetails(null);
+                        setSelectedCategory(null);
+                        setTimeout(() => handleSearchSubmit({ preventDefault: () => {} }), 100);
+                      }}
+                      style={{ width: '100%', padding: '1.5rem', backgroundColor: 'var(--primary)', color: 'white', borderRadius: '1rem', border: 'none', fontSize: '1.2rem', fontWeight: 700, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)', transition: 'background-color 0.2s', marginTop: 'auto' }}
+                      onMouseOver={e => e.currentTarget.style.backgroundColor = 'var(--primary-dark)'}
+                      onMouseOut={e => e.currentTarget.style.backgroundColor = 'var(--primary)'}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                      Buscar precios de {selectedDrugDetails.name}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Separador */}
+            <div style={{ maxWidth: '1200px', margin: '4rem auto', borderBottom: '1px solid var(--border)' }}></div>
+
+            {/* Antigua Grilla de Categorías */}
+            <div style={{ marginBottom: '3rem', textAlign: 'center' }}>
+              <h3 style={{ color: 'var(--text)', fontSize: '2rem', marginBottom: '0.5rem', fontWeight: 800 }}>Explorar por Especialidad</h3>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem', maxWidth: '1200px', margin: '0 auto', paddingBottom: '4rem' }}>
+              {diccionarioAnatomico.map((category) => {
+                const topDrugs = category.drugs.slice(0, 2);
+                const remainingCount = category.drugs.length - topDrugs.length;
+                
+                return (
+                  <div 
+                    key={category.id}
+                    onClick={() => {
+                      setSelectedCategory(category);
+                      setSelectedDrugDetails(null);
+                      document.getElementById('anatomy-section')?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    style={{ backgroundColor: 'var(--surface)', borderRadius: '1.5rem', padding: '2rem', border: '1px solid var(--border)', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05)', cursor: 'pointer', transition: 'transform 0.3s, box-shadow 0.3s', position: 'relative', overflow: 'hidden' }}
+                    onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-8px)'; e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1)'; }}
+                    onMouseOut={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.05)'; }}
+                  >
+                    <div style={{ position: 'absolute', top: 0, right: 0, width: '120px', height: '120px', backgroundColor: category.iconColor, opacity: 0.05, borderBottomLeftRadius: '100%', pointerEvents: 'none' }}></div>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                      <div style={{ backgroundColor: `${category.colorHex}`, padding: '1rem', borderRadius: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <img src={category.iconPath} alt={category.name} style={{ width: '32px', height: '32px' }} onError={(e) => { e.target.style.display = 'none' }} />
+                      </div>
+                      <h3 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--text)', fontWeight: 800 }}>{category.name}</h3>
+                    </div>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      {topDrugs.map((drug, idx) => (
+                        <div key={idx} style={{ backgroundColor: 'var(--background)', padding: '0.75rem 1rem', borderRadius: '0.75rem', fontSize: '0.9rem', color: 'var(--text)', fontWeight: 600, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--border)' }}>
+                          {drug.name}
+                        </div>
+                      ))}
+                      {remainingCount > 0 && (
+                        <div style={{ textAlign: 'center', marginTop: '0.5rem', color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 600 }}>
+                          + {remainingCount} principios más
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ===================== TAB: OFERTAS (CALENDARIO DE DESCUENTOS) ===================== */}
+        {activeTab === 'ofertas' && (
+          <div className="tab-content" style={{ animation: 'fadeIn 0.3s' }}>
+            <div style={{ marginBottom: '3rem', textAlign: 'center' }}>
+              <h2 style={{ color: 'var(--text)', fontSize: '2.5rem', marginBottom: '0.5rem', fontWeight: 800 }}>Radar de <span style={{ color: 'var(--error)' }}>Beneficios</span> 💳</h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Maximizá tus ahorros aprovechando alianzas con tarjetas, seguros, cooperativas y días especiales de cada cadena.</p>
+            </div>
+
+            {/* Filtros de Categoría (Perfil de Ahorro) - Glassmorphism */}
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginBottom: '2rem', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => setOfferCategory('bancos')}
+                style={{
+                  padding: '0.8rem 1.8rem',
+                  borderRadius: '1rem',
+                  border: offerCategory === 'bancos' ? '1px solid rgba(255,255,255,0.9)' : '1px solid rgba(200,200,200,0.3)',
+                  backgroundColor: offerCategory === 'bancos' ? 'rgba(255, 255, 255, 0.95)' : 'rgba(245, 245, 245, 0.5)',
+                  backdropFilter: 'blur(10px)',
+                  color: offerCategory === 'bancos' ? 'var(--primary-dark)' : 'var(--text-muted)',
+                  fontWeight: offerCategory === 'bancos' ? 800 : 600,
+                  fontSize: '1.05rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+                  boxShadow: offerCategory === 'bancos' ? '0 8px 32px 0 rgba(16, 185, 129, 0.15)' : '0 4px 15px 0 rgba(31, 38, 135, 0.05)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.6rem',
+                  transform: offerCategory === 'bancos' ? 'translateY(-2px)' : 'none'
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                Bancos y Tarjetas
+              </button>
+              <button
+                onClick={() => setOfferCategory('seguros')}
+                style={{
+                  padding: '0.8rem 1.8rem',
+                  borderRadius: '1rem',
+                  border: offerCategory === 'seguros' ? '1px solid rgba(255,255,255,0.9)' : '1px solid rgba(200,200,200,0.3)',
+                  backgroundColor: offerCategory === 'seguros' ? 'rgba(255, 255, 255, 0.95)' : 'rgba(245, 245, 245, 0.5)',
+                  backdropFilter: 'blur(10px)',
+                  color: offerCategory === 'seguros' ? '#00358e' : 'var(--text-muted)',
+                  fontWeight: offerCategory === 'seguros' ? 800 : 600,
+                  fontSize: '1.05rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+                  boxShadow: offerCategory === 'seguros' ? '0 8px 32px 0 rgba(0, 85, 196, 0.15)' : '0 4px 15px 0 rgba(31, 38, 135, 0.05)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.6rem',
+                  transform: offerCategory === 'seguros' ? 'translateY(-2px)' : 'none'
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                Seguros Médicos
+              </button>
+              <button
+                onClick={() => setOfferCategory('cooperativas')}
+                style={{
+                  padding: '0.8rem 1.8rem',
+                  borderRadius: '1rem',
+                  border: offerCategory === 'cooperativas' ? '1px solid rgba(255,255,255,0.9)' : '1px solid rgba(200,200,200,0.3)',
+                  backgroundColor: offerCategory === 'cooperativas' ? 'rgba(255, 255, 255, 0.95)' : 'rgba(245, 245, 245, 0.5)',
+                  backdropFilter: 'blur(10px)',
+                  color: offerCategory === 'cooperativas' ? '#004b2b' : 'var(--text-muted)',
+                  fontWeight: offerCategory === 'cooperativas' ? 800 : 600,
+                  fontSize: '1.05rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+                  boxShadow: offerCategory === 'cooperativas' ? '0 8px 32px 0 rgba(0, 118, 68, 0.15)' : '0 4px 15px 0 rgba(31, 38, 135, 0.05)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.6rem',
+                  transform: offerCategory === 'cooperativas' ? 'translateY(-2px)' : 'none'
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Cooperativas
+              </button>
+              <button
+                onClick={() => setOfferCategory('eventos')}
+                style={{
+                  padding: '0.8rem 1.8rem',
+                  borderRadius: '1rem',
+                  border: offerCategory === 'eventos' ? '1px solid rgba(255,255,255,0.9)' : '1px solid rgba(200,200,200,0.3)',
+                  backgroundColor: offerCategory === 'eventos' ? 'rgba(255, 255, 255, 0.95)' : 'rgba(245, 245, 245, 0.5)',
+                  backdropFilter: 'blur(10px)',
+                  color: offerCategory === 'eventos' ? '#e3000f' : 'var(--text-muted)',
+                  fontWeight: offerCategory === 'eventos' ? 800 : 600,
+                  fontSize: '1.05rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
+                  boxShadow: offerCategory === 'eventos' ? '0 8px 32px 0 rgba(227, 0, 15, 0.15)' : '0 4px 15px 0 rgba(31, 38, 135, 0.05)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.6rem',
+                  transform: offerCategory === 'eventos' ? 'translateY(-2px)' : 'none'
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                Eventos de Cadenas
+              </button>
+            </div>
+
+            {/* Selector de Días (Se muestra para Bancos y Eventos) */}
+            {(offerCategory === 'bancos' || offerCategory === 'eventos') && (
+              <div style={{ display: 'flex', gap: '0.8rem', overflowX: 'auto', paddingBottom: '1rem', marginBottom: '2rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                {diasSemana.map((dia) => {
+                  const isSelected = selectedDay === dia.id;
+                  const isToday = new Date().getDay() === dia.id;
+                  
+                  return (
+                    <button
+                      key={dia.id}
+                      onClick={() => setSelectedDay(dia.id)}
+                      style={{
+                        padding: '0.8rem 1.5rem',
+                        borderRadius: '2rem',
+                        border: 'none',
+                        fontSize: '1rem',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        backgroundColor: isSelected ? 'var(--primary)' : 'var(--surface)',
+                        color: isSelected ? 'white' : 'var(--text)',
+                        boxShadow: isSelected ? '0 4px 15px rgba(16, 185, 129, 0.3)' : '0 2px 5px rgba(0,0,0,0.05)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '0.2rem'
+                      }}
+                    >
+                      <span>{dia.name}</span>
+                      {isToday && <span style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: isSelected ? 'rgba(255,255,255,0.8)' : 'var(--primary)', fontWeight: 800, letterSpacing: '1px' }}>Hoy</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Tarjetas de Ofertas para la Categoría y Día Seleccionado */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+              {alianzasDescuentos.filter(oferta => oferta.category === offerCategory && ((offerCategory !== 'bancos' && offerCategory !== 'eventos') || oferta.dayIds.includes(selectedDay))).length === 0 ? (
+                <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '4rem', color: 'var(--text-muted)', backgroundColor: 'var(--surface)', borderRadius: '1.5rem' }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.3, marginBottom: '1rem' }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                  <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>No hay alianzas registradas para este día</h3>
+                  <p>Seleccioná otro día de la semana para ver más descuentos.</p>
+                </div>
+              ) : (
+                alianzasDescuentos
+                  .filter(oferta => oferta.category === offerCategory && ((offerCategory !== 'bancos' && offerCategory !== 'eventos') || oferta.dayIds.includes(selectedDay)))
+                  .map((oferta) => {
+                    const isLongDiscount = oferta.discount.includes(' al ');
+                    return (
+                    <div 
+                      key={oferta.id} 
+                      style={{ 
+                        backgroundColor: oferta.bankColor,
+                        borderRadius: '1.5rem',
+                        overflow: 'hidden',
+                        position: 'relative',
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                        transition: 'transform 0.3s',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column'
+                      }}
+                      onMouseOver={e => e.currentTarget.style.transform = 'translateY(-5px)'}
+                      onMouseOut={e => e.currentTarget.style.transform = 'translateY(0)'}
+                    >
+                      <div style={{ position: 'absolute', top: 0, right: 0, width: '150px', height: '150px', backgroundColor: oferta.bankHighlight || '#ffffff', opacity: 0.2, borderBottomLeftRadius: '100%', pointerEvents: 'none' }}></div>
+                      
+                      <div style={{ padding: '2.5rem 2rem', display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1, zIndex: 1 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ backgroundColor: 'white', color: oferta.bankColor, padding: '0.4rem 1rem', borderRadius: '2rem', fontWeight: 900, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                            {oferta.bank}
+                          </span>
+                        </div>
+                        
+                        <div>
+                          <h3 style={{ color: 'white', fontSize: isLongDiscount ? '2.8rem' : '3.5rem', fontWeight: 900, margin: '1rem 0 0 0', lineHeight: 1 }}>{oferta.discount}</h3>
+                          <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '1.2rem', fontWeight: 600 }}>de ahorro</span>
+                        </div>
+
+                        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1rem', margin: 0 }}>Válido pagando con:<br/><strong style={{ color: 'white' }}>{oferta.type}</strong></p>
+                      </div>
+
+                      <div style={{ backgroundColor: oferta.pharmacyColor, padding: '1.5rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ color: 'white', fontSize: '1rem', opacity: 0.8 }}>Exclusivo en:</span>
+                        <h4 style={{ color: 'white', margin: 0, fontSize: '1.5rem', fontWeight: 900 }}>{oferta.pharmacy}</h4>
+                      </div>
+                    </div>
+                  )})
+              )}
+            </div>
+          </div>
+        )}
+
       </main>
 
       {/* Floating Cart Button */}
@@ -1023,36 +1735,37 @@ function App() {
         </div>
       )}
 
-      {/* Upload Recipe Modal */}
-      {isUploadModalOpen && (
-        <div className="cart-modal-overlay" onClick={() => setIsUploadModalOpen(false)}>
-          <div className="cart-modal-content upload-modal" onClick={e => e.stopPropagation()}>
-            <div className="cart-header">
-              <h2>Carga tu receta médica</h2>
-              <button className="btn-close-modal" onClick={() => setIsUploadModalOpen(false)}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              </button>
-            </div>
-            
-            <div className="cart-body" style={{ textAlign: 'center', padding: '3rem 2rem' }}>
-              <div style={{ backgroundColor: 'var(--primary-light)', color: 'var(--primary)', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        {/* Upload Recipe Modal */}
+        {isUploadModalOpen && (
+          <div className="cart-modal-overlay" onClick={() => setIsUploadModalOpen(false)}>
+            <div className="cart-modal-content upload-modal" onClick={e => e.stopPropagation()}>
+              <div className="cart-header">
+                <h2>Carga tu receta médica</h2>
+                <button className="btn-close-modal" onClick={() => setIsUploadModalOpen(false)}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
               </div>
-              <h3 style={{ color: 'var(--primary)', fontWeight: 700, fontSize: '1.4rem', marginBottom: '1rem' }}>¡Próximamente!</h3>
-              <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: '1.6' }}>
-                Estamos entrenando a nuestra Inteligencia Artificial para que pronto puedas subir la foto de tu receta y nosotros hagamos todo el trabajo.
-              </p>
-              <button 
-                className="btn-add-cart" 
-                style={{ marginTop: '2rem', width: '100%', justifyContent: 'center' }}
-                onClick={() => setIsUploadModalOpen(false)}
-              >
-                Entendido
-              </button>
+              
+              <div className="cart-body" style={{ textAlign: 'center', padding: '3rem 2rem' }}>
+                <div style={{ backgroundColor: 'var(--primary-light)', color: 'var(--primary)', width: '80px', height: '80px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                </div>
+                <h3 style={{ color: 'var(--primary)', fontWeight: 700, fontSize: '1.4rem', marginBottom: '1rem' }}>¡Próximamente!</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', lineHeight: '1.6' }}>
+                  Estamos entrenando a nuestra Inteligencia Artificial para que pronto puedas subir la foto de tu receta y nosotros hagamos todo el trabajo.
+                </p>
+                <button 
+                  className="btn-add-cart" 
+                  style={{ marginTop: '2rem', width: '100%', justifyContent: 'center' }}
+                  onClick={() => setIsUploadModalOpen(false)}
+                >
+                  Entendido
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
       {/* Footer / Disclaimer */}
       <footer className="app-footer" style={{ marginTop: '5rem', padding: '3rem 0', backgroundColor: '#0f172a', color: '#94a3b8' }}>
         <div className="container" style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>

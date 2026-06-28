@@ -1,0 +1,80 @@
+.anatomy-map-container {
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+  position: relative;
+  filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.05));
+}
+
+.anatomy-svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.body-part {
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+}
+
+.overlay-part {
+  opacity: 0.7;
+}
+
+.part-shape {
+  fill: rgba(255, 255, 255, 0.5);
+  stroke: var(--primary);
+  stroke-width: 2;
+  transition: all 0.3s;
+}
+
+.part-label {
+  pointer-events: none;
+  opacity: 0.8;
+  transition: all 0.3s;
+  user-select: none;
+  filter: grayscale(0.5);
+}
+
+/* Hover Effects */
+.body-part:hover .part-shape {
+  fill: var(--primary-light);
+  stroke-width: 3;
+  transform: scale(1.1);
+  filter: url(#glow);
+}
+
+.body-part:hover .part-label {
+  opacity: 1;
+  transform: scale(1.2);
+  filter: grayscale(0);
+}
+
+/* Active State */
+.body-part.active .part-shape {
+  fill: var(--primary);
+  stroke: var(--primary-dark);
+  stroke-width: 3;
+  filter: url(#glow);
+}
+
+.body-part.active .part-label {
+  opacity: 1;
+  filter: grayscale(0);
+}
+
+/* Derma (Base body) specific styles */
+#derma {
+  transition: fill 0.3s, stroke-width 0.3s;
+}
+
+#derma:hover {
+  fill: #e2e8f0;
+}
+
+#derma.active {
+  fill: #f8fafc;
+  stroke: var(--primary);
+  stroke-width: 3;
+}
