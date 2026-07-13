@@ -430,6 +430,10 @@ function App() {
       });
 
       setResults(processedResults);
+      
+      // DISPARAR BÚSQUEDA EN VIVO AUTOMÁTICAMENTE
+      handleLiveSearch(searchWord);
+      
     } catch (error) {
       console.error("Error al buscar:", error);
       setResults([]);
@@ -450,10 +454,10 @@ function App() {
     setResults([]);
   };
 
-  const handleLiveSearch = async () => {
+  const handleLiveSearch = async (termToSearch) => {
     setIsLiveSearching(true);
     try {
-      const res = await fetch(`/api/live-search?q=${encodeURIComponent(searchTerm)}`);
+      const res = await fetch(`/api/live-search?q=${encodeURIComponent(termToSearch)}`);
       const data = await res.json();
       if (data.results && data.results.length > 0) {
         // Transformar los resultados planos en la estructura agrupada de productos
@@ -475,7 +479,7 @@ function App() {
               id: 'live-' + Math.random().toString(36).substr(2, 9),
               commercialName: item.commercialName,
               laboratory: 'Desconocido',
-              composition: searchTerm,
+              composition: termToSearch,
               details: '',
               imageUrl: item.image_url,
               prices: [],
@@ -497,26 +501,56 @@ function App() {
           });
         });
 
-        // Calcular ahorros y ordernar precios
-        const processedResults = Object.values(grouped).map(product => {
-          const sortedPrices = [...product.prices].sort((a, b) => a.price - b.price);
-          let savings = 0;
-          let savingsPercent = 0;
-          if (sortedPrices.length > 1) {
-            const minPrice = sortedPrices[0].price;
-            const maxPrice = sortedPrices[sortedPrices.length - 1].price;
-            savings = maxPrice - minPrice;
-            savingsPercent = Math.round((savings / maxPrice) * 100);
-          }
-          return { ...product, sortedPrices, savings, savingsPercent };
+        // Combinar con los resultados existentes (los de Supabase)
+        setResults(prevResults => {
+          const existingGrouped = {};
+          prevResults.forEach(p => {
+             const baseName = p.commercialName
+              .replace(/\b(\d+(mg|ml|g|mcg|ui|kg|l|cm)\b|comp|cáps|caps|caja|sobre|amp|iny|jbe|susp|gotas|grageas|env|fco|comprimidos|comprimido)\b/gi, '')
+              .replace(/[0-9]+/g, '')
+              .replace(/\bx\b/gi, '')
+              .replace(/[^a-zñáéíóú\s]/gi, '')
+              .trim()
+              .replace(/\s+/g, ' ');
+             const key = (baseName || p.commercialName).toLowerCase();
+             existingGrouped[key] = p;
+          });
+
+          // Mezclar los nuevos
+          Object.keys(grouped).forEach(k => {
+             if (existingGrouped[k]) {
+               const newPrices = grouped[k].prices;
+               newPrices.forEach(np => {
+                 if (!existingGrouped[k].prices) existingGrouped[k].prices = [...existingGrouped[k].sortedPrices]; // Fallback
+                 if (!existingGrouped[k].sortedPrices.some(ep => ep.pharmacy.id === np.pharmacy.id)) {
+                   existingGrouped[k].sortedPrices.push(np);
+                 }
+               });
+             } else {
+               existingGrouped[k] = grouped[k];
+               existingGrouped[k].sortedPrices = grouped[k].prices;
+             }
+          });
+
+          // Recalcular ahorros para todo
+          return Object.values(existingGrouped).map(product => {
+            const sortedPrices = [...(product.sortedPrices || product.prices)].sort((a, b) => a.price - b.price);
+            let savings = 0;
+            let savingsPercent = 0;
+            if (sortedPrices.length > 1) {
+              const minPrice = sortedPrices[0].price;
+              const maxPrice = sortedPrices[sortedPrices.length - 1].price;
+              savings = maxPrice - minPrice;
+              savingsPercent = Math.round((savings / maxPrice) * 100);
+            }
+            return { ...product, sortedPrices, savings, savingsPercent };
+          });
         });
 
-        setResults(processedResults);
-
-        // Guardar silenciosamente en Supabase para el futuro
+        // Guardar silenciosamente en Supabase
         try {
           const cacheItems = data.results.map(item => ({
-            query: searchTerm.toLowerCase(),
+            query: termToSearch.toLowerCase(),
             commercial_name: item.commercialName,
             price: item.price,
             pharmacy_id: item.pharmacy_id,
@@ -532,13 +566,9 @@ function App() {
         } catch (e) {
           console.error('No se pudo guardar en cache', e);
         }
-
-      } else {
-        setBackendErrors([{ error: true, message: 'No se encontró el producto en las farmacias online', pharmacy: { name: 'Búsqueda en vivo' } }]);
       }
     } catch (error) {
       console.error("Error en live search:", error);
-      setBackendErrors([{ error: true, message: 'Fallo al conectar con el servidor de búsqueda en vivo', pharmacy: { name: 'Servidor Local' } }]);
     } finally {
       setIsLiveSearching(false);
     }
@@ -1067,6 +1097,14 @@ function App() {
                     </ul>
                   </div>
                 )}
+
+                {isLiveSearching && (
+                  <div style={{ background: '#e0f2fe', color: '#0369a1', padding: '0.75rem 1rem', borderRadius: '0.5rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid #bae6fd' }}>
+                    <div style={{ width: '20px', height: '20px', border: '2px solid #0369a1', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                    <span style={{ fontWeight: '500' }}>Buscando precios actualizados en Catedral, FarmaTotal y Farmacenter...</span>
+                  </div>
+                )}
+                
                 <div className="results-grid">
                   {(() => {
                     const exactMatches = sortedResults.filter(p => p.relevanceScore === 1);
@@ -1208,41 +1246,14 @@ function App() {
                     <circle cx="11" cy="11" r="8"></circle>
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                   </svg>
-                  <p style={{ fontSize: '1.2rem', color: 'var(--text-main)', fontWeight: '600' }}>No encontramos "{searchTerm}" en nuestra base de datos rápida.</p>
-                  <p style={{ marginTop: '0.5rem' }}>Prueba con "Paracetamol" o activa la búsqueda profunda.</p>
+                  <p style={{ fontSize: '1.2rem', color: 'var(--text-main)', fontWeight: '600' }}>No encontramos "{searchTerm}" en nuestra base rápida.</p>
                 </div>
                 
-                {isLiveSearching ? (
+                {isLiveSearching && (
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
                     <div style={{ width: '40px', height: '40px', border: '3px solid var(--border)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-                    <p style={{ fontWeight: '600', color: 'var(--primary-dark)' }}>Buscando en vivo en Catedral, FarmaTotal, Farmacenter y Farmaoliva...</p>
+                    <p style={{ fontWeight: '600', color: 'var(--primary-dark)' }}>Buscando en vivo en todas las farmacias...</p>
                   </div>
-                ) : (
-                  <button 
-                    onClick={handleLiveSearch}
-                    style={{
-                      background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)',
-                      color: 'white',
-                      border: 'none',
-                      padding: '1rem 2rem',
-                      borderRadius: '999px',
-                      fontSize: '1.1rem',
-                      fontWeight: '700',
-                      cursor: 'pointer',
-                      boxShadow: '0 4px 15px rgba(2, 136, 209, 0.3)',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      transition: 'transform 0.2s'
-                    }}
-                    onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                    onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-                    </svg>
-                    Búsqueda Profunda (En vivo)
-                  </button>
                 )}
               </div>
             )}
