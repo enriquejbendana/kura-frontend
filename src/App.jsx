@@ -22,6 +22,7 @@ function App() {
   const [results, setResults] = useState([]);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isLiveSearching, setIsLiveSearching] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [searchType, setSearchType] = useState('principio');
   const [presentation, setPresentation] = useState('cualquiera');
@@ -348,7 +349,7 @@ function App() {
         if (mainSearchWord) {
           rawData = rawData.filter(item => {
             const name = item.commercialName.toLowerCase();
-            const comp = item.composition.toLowerCase();
+            const comp = (item.composition || '').toLowerCase();
             return name.includes(mainSearchWord) || comp.includes(mainSearchWord);
           });
         }
@@ -447,6 +448,100 @@ function App() {
     setSearchTerm('');
     setHasSearched(false);
     setResults([]);
+  };
+
+  const handleLiveSearch = async () => {
+    setIsLiveSearching(true);
+    try {
+      const res = await fetch(`/api/live-search?q=${encodeURIComponent(searchTerm)}`);
+      const data = await res.json();
+      if (data.results && data.results.length > 0) {
+        // Transformar los resultados planos en la estructura agrupada de productos
+        const grouped = {};
+        data.results.forEach(item => {
+          // Normalizar el nombre base
+          const baseName = item.commercialName
+            .replace(/\b(\d+(mg|ml|g|mcg|ui|kg|l|cm)\b|comp|cáps|caps|caja|sobre|amp|iny|jbe|susp|gotas|grageas|env|fco|comprimidos|comprimido)\b/gi, '')
+            .replace(/[0-9]+/g, '')
+            .replace(/\bx\b/gi, '')
+            .replace(/[^a-zñáéíóú\s]/gi, '')
+            .trim()
+            .replace(/\s+/g, ' ');
+
+          const key = (baseName || item.commercialName).toLowerCase();
+          
+          if (!grouped[key]) {
+            grouped[key] = {
+              id: 'live-' + Math.random().toString(36).substr(2, 9),
+              commercialName: item.commercialName,
+              laboratory: 'Desconocido',
+              composition: searchTerm,
+              details: '',
+              imageUrl: item.image_url,
+              prices: [],
+              clicks: 0,
+              relevanceScore: 1
+            };
+          }
+          
+          let phName = item.pharmacy_id;
+          if (phName === 'farmacenter') phName = 'Farmacenter';
+          if (phName === 'farmatotal') phName = 'Farmatotal';
+          if (phName === 'farmaoliva') phName = 'Farmaoliva';
+          if (phName === 'catedral') phName = 'Farmacias Catedral';
+
+          grouped[key].prices.push({
+            pharmacy: { id: item.pharmacy_id, name: phName, class: item.pharmacy_id },
+            price: item.price,
+            originalName: item.commercialName
+          });
+        });
+
+        // Calcular ahorros y ordernar precios
+        const processedResults = Object.values(grouped).map(product => {
+          const sortedPrices = [...product.prices].sort((a, b) => a.price - b.price);
+          let savings = 0;
+          let savingsPercent = 0;
+          if (sortedPrices.length > 1) {
+            const minPrice = sortedPrices[0].price;
+            const maxPrice = sortedPrices[sortedPrices.length - 1].price;
+            savings = maxPrice - minPrice;
+            savingsPercent = Math.round((savings / maxPrice) * 100);
+          }
+          return { ...product, sortedPrices, savings, savingsPercent };
+        });
+
+        setResults(processedResults);
+
+        // Guardar silenciosamente en Supabase para el futuro
+        try {
+          const cacheItems = data.results.map(item => ({
+            query: searchTerm.toLowerCase(),
+            commercial_name: item.commercialName,
+            price: item.price,
+            pharmacy_id: item.pharmacy_id,
+            image_url: item.image_url,
+            scraped_at: new Date().toISOString()
+          }));
+          
+          if (cacheItems.length > 0) {
+            supabase.from('medicamentos_cache').insert(cacheItems).then(({error}) => {
+              if (error) console.error('Error insertando en cache:', error);
+            });
+          }
+        } catch (e) {
+          console.error('No se pudo guardar en cache', e);
+        }
+
+      } else {
+        setBackendErrors([{ error: true, message: 'No se encontró el producto en las farmacias online', pharmacy: { name: 'Búsqueda en vivo' } }]);
+      }
+    } catch (error) {
+      console.error("Error en live search:", error);
+      setBackendErrors([{ error: true, message: 'Fallo al conectar con el servidor de búsqueda en vivo', pharmacy: { name: 'Servidor Local' } }]);
+    } finally {
+      setIsLiveSearching(false);
+    }
   };
 
   const handleSearchChange = (e) => {
@@ -1108,7 +1203,47 @@ function App() {
               </>
             ) : (
               <div className="no-results" style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-muted)' }}>
-                <p>No se encontraron resultados para "{searchTerm}". Prueba con "Paracetamol" o utilizando las etiquetas sugeridas.</p>
+                <div style={{ marginBottom: '2rem' }}>
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--border)', marginBottom: '1rem' }}>
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  <p style={{ fontSize: '1.2rem', color: 'var(--text-main)', fontWeight: '600' }}>No encontramos "{searchTerm}" en nuestra base de datos rápida.</p>
+                  <p style={{ marginTop: '0.5rem' }}>Prueba con "Paracetamol" o activa la búsqueda profunda.</p>
+                </div>
+                
+                {isLiveSearching ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{ width: '40px', height: '40px', border: '3px solid var(--border)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                    <p style={{ fontWeight: '600', color: 'var(--primary-dark)' }}>Buscando en vivo en Catedral, FarmaTotal, Farmacenter y Farmaoliva...</p>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={handleLiveSearch}
+                    style={{
+                      background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)',
+                      color: 'white',
+                      border: 'none',
+                      padding: '1rem 2rem',
+                      borderRadius: '999px',
+                      fontSize: '1.1rem',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 15px rgba(2, 136, 209, 0.3)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      transition: 'transform 0.2s'
+                    }}
+                    onMouseOver={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                    onMouseOut={e => e.currentTarget.style.transform = 'scale(1)'}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                    Búsqueda Profunda (En vivo)
+                  </button>
+                )}
               </div>
             )}
           </section>
