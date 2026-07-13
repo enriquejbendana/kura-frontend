@@ -1,16 +1,34 @@
 import * as cheerio from 'cheerio';
 
-// Helper function to extract numbers
 const extractNumber = (str) => {
     if (!str) return null;
     const num = parseInt(str.replace(/[^\d]/g, ''), 10);
     return isNaN(num) ? null : num;
 };
 
+// Helper for fetch with timeout
+async function fetchWithTimeout(resource, options = {}) {
+    const { timeout = 8000 } = options;
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+    const response = await fetch(resource, {
+        ...options,
+        signal: controller.signal,
+        headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+            'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
+            ...options.headers
+        }
+    });
+    clearTimeout(id);
+    return response;
+}
+
 // Farmacenter Scraper (HTML)
 async function scrapeFarmacenter(query) {
     try {
-        const res = await fetch(`https://www.farmacenter.com.py/catalogo?q=${encodeURIComponent(query)}`);
+        const res = await fetchWithTimeout(`https://www.farmacenter.com.py/catalogo?q=${encodeURIComponent(query)}`);
         if (!res.ok) return [];
         const html = await res.text();
         const $ = cheerio.load(html);
@@ -52,7 +70,7 @@ async function scrapeFarmacenter(query) {
 // FarmaTotal Scraper (HTML)
 async function scrapeFarmaTotal(query) {
     try {
-        const res = await fetch(`https://www.farmatotal.com.py/catalogo?q=${encodeURIComponent(query)}`);
+        const res = await fetchWithTimeout(`https://www.farmatotal.com.py/catalogo?q=${encodeURIComponent(query)}`);
         if (!res.ok) return [];
         const html = await res.text();
         const $ = cheerio.load(html);
@@ -60,16 +78,18 @@ async function scrapeFarmaTotal(query) {
         
         $('.product-wrapper, .product, .card').each((i, el) => {
             const titleEl = $(el).find('.product-title, h2, h3').first();
-            const priceEl = $(el).find('.price, .amount, .precio').first();
+            // Evitar tomar precios tachados o múltiples precios concatenados
+            const priceEl = $(el).find('.price .woocommerce-Price-amount, .amount, .precio').last(); 
             const imgEl = $(el).find('img').first();
             
             if (titleEl.length && priceEl.length) {
                 const title = titleEl.text().trim();
-                const priceText = priceEl.text().trim();
-                const price = extractNumber(priceText);
+                let priceText = priceEl.text().replace(/\./g, '').trim();
+                const priceMatches = priceText.match(/\d+/g);
+                const price = priceMatches ? parseInt(priceMatches[priceMatches.length - 1], 10) : null;
                 const imageUrl = imgEl.attr('src');
                 
-                if (price && title) {
+                if (price && title && price < 10000000) { // Safety check contra números largos
                     results.push({
                         pharmacy_id: 'farmatotal',
                         commercialName: title,
@@ -90,7 +110,7 @@ async function scrapeFarmaTotal(query) {
 // Farmaoliva Scraper (HTML)
 async function scrapeFarmaoliva(query) {
     try {
-        const res = await fetch(`https://www.farmaoliva.com.py/catalogo?q=${encodeURIComponent(query)}`);
+        const res = await fetchWithTimeout(`https://www.farmaoliva.com.py/catalogo?q=${encodeURIComponent(query)}`);
         if (!res.ok) return [];
         const html = await res.text();
         const $ = cheerio.load(html);
@@ -98,7 +118,7 @@ async function scrapeFarmaoliva(query) {
         
         $('.ecommercepro-LoopProduct-link, .product, .card').each((i, el) => {
             const title = $(el).attr('title') || $(el).find('h2, h3, .product-title').text().trim();
-            const priceEl = $(el).find('.price, .amount, .precio').first();
+            const priceEl = $(el).find('.price ins .amount, .price .amount, .precio').last();
             const imgEl = $(el).find('img').first();
             
             if (title && priceEl.length) {
@@ -106,7 +126,7 @@ async function scrapeFarmaoliva(query) {
                 const price = extractNumber(priceText);
                 const imageUrl = imgEl.attr('src');
                 
-                if (price) {
+                if (price && price < 10000000) {
                     results.push({
                         pharmacy_id: 'farmaoliva',
                         commercialName: title,
@@ -127,7 +147,7 @@ async function scrapeFarmaoliva(query) {
 // Catedral Scraper (JSON API)
 async function scrapeCatedral(query) {
     try {
-        const res = await fetch(`https://www.farmaciacatedral.com.py/get-productos?page=1&query_string=${encodeURIComponent(query)}`);
+        const res = await fetchWithTimeout(`https://www.farmaciacatedral.com.py/get-productos?page=1&query_string=${encodeURIComponent(query)}`);
         if (!res.ok) return [];
         const json = await res.json();
         const results = [];
@@ -164,18 +184,20 @@ export default async function handler(req, res) {
 
     console.log(`Live Search triggered for: ${q}`);
 
-    // Fetch all pharmacies in parallel
-    const [fc, ft, fo, cat] = await Promise.all([
+    // Fetch all pharmacies in parallel using allSettled to prevent one failure crashing others
+    const outcomes = await Promise.allSettled([
         scrapeFarmacenter(q),
         scrapeFarmaTotal(q),
         scrapeFarmaoliva(q),
         scrapeCatedral(q)
     ]);
 
-    const allResults = [...fc, ...ft, ...fo, ...cat];
-    
-    // We send the raw results back to the client immediately.
-    // The client can display them, and we could also insert them into Supabase in the background.
+    let allResults = [];
+    outcomes.forEach(outcome => {
+        if (outcome.status === 'fulfilled' && outcome.value) {
+            allResults = allResults.concat(outcome.value);
+        }
+    });
     
     return res.status(200).json({
         success: true,
