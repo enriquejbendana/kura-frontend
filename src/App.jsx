@@ -569,6 +569,8 @@ function App() {
       }
     } catch (error) {
       console.error("Error en live search:", error);
+      // MOSTRAR ERROR EN PANTALLA PARA DEPURAR
+      setBackendErrors(prev => [...prev, { error: true, pharmacy: { name: 'Vercel API (' + error.message + ')' } }]);
     } finally {
       setIsLiveSearching(false);
     }
