@@ -42,7 +42,7 @@ async function scrapeFarmacenter(query) {
             if (titleEl.length && priceEl.length) {
                 const title = titleEl.text().trim();
                 const cardText = $(el).text();
-                const priceMatches = cardText.match(/\d[\d\.,]*/g);
+                const priceMatches = cardText.match(/\d[\d.,]*/g);
                 const imageUrl = imgEl.attr('data-src') || imgEl.attr('data-original') || imgEl.attr('src');
                 
                 if (priceMatches && title) {
