@@ -30,6 +30,7 @@ function App() {
   const [showAllVariants, setShowAllVariants] = useState(false);
 
   const [backendErrors, setBackendErrors] = useState([]);
+  const [debugLiveSearch, setDebugLiveSearch] = useState("");
   
   // Estados de la canasta inteligente
   const [cart, setCart] = useState([]);
@@ -270,6 +271,7 @@ function App() {
     setIsLoading(true);
     setShowAllVariants(false);
     setBackendErrors([]);
+    setDebugLiveSearch("");
 
     let queryToFetch = cleanTerm;
     if (finalPresentation !== 'cualquiera') {
@@ -459,7 +461,10 @@ function App() {
     setIsLiveSearching(true);
     try {
       const res = await fetch(`/api/live-search?q=${encodeURIComponent(termToSearch)}`);
-      const data = await res.json();
+      const rawText = await res.text();
+      setDebugLiveSearch(`Status: ${res.status} | Res: ${rawText.substring(0, 500)}`);
+      
+      const data = JSON.parse(rawText);
       if (data.results && data.results.length > 0) {
         // Transformar los resultados planos en la estructura agrupada de productos
         const grouped = {};
@@ -472,7 +477,7 @@ function App() {
             .replace(/[^a-zñáéíóú\s]/gi, '')
             .trim()
             .replace(/\s+/g, ' ');
-
+            
           const key = (baseName || item.commercialName).toLowerCase();
           
           if (!grouped[key]) {
@@ -504,72 +509,84 @@ function App() {
 
         // Combinar con los resultados existentes (los de Supabase)
         setResults(prevResults => {
-          const existingGrouped = {};
-          prevResults.forEach(p => {
-             const baseName = p.commercialName
-              .replace(/\b(\d+(mg|ml|g|mcg|ui|kg|l|cm)\b|comp|cáps|caps|caja|sobre|amp|iny|jbe|susp|gotas|grageas|env|fco|comprimidos|comprimido)\b/gi, '')
-              .replace(/[0-9]+/g, '')
-              .replace(/\bx\b/gi, '')
-              .replace(/[^a-zñáéíóú\s]/gi, '')
-              .trim()
-              .replace(/\s+/g, ' ');
-             const key = (baseName || p.commercialName).toLowerCase();
-             existingGrouped[key] = p;
-          });
+          try {
+            const existingGrouped = {};
+            prevResults.forEach(p => {
+               const baseName = p.commercialName
+                .replace(/\b(\d+(mg|ml|g|mcg|ui|kg|l|cm)\b|comp|cáps|caps|caja|sobre|amp|iny|jbe|susp|gotas|grageas|env|fco|comprimidos|comprimido)\b/gi, '')
+                .replace(/[0-9]+/g, '')
+                .replace(/\bx\b/gi, '')
+                .replace(/[^a-zñáéíóú\s]/gi, '')
+                .trim()
+                .replace(/\s+/g, ' ');
+               const key = (baseName || p.commercialName).toLowerCase();
+               existingGrouped[key] = p;
+            });
 
-          // Mezclar los nuevos
-          Object.keys(grouped).forEach(k => {
-             if (existingGrouped[k]) {
-               const newPrices = grouped[k].prices;
-               newPrices.forEach(np => {
-                 if (!existingGrouped[k].prices) existingGrouped[k].prices = [...existingGrouped[k].sortedPrices]; // Fallback
-                 if (!existingGrouped[k].sortedPrices.some(ep => ep.pharmacy.id === np.pharmacy.id)) {
-                   existingGrouped[k].sortedPrices.push(np);
-                 }
-               });
-             } else {
-               existingGrouped[k] = grouped[k];
-               existingGrouped[k].sortedPrices = grouped[k].prices;
-             }
-          });
+            // Mezclar los nuevos
+            Object.keys(grouped).forEach(k => {
+               if (existingGrouped[k]) {
+                 const newPrices = grouped[k].prices;
+                 newPrices.forEach(np => {
+                   if (!existingGrouped[k].prices) existingGrouped[k].prices = [...existingGrouped[k].sortedPrices]; // Fallback
+                   if (!existingGrouped[k].sortedPrices.some(ep => ep.pharmacy.id === np.pharmacy.id)) {
+                     existingGrouped[k].sortedPrices.push(np);
+                   }
+                 });
+               } else {
+                 existingGrouped[k] = grouped[k];
+                 existingGrouped[k].sortedPrices = grouped[k].prices;
+               }
+            });
 
-          // Recalcular ahorros para todo
-          return Object.values(existingGrouped).map(product => {
-            const sortedPrices = [...(product.sortedPrices || product.prices)].sort((a, b) => a.price - b.price);
-            let savings = 0;
-            let savingsPercent = 0;
-            if (sortedPrices.length > 1) {
-              const minPrice = sortedPrices[0].price;
-              const maxPrice = sortedPrices[sortedPrices.length - 1].price;
-              savings = maxPrice - minPrice;
-              savingsPercent = Math.round((savings / maxPrice) * 100);
-            }
-            return { ...product, sortedPrices, savings, savingsPercent };
-          });
+            // Recalcular ahorros para todo
+            return Object.values(existingGrouped).map(product => {
+              const sortedPrices = [...(product.sortedPrices || product.prices)].sort((a, b) => a.price - b.price);
+              let savings = 0;
+              let savingsPercent = 0;
+              
+              if (sortedPrices.length > 1) {
+                const maxPrice = Math.max(...sortedPrices.map(p => p.price));
+                const minPrice = sortedPrices[0].price;
+                savings = maxPrice - minPrice;
+                savingsPercent = Math.round((savings / maxPrice) * 100);
+              }
+              
+              return {
+                ...product,
+                sortedPrices,
+                savings,
+                savingsPercent
+              };
+            });
+          } catch (updateErr) {
+            console.error("DEBUG ERR: ", updateErr);
+            setDebugLiveSearch(prev => prev + " | UpdateErr: " + updateErr.message);
+            return prevResults;
+          }
         });
-
-        // Guardar silenciosamente en Supabase
+        
         try {
           const cacheItems = data.results.map(item => ({
-            query: termToSearch.toLowerCase(),
+            query_term: termToSearch,
             commercial_name: item.commercialName,
-            price: item.price,
             pharmacy_id: item.pharmacy_id,
-            image_url: item.image_url,
-            scraped_at: new Date().toISOString()
+            price: item.price,
+            image_url: item.image_url
           }));
           
-          if (cacheItems.length > 0) {
-            supabase.from('medicamentos_cache').insert(cacheItems).then(({error}) => {
-              if (error) console.error('Error insertando en cache:', error);
-            });
-          }
+          supabase.from('medicamentos_cache').insert(cacheItems).then(({error}) => {
+            if (error) console.error('Error insertando en cache:', error);
+          });
         } catch (e) {
-          console.error('No se pudo guardar en cache', e);
+          console.error("Error inesperado al cachear:", e);
         }
+      } else {
+        setDebugLiveSearch(prev => prev + " | No hay data.results");
       }
     } catch (error) {
       console.error("Error en live search:", error);
+      setDebugLiveSearch("FetchException: " + error.message);
       // MOSTRAR ERROR EN PANTALLA PARA DEPURAR
       setBackendErrors(prev => [...prev, { error: true, pharmacy: { name: 'Vercel API (' + error.message + ')' } }]);
     } finally {
@@ -1105,6 +1122,13 @@ function App() {
                   <div style={{ background: '#e0f2fe', color: '#0369a1', padding: '0.75rem 1rem', borderRadius: '0.5rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid #bae6fd' }}>
                     <div style={{ width: '20px', height: '20px', border: '2px solid #0369a1', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
                     <span style={{ fontWeight: '500' }}>Buscando precios actualizados en Catedral, FarmaTotal y Farmacenter...</span>
+                  </div>
+                )}
+                
+                {debugLiveSearch && (
+                  <div style={{ background: '#333', color: '#0f0', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1.5rem', fontFamily: 'monospace', fontSize: '12px', overflowX: 'auto', whiteSpace: 'pre-wrap' }}>
+                    <strong>DIAGNÓSTICO TÉCNICO:</strong><br/>
+                    {debugLiveSearch}
                   </div>
                 )}
                 
