@@ -1129,7 +1129,7 @@ function App() {
                               <span className="laboratory-name">{product.laboratory}</span>
                             )}
                             <h3 className="product-title">{product.commercialName}</h3>
-                            <p className="product-subtitle">{product.composition} • {product.details}</p>
+                            <p className="product-subtitle">{product.composition}</p>
                             
                             {product.savings > 0 && (
                               <div className="savings-pill">
