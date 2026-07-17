@@ -439,9 +439,13 @@ function App() {
       setBackendErrors([{ error: true, message: 'Fallo al conectar con el servidor', pharmacy: { name: 'Servidor Local' } }]);
     } finally {
       setIsLoading(false);
+      setDebugLiveSearch(prev => prev + " | executeSearch FINALLY");
       // SIEMPRE disparar la bsqueda en vivo, incluso si Supabase falla (por ejemplo, si la tabla no existe todava)
       if (searchWord.length >= 3) {
+        setDebugLiveSearch(prev => prev + " | CALLING handleLiveSearch");
         handleLiveSearch(searchWord);
+      } else {
+        setDebugLiveSearch(prev => prev + " | searchWord too short: " + searchWord.length);
       }
     }
   };
@@ -458,6 +462,7 @@ function App() {
   };
 
   const handleLiveSearch = async (termToSearch) => {
+    setDebugLiveSearch(prev => prev + " | handleLiveSearch INICIO");
     setIsLiveSearching(true);
     try {
       const res = await fetch(`/api/live-search?q=${encodeURIComponent(termToSearch)}`);
