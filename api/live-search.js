@@ -199,15 +199,6 @@ export default async function handler(req, res) {
         }
     });
 
-    // AÑADIR RESULTADO DUMMY PARA DEPURACIÓN
-    allResults.push({
-        pharmacy_id: 'catedral',
-        commercialName: 'PRUEBA VERCEL FUNCIONA - ' + q,
-        price: 9999,
-        image_url: null,
-        query: q
-    });
-    
     return res.status(200).json({
         success: true,
         query: q,
