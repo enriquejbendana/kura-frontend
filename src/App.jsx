@@ -1125,12 +1125,10 @@ function App() {
                   </div>
                 )}
                 
-                {debugLiveSearch && (
-                  <div style={{ background: '#333', color: '#0f0', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1.5rem', fontFamily: 'monospace', fontSize: '12px', overflowX: 'auto', whiteSpace: 'pre-wrap' }}>
-                    <strong>DIAGNÓSTICO TÉCNICO:</strong><br/>
-                    {debugLiveSearch}
-                  </div>
-                )}
+                <div style={{ background: '#333', color: '#0f0', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1.5rem', fontFamily: 'monospace', fontSize: '12px', overflowX: 'auto', whiteSpace: 'pre-wrap' }}>
+                  <strong>DIAGNÓSTICO TÉCNICO v3:</strong><br/>
+                  {debugLiveSearch || "Esperando datos..."}
+                </div>
                 
                 <div className="results-grid">
                   {(() => {
