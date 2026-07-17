@@ -440,12 +440,12 @@ function App() {
     } finally {
       setIsLoading(false);
       setDebugLiveSearch(prev => prev + " | executeSearch FINALLY");
-      // SIEMPRE disparar la bsqueda en vivo, incluso si Supabase falla (por ejemplo, si la tabla no existe todava)
-      if (searchWord.length >= 3) {
+      // SIEMPRE disparar la búsqueda en vivo
+      if (cleanTerm.length >= 3) {
         setDebugLiveSearch(prev => prev + " | CALLING handleLiveSearch");
-        handleLiveSearch(searchWord);
+        handleLiveSearch(cleanTerm);
       } else {
-        setDebugLiveSearch(prev => prev + " | searchWord too short: " + searchWord.length);
+        setDebugLiveSearch(prev => prev + " | searchWord too short: " + cleanTerm.length);
       }
     }
   };
