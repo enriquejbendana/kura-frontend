@@ -199,6 +199,15 @@ export default async function handler(req, res) {
         }
     });
 
+    // Filtro anti-basura: Asegurarse de que al menos una palabra clave est en el nombre del producto
+    const searchKeywords = q.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+    if (searchKeywords.length > 0) {
+        allResults = allResults.filter(item => {
+            const itemName = item.commercialName.toLowerCase();
+            return searchKeywords.some(kw => itemName.includes(kw));
+        });
+    }
+
     return res.status(200).json({
         success: true,
         query: q,
