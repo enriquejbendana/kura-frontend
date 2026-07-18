@@ -199,7 +199,7 @@ export default async function handler(req, res) {
         }
     });
 
-    // Filtro anti-basura: Asegurarse de que al menos una palabra clave est en el nombre del producto
+    // Filtro anti-basura: Asegurarse de que al menos una palabra clave este en el nombre del producto
     const searchKeywords = q.toLowerCase().split(/\s+/).filter(w => w.length > 2);
     if (searchKeywords.length > 0) {
         allResults = allResults.filter(item => {
@@ -208,10 +208,21 @@ export default async function handler(req, res) {
         });
     }
 
+    // Deduplicar resultados exactos (misma farmacia, mismo nombre)
+    const uniqueResults = [];
+    const seen = new Set();
+    allResults.forEach(item => {
+        const uniqueKey = `${item.pharmacy_id}-${item.commercialName.toLowerCase().trim()}`;
+        if (!seen.has(uniqueKey)) {
+            seen.add(uniqueKey);
+            uniqueResults.push(item);
+        }
+    });
+
     return res.status(200).json({
         success: true,
         query: q,
-        total: allResults.length,
-        results: allResults
+        total: uniqueResults.length,
+        results: uniqueResults
     });
 }

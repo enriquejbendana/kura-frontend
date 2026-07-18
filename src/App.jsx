@@ -466,10 +466,9 @@ function App() {
         data.results.forEach(item => {
           // Normalizar el nombre base
           const baseName = item.commercialName
-            .replace(/\b(\d+(mg|ml|g|mcg|ui|kg|l|cm)\b|comp|cáps|caps|caja|sobre|amp|iny|jbe|susp|gotas|grageas|env|fco|comprimidos|comprimido)\b/gi, '')
-            .replace(/[0-9]+/g, '')
+            .replace(/\b(comp|cps|cáps|caps|caja|sobre|amp|iny|jbe|susp|gotas|grageas|env|fco|comprimidos|comprimido)\b/gi, '')
             .replace(/\bx\b/gi, '')
-            .replace(/[^a-zñáéíóú\s]/gi, '')
+            .replace(/[^a-z0-9ñáéíóú\s]/gi, '')
             .trim()
             .replace(/\s+/g, ' ');
 
