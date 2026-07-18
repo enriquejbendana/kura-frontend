@@ -1,9 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --primary: #f97316;       /* Naranja vibrante para acentos */
-  --primary-dark: #ea580c;
-  --primary-light: #fff7ed;
+  --primary: #2563eb;       /* Azul Zafiro para acentos y legibilidad */
+  --primary-dark: #1d4ed8;
+  --primary-light: #eff6ff;
   --bg-color: #e0e5ec;      /* Gris crema Neumórfico */
   --surface-color: #e0e5ec;
   --text-main: #2d3748;
