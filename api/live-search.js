@@ -198,13 +198,22 @@ export default async function handler(req, res) {
             allResults = allResults.concat(outcome.value);
         }
     });
+    
+    const exact = req.query.exact === 'true';
 
     // Filtro anti-basura: Asegurarse de que al menos una palabra clave este en el nombre del producto
     const searchKeywords = q.toLowerCase().split(/\s+/).filter(w => w.length > 2);
     if (searchKeywords.length > 0) {
         allResults = allResults.filter(item => {
             const itemName = item.commercialName.toLowerCase();
-            return searchKeywords.some(kw => itemName.includes(kw));
+            if (exact) {
+                return searchKeywords.some(kw => {
+                    const regex = new RegExp(`\\b${kw}\\b`);
+                    return regex.test(itemName);
+                });
+            } else {
+                return searchKeywords.some(kw => itemName.includes(kw));
+            }
         });
     }
 

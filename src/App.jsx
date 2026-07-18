@@ -458,7 +458,7 @@ function App() {
   const handleLiveSearch = async (termToSearch) => {
     setIsLiveSearching(true);
     try {
-      const res = await fetch(`/api/live-search?q=${encodeURIComponent(termToSearch)}`);
+      const res = await fetch(`/api/live-search?q=${encodeURIComponent(termToSearch)}&exact=${exactMatch}`);
       const data = await res.json();
       if (data.results && data.results.length > 0) {
         // Transformar los resultados planos en la estructura agrupada de productos
@@ -865,10 +865,15 @@ function App() {
                   )}
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'nowrap', flexShrink: 0 }}>
                 <button type="submit" className="search-button">Buscar</button>
-              </div>
-            </form>
+                </div>
+              </form>
 
-            <div className="advanced-search-toggle" style={{ textAlign: 'right', marginTop: '0.5rem' }}>
+              <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "10px", fontSize: "0.9rem", color: "var(--text-main)", cursor: "pointer", userSelect: "none", width: "fit-content" }}>
+                <input type="checkbox" checked={exactMatch} onChange={(e) => setExactMatch(e.target.checked)} style={{ cursor: "pointer" }} />
+                Buscar coincidencia exacta
+              </label>
+
+              <div className="advanced-search-toggle" style={{ textAlign: 'right', marginTop: '0.5rem' }}>
               <button 
                 type="button" 
                 onClick={() => setShowAdvanced(!showAdvanced)}
@@ -1028,15 +1033,7 @@ function App() {
                     <span className="results-count" style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--primary-dark)', background: 'var(--primary-light)', padding: '0.25rem 0.75rem', borderRadius: '1rem', border: '1px solid var(--primary)' }}>
                       {results.length} productos encontrados
                     </span>
-                    {results.length > 0 && (
-                      <button 
-                        onClick={exportToExcel} 
-                        className="btn-export-excel"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        Exportar a Excel
-                      </button>
-                    )}
+                    
                   </>
                 )}
               </div>
