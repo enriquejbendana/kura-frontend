@@ -19,6 +19,7 @@ function App() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
+  const [exactMatch, setExactMatch] = useState(false);
   const [results, setResults] = useState([]);
 
   const [isLoading, setIsLoading] = useState(false);
