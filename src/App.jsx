@@ -839,6 +839,11 @@ function App() {
                     <button type="submit" className="search-button">Buscar</button>
                   </div>
                 </form>
+
+              <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "10px", fontSize: "0.9rem", color: "var(--text-main)", cursor: "pointer", userSelect: "none", width: "fit-content" }}>
+                <input type="checkbox" checked={exactMatch} onChange={(e) => setExactMatch(e.target.checked)} style={{ cursor: "pointer" }} />
+                Buscar coincidencia exacta
+              </label>
               </div>
             </div>
             <div className="hero-image-container">
