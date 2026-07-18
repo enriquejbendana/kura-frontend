@@ -70,7 +70,7 @@ async function scrapeFarmacenter(query) {
 // FarmaTotal Scraper (HTML)
 async function scrapeFarmaTotal(query) {
     try {
-        const res = await fetchWithTimeout(`https://www.farmatotal.com.py/catalogo?q=${encodeURIComponent(query)}`);
+        const res = await fetchWithTimeout(`https://www.farmatotal.com.py/?s=${encodeURIComponent(query)}&post_type=product`);
         if (!res.ok) return [];
         const html = await res.text();
         const $ = cheerio.load(html);
