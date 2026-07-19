@@ -4,15 +4,15 @@
   --primary: #2563eb;       /* Azul Zafiro para acentos y legibilidad */
   --primary-dark: #1d4ed8;
   --primary-light: #eff6ff;
-  --bg-color: #e0e5ec;      /* Gris crema Neumórfico */
-  --surface-color: #e0e5ec;
-  --text-main: #2d3748;
-  --text-muted: #718096;
-  --text-light: #a0aec0;
-  --border-color: transparent;
-  --border-light: transparent;
+  --bg-color: #ffffff;      /* Fondo blanco puro */
+  --surface-color: #ffffff;
+  --text-main: #1e293b;     /* Texto un poco más oscuro para mejor contraste */
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+  --border-color: #e2e8f0;  /* Bordes sutiles para estilo limpio */
+  --border-light: #f1f5f9;
   --success: #10b981;
-  --success-bg: #e0e5ec;
+  --success-bg: #ecfdf5;
   --warning: #f59e0b;
   
   --radius-sm: 12px;
@@ -20,10 +20,11 @@
   --radius-lg: 30px;
   --radius-xl: 40px;
   
-  --shadow-outset: 9px 9px 16px rgba(163,177,198,0.6), -9px -9px 16px rgba(255,255,255, 0.6);
-  --shadow-inset: inset 6px 6px 10px 0 rgba(163,177,198, 0.6), inset -6px -6px 10px 0 rgba(255,255,255, 0.7);
-  --shadow-sm-outset: 5px 5px 10px rgba(163,177,198,0.5), -5px -5px 10px rgba(255,255,255, 0.7);
-  --shadow-hover: 12px 12px 20px rgba(163,177,198,0.7), -12px -12px 20px rgba(255,255,255, 0.8);
+  /* Sombras modernas (Clean UI) en lugar de Neumorfismo */
+  --shadow-outset: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --shadow-inset: inset 0 2px 4px 0 rgba(0, 0, 0, 0.03);
+  --shadow-sm-outset: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+  --shadow-hover: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
 }
 
 
