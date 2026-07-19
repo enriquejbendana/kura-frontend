@@ -692,7 +692,7 @@ function App() {
         composition: 'Amoxicilina',
         details: 'Caja x 20 Comprimidos',
         prices: [
-          { pharmacy: { id: 'punto-farma', name: 'Punto Farma' }, price: 25000 },
+          { pharmacy: { id: 'punto_farma', name: 'Punto Farma' }, price: 25000 },
           { pharmacy: { id: 'farmacenter', name: 'Farmacenter' }, price: 27500 },
           { pharmacy: { id: 'catedral', name: 'Farmacias Catedral' }, price: 24000 },
           { pharmacy: { id: 'farmaoliva', name: 'Farmaoliva' }, price: 26000 },
@@ -707,7 +707,7 @@ function App() {
         composition: 'Ibuprofeno',
         details: 'Caja x 10 Cápsulas Blandas',
         prices: [
-          { pharmacy: { id: 'punto-farma', name: 'Punto Farma' }, price: 12000 },
+          { pharmacy: { id: 'punto_farma', name: 'Punto Farma' }, price: 12000 },
           { pharmacy: { id: 'farmacenter', name: 'Farmacenter' }, price: 13500 },
           { pharmacy: { id: 'catedral', name: 'Farmacias Catedral' }, price: 11500 },
           { pharmacy: { id: 'farmaoliva', name: 'Farmaoliva' }, price: 12500 }
@@ -734,7 +734,7 @@ function App() {
 
   const calculateCartTotals = () => {
     const pharmacies = [
-      { id: 'punto-farma', name: 'Punto Farma', logo: '/logos/punto-farma.png' },
+      { id: 'punto_farma', name: 'Punto Farma', logo: '/logos/punto-farma.png' },
       { id: 'farmacenter', name: 'Farmacenter', logo: '/logos/farmacenter.png' },
       { id: 'catedral', name: 'Farmacias Catedral', logo: '/logos/catedral.png' },
       { id: 'farmaoliva', name: 'Farmaoliva', logo: '/logos/farmaoliva.png' },
@@ -1157,7 +1157,7 @@ function App() {
                         {product.sortedPrices.map((priceEntry, idx) => {
                           const isBestPrice = idx === 0;
                           const domains = {
-                            'punto-farma': 'https://www.puntofarma.com.py/buscar?s=',
+                            'punto_farma': 'https://www.puntofarma.com.py/buscar?s=',
                             'farmacenter': 'https://www.farmacenter.com.py/catalogo?q=',
                             'catedral': 'https://www.farmaciacatedral.com.py/buscador?q=',
                             'farmaoliva': 'https://www.farmaoliva.com.py/catalogo?q=',
