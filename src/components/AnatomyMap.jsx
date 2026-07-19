@@ -44,7 +44,17 @@ const AnatomyMap = ({ onPartClick, selectedPart }) => {
           onClick={() => onPartClick('neuro')}
         >
           <circle cx="100" cy="45" r="22" className="part-shape" />
-          <text x="100" y="50" className="part-label" textAnchor="middle" fontSize="16">🧠</text>
+          <text x="100" y="42" className="part-label" textAnchor="middle" fontSize="16">🧠</text>
+        </g>
+
+        {/* Ojos (Oftalmo) */}
+        <g 
+          className={`body-part overlay-part ${selectedPart === 'oftalmo' ? 'active' : ''}`}
+          onClick={() => onPartClick('oftalmo')}
+        >
+          <circle cx="92" cy="35" r="4" className="part-shape" fill="#9333ea" />
+          <circle cx="108" cy="35" r="4" className="part-shape" fill="#9333ea" />
+          <text x="100" y="55" className="part-label" textAnchor="middle" fontSize="12">👁️</text>
         </g>
 
         {/* Cuello / Tiroides (Metabolismo) */}
@@ -81,6 +91,15 @@ const AnatomyMap = ({ onPartClick, selectedPart }) => {
         >
           <ellipse cx="100" cy="160" rx="20" ry="18" className="part-shape" />
           <text x="100" y="165" className="part-label" textAnchor="middle" fontSize="16">🩺</text>
+        </g>
+
+        {/* Zona Pélvica / Reproductivo (Gineco/Uro) */}
+        <g 
+          className={`body-part overlay-part ${selectedPart === 'gineco' ? 'active' : ''}`}
+          onClick={() => onPartClick('gineco')}
+        >
+          <ellipse cx="100" cy="205" rx="16" ry="12" className="part-shape" />
+          <text x="100" y="210" className="part-label" textAnchor="middle" fontSize="14">⚕️</text>
         </g>
 
         {/* Articulaciones (Reuma - Rodillas/Codos) */}

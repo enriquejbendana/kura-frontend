@@ -684,5 +684,81 @@ export const diccionarioAnatomico = [
         embarazo: 'Consultar previamente con un profesional médico.'
       }
     ]
+  },
+  {
+    id: 'oftalmo',
+    name: 'Oftalmología y Otorrino',
+    description: 'Gotas oftálmicas, lágrimas artificiales y gotas óticas.',
+    iconPath: '/assets/oftalmo_icon.png',
+    colorHex: '#f3e8ff',
+    iconColor: '#9333ea',
+    drugs: [
+      {
+        name: 'Lágrimas Artificiales (Hialuronato)',
+        accion: 'Lubricante ocular.',
+        indicaciones: 'Ojo seco, irritación por pantallas, uso de lentes de contacto.',
+        efectos: 'Visión borrosa transitoria al aplicar.',
+        contraindicaciones: 'Hipersensibilidad a los componentes.',
+        embarazo: 'Seguro.'
+      },
+      {
+        name: 'Tobramicina',
+        accion: 'Antibiótico oftálmico.',
+        indicaciones: 'Conjuntivitis bacteriana, infecciones oculares superficiales.',
+        efectos: 'Ardor temporal en el ojo.',
+        contraindicaciones: 'Infecciones virales o micóticas del ojo.',
+        embarazo: 'Consultar previamente.'
+      },
+      {
+        name: 'Nafazolina',
+        accion: 'Descongestivo ocular.',
+        indicaciones: 'Ojo rojo, irritación ocular leve (alergias, humo).',
+        efectos: 'Dilatación pupilar leve, rebote si se usa en exceso.',
+        contraindicaciones: 'Glaucoma de ángulo estrecho.',
+        embarazo: 'Consultar previamente.'
+      }
+    ]
+  },
+  {
+    id: 'gineco',
+    name: 'Ginecología y Urología',
+    description: 'Anticonceptivos, tratamientos hormonales y urológicos.',
+    iconPath: '/assets/gineco_icon.png',
+    colorHex: '#fce7f3',
+    iconColor: '#be185d',
+    drugs: [
+      {
+        name: 'Drospirenona + Etinilestradiol',
+        accion: 'Anticonceptivo oral combinado.',
+        indicaciones: 'Prevención del embarazo, síndrome premenstrual, acné hormonal.',
+        efectos: 'Sensibilidad mamaria, náuseas, cambios de humor.',
+        contraindicaciones: 'Antecedentes de trombosis, fumadoras mayores de 35 años.',
+        embarazo: 'Contraindicado.'
+      },
+      {
+        name: 'Levonorgestrel',
+        accion: 'Progestágeno (Anticonceptivo de emergencia).',
+        indicaciones: 'Anticoncepción de urgencia post-coital (píldora del día después).',
+        efectos: 'Sangrado irregular, náuseas, dolor pélvico.',
+        contraindicaciones: 'No es método de uso regular.',
+        embarazo: 'Contraindicado.'
+      },
+      {
+        name: 'Sildenafil',
+        accion: 'Inhibidor de la fosfodiesterasa tipo 5.',
+        indicaciones: 'Disfunción eréctil, hipertensión pulmonar.',
+        efectos: 'Dolor de cabeza, rubor facial, visión azulada.',
+        contraindicaciones: 'Uso concomitante con nitratos (riesgo de hipotensión fatal).',
+        embarazo: 'No aplica.'
+      },
+      {
+        name: 'Clotrimazol Óvulos',
+        accion: 'Antifúngico de uso tópico/vaginal.',
+        indicaciones: 'Candidiasis vaginal (infección por hongos).',
+        efectos: 'Irritación local leve.',
+        contraindicaciones: 'Hipersensibilidad.',
+        embarazo: 'Consultar previamente.'
+      }
+    ]
   }
 ];
