@@ -2,13 +2,14 @@ import * as cheerio from 'cheerio';
 
 const extractNumber = (str) => {
     if (!str) return null;
-    const num = parseInt(str.replace(/[^\d]/g, ''), 10);
+    let cleanStr = str.split(',')[0];
+    const num = parseInt(cleanStr.replace(/[^\d]/g, ''), 10);
     return isNaN(num) ? null : num;
 };
 
 // Helper for fetch with timeout
 async function fetchWithTimeout(resource, options = {}) {
-    const { timeout = 8000 } = options;
+    const { timeout = 6500 } = options;
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeout);
     const response = await fetch(resource, {
@@ -201,15 +202,23 @@ export default async function handler(req, res) {
     
     const exact = req.query.exact === 'true';
 
+    const normalizeText = (text) => {
+        return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    };
+
+    const escapeRegExp = (string) => {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+    };
+
     // Filtro anti-basura: Asegurarse de que al menos una palabra clave este en el nombre del producto
-    const searchKeywords = q.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+    const searchKeywords = normalizeText(q).split(/\s+/).filter(w => w.length > 0);
     if (searchKeywords.length > 0) {
         allResults = allResults.filter(item => {
-            const itemName = item.commercialName.toLowerCase();
+            const itemName = normalizeText(item.commercialName);
             if (exact) {
                 // Modo exacto: DEBEN estar TODAS las palabras buscadas, y como palabras completas
                 return searchKeywords.every(kw => {
-                    const regex = new RegExp(`\\b${kw}\\b`);
+                    const regex = new RegExp(`\\b${escapeRegExp(kw)}\\b`);
                     return regex.test(itemName);
                 });
             } else {
