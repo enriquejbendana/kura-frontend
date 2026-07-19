@@ -39,15 +39,13 @@
 
 /* Hover Effects */
 .body-part:hover .part-shape {
-  fill: var(--primary-light);
+  fill: var(--primary);
   stroke-width: 3;
-  transform: scale(1.1);
   filter: url(#glow);
 }
 
 .body-part:hover .part-label {
   opacity: 1;
-  transform: scale(1.2);
   filter: grayscale(0);
 }
 
