@@ -1,11 +1,45 @@
 export const diccionarioAnatomico = [
   {
     id: 'neuro',
-    name: 'Sistema Nervioso y Dolor',
-    description: 'Analgésicos, sedantes, anticonvulsivantes y antidepresivos.',
+    name: 'Sistema Nervioso y Psiquiatría',
+    description: 'Sedantes, anticonvulsivantes y antidepresivos.',
     iconPath: '/assets/neuro_icon.png',
     colorHex: '#e0e7ff',
     iconColor: '#4f46e5',
+    drugs: [
+      {
+        name: 'Clonazepam',
+        accion: 'Agente ansiolítico, anticonvulsivante y miorrelajante perteneciente a la familia de las benzodiazepinas. Deprime el SNC al unirse a receptores GABA-A.',
+        indicaciones: 'Indicado como terapia de primera línea en trastornos de pánico (con o sin agorafobia), trastornos de ansiedad generalizada, crisis epilépticas (ausencias, mioclonías) y síndromes de piernas inquietas.',
+        efectos: 'Somnolencia diurna, fatiga, debilidad muscular, mareos, ataxia (problemas de coordinación), alteración de la concentración y memoria anterógrada. Riesgo de dependencia física y psicológica.',
+        contraindicaciones: 'Glaucoma de ángulo cerrado, miastenia gravis, insuficiencia respiratoria grave (EPOC avanzado), apnea del sueño, insuficiencia hepática grave y antecedentes de abuso de sustancias.',
+        embarazo: 'Para uso en embarazo y lactancia se debe consultar previamente con un profesional médico.'
+      },
+      {
+        name: 'Alprazolam',
+        accion: 'Benzodiazepina de acción corta/intermedia con potentes efectos ansiolíticos. Facilita la acción inhibidora del neurotransmisor GABA en el cerebro.',
+        indicaciones: 'Tratamiento agudo de los trastornos de ansiedad, ataques de pánico repentinos y ansiedad asociada a síntomas depresivos. No recomendado para uso crónico prolongado.',
+        efectos: 'Sedación pronunciada, letargo, alteraciones de la memoria, boca seca, estreñimiento. Puede generar un rápido desarrollo de tolerancia y alta dependencia.',
+        contraindicaciones: 'Hipersensibilidad a las benzodiazepinas, miastenia gravis, insuficiencia hepática y respiratoria severa. No consumir simultáneamente con alcohol u otros depresores del SNC.',
+        embarazo: 'Para uso en embarazo y lactancia se debe consultar previamente con un profesional médico.'
+      },
+      {
+        name: 'Sertralina',
+        accion: 'Antidepresivo inhibidor selectivo de la recaptación de serotonina (ISRS). Aumenta los niveles de serotonina disponibles en el espacio sináptico del cerebro.',
+        indicaciones: 'Tratamiento de la depresión mayor, trastorno obsesivo-compulsivo (TOC), trastorno de pánico, trastorno de estrés postraumático (TEPT) y fobia social.',
+        efectos: 'Frecuentemente causa insomnio o somnolencia, náuseas, pérdida de apetito, temblor leve, sequedad bucal y disfunción sexual (retraso eyaculatorio, anorgasmia). El efecto terapéutico completo demora 3-4 semanas.',
+        contraindicaciones: 'Uso concomitante o reciente (en los últimos 14 días) con inhibidores de la monoaminooxidasa (IMAO) debido al riesgo de síndrome serotoninérgico fatal.',
+        embarazo: 'Para uso en embarazo y lactancia se debe consultar previamente con un profesional médico.'
+      }
+    ]
+  },
+  {
+    id: 'reuma',
+    name: 'Reumatología y Analgésicos',
+    description: 'Analgésicos, antiinflamatorios (AINEs) y miorrelajantes musculares.',
+    iconPath: '/assets/reuma_icon.png',
+    colorHex: '#ffedd5',
+    iconColor: '#f97316',
     drugs: [
       {
         name: 'Paracetamol',
@@ -45,30 +79,6 @@ export const diccionarioAnatomico = [
         indicaciones: 'Tratamiento del dolor agudo intenso, dolores de tipo cólico (biliar, renal), dolor tumoral, y como antipirético de rescate en fiebre alta que no responde a otras medidas convencionales.',
         efectos: 'Reacciones de hipersensibilidad cutánea, hipotensión arterial transitoria. En casos muy raros pero graves puede producir agranulocitosis (disminución de glóbulos blancos) de origen inmunoalérgico.',
         contraindicaciones: 'Alergia conocida a las pirazolonas, porfiria hepática aguda, déficit de glucosa-6-fosfato deshidrogenasa, y alteraciones previas de la médula ósea o sistema hematopoyético.',
-        embarazo: 'Para uso en embarazo y lactancia se debe consultar previamente con un profesional médico.'
-      },
-      {
-        name: 'Clonazepam',
-        accion: 'Agente ansiolítico, anticonvulsivante y miorrelajante perteneciente a la familia de las benzodiazepinas. Deprime el SNC al unirse a receptores GABA-A.',
-        indicaciones: 'Indicado como terapia de primera línea en trastornos de pánico (con o sin agorafobia), trastornos de ansiedad generalizada, crisis epilépticas (ausencias, mioclonías) y síndromes de piernas inquietas.',
-        efectos: 'Somnolencia diurna, fatiga, debilidad muscular, mareos, ataxia (problemas de coordinación), alteración de la concentración y memoria anterógrada. Riesgo de dependencia física y psicológica.',
-        contraindicaciones: 'Glaucoma de ángulo cerrado, miastenia gravis, insuficiencia respiratoria grave (EPOC avanzado), apnea del sueño, insuficiencia hepática grave y antecedentes de abuso de sustancias.',
-        embarazo: 'Para uso en embarazo y lactancia se debe consultar previamente con un profesional médico.'
-      },
-      {
-        name: 'Alprazolam',
-        accion: 'Benzodiazepina de acción corta/intermedia con potentes efectos ansiolíticos. Facilita la acción inhibidora del neurotransmisor GABA en el cerebro.',
-        indicaciones: 'Tratamiento agudo de los trastornos de ansiedad, ataques de pánico repentinos y ansiedad asociada a síntomas depresivos. No recomendado para uso crónico prolongado.',
-        efectos: 'Sedación pronunciada, letargo, alteraciones de la memoria, boca seca, estreñimiento. Puede generar un rápido desarrollo de tolerancia y alta dependencia.',
-        contraindicaciones: 'Hipersensibilidad a las benzodiazepinas, miastenia gravis, insuficiencia hepática y respiratoria severa. No consumir simultáneamente con alcohol u otros depresores del SNC.',
-        embarazo: 'Para uso en embarazo y lactancia se debe consultar previamente con un profesional médico.'
-      },
-      {
-        name: 'Sertralina',
-        accion: 'Antidepresivo inhibidor selectivo de la recaptación de serotonina (ISRS). Aumenta los niveles de serotonina disponibles en el espacio sináptico del cerebro.',
-        indicaciones: 'Tratamiento de la depresión mayor, trastorno obsesivo-compulsivo (TOC), trastorno de pánico, trastorno de estrés postraumático (TEPT) y fobia social.',
-        efectos: 'Frecuentemente causa insomnio o somnolencia, náuseas, pérdida de apetito, temblor leve, sequedad bucal y disfunción sexual (retraso eyaculatorio, anorgasmia). El efecto terapéutico completo demora 3-4 semanas.',
-        contraindicaciones: 'Uso concomitante o reciente (en los últimos 14 días) con inhibidores de la monoaminooxidasa (IMAO) debido al riesgo de síndrome serotoninérgico fatal.',
         embarazo: 'Para uso en embarazo y lactancia se debe consultar previamente con un profesional médico.'
       }
     ]
