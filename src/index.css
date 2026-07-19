@@ -1,9 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --primary: #2563eb;       /* Azul Zafiro para acentos y legibilidad */
-  --primary-dark: #1d4ed8;
-  --primary-light: #eff6ff;
+  --primary: #0284c7;       /* Azul Celeste (Sky Blue) para acentos y legibilidad */
+  --primary-dark: #0369a1;
+  --primary-light: #e0f2fe;
   --bg-color: #ffffff;      /* Fondo blanco puro */
   --surface-color: #ffffff;
   --text-main: #1e293b;     /* Texto un poco más oscuro para mejor contraste */
