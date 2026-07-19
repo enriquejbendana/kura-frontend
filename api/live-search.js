@@ -207,11 +207,13 @@ export default async function handler(req, res) {
         allResults = allResults.filter(item => {
             const itemName = item.commercialName.toLowerCase();
             if (exact) {
-                return searchKeywords.some(kw => {
+                // Modo exacto: DEBEN estar TODAS las palabras buscadas, y como palabras completas
+                return searchKeywords.every(kw => {
                     const regex = new RegExp(`\\b${kw}\\b`);
                     return regex.test(itemName);
                 });
             } else {
+                // Modo flexible: Puede tener ALGUNA de las palabras
                 return searchKeywords.some(kw => itemName.includes(kw));
             }
         });
