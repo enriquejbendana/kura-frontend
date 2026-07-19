@@ -1423,6 +1423,34 @@ function App() {
               <input 
                 type="text" 
                 placeholder="Buscar principio activo por nombre (ej: Ibuprofeno, Omeprazol)..."
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const val = e.target.value.toLowerCase().trim();
+                    if (val.length > 2) {
+                      let foundCat = null;
+                      let foundDrug = null;
+                      
+                      for (const cat of diccionarioAnatomico) {
+                        const found = cat.drugs.find(d => d.name.toLowerCase().includes(val));
+                        if (found) {
+                          foundCat = cat;
+                          foundDrug = found;
+                          break;
+                        }
+                      }
+                      
+                      if (foundCat && foundDrug) {
+                        setSelectedCategory(foundCat);
+                        setSelectedDrugDetails(foundDrug);
+                      } else {
+                        // Redirigir a búsqueda general
+                        setSearchTerm(val);
+                        setActiveTab('inicio');
+                        executeSearch(val);
+                      }
+                    }
+                  }
+                }}
                 onChange={(e) => {
                   const val = e.target.value.toLowerCase();
                   if (val.length > 2) {
