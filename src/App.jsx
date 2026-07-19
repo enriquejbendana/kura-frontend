@@ -1480,7 +1480,6 @@ function App() {
                     // Mapear los IDs visuales del mapa anatómico a las categorías de la base de datos
                     let mappedId = partId;
                     if (partId === 'resp') mappedId = 'neumo';
-                    if (partId === 'reuma') mappedId = 'neuro';
                     
                     const category = diccionarioAnatomico.find(c => c.id === mappedId);
                     if (category) {

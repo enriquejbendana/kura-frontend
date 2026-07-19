@@ -67,8 +67,8 @@ const AnatomyMap = ({ onPartClick, selectedPart }) => {
 
         {/* Articulaciones (Reuma - Rodillas/Codos) */}
         <g 
-          className={`body-part overlay-part ${selectedPart === 'neuro' ? 'active' : ''}`}
-          onClick={() => onPartClick('neuro')}
+          className={`body-part overlay-part ${selectedPart === 'reuma' ? 'active' : ''}`}
+          onClick={() => onPartClick('reuma')}
         >
           {/* Codos */}
           <circle cx="35" cy="140" r="12" className="part-shape" />
