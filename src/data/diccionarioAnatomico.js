@@ -24,6 +24,22 @@ export const diccionarioAnatomico = [
         embarazo: 'Para uso en embarazo y lactancia se debe consultar previamente con un profesional médico.'
       },
       {
+        name: 'Ergotamina',
+        accion: 'Alcaloide del cornezuelo de centeno. Provoca vasoconstricción directa del lecho vascular craneal, reduciendo la pulsación responsable del dolor de la migraña.',
+        indicaciones: 'Tratamiento agudo de las crisis de migraña con o sin aura y cefaleas en racimos. Especialmente útil en dolores de cabeza intensos y pulsátiles.',
+        efectos: 'Náuseas y vómitos son muy frecuentes. El uso excesivo puede causar "ergotismo" (espasmos vasculares severos) y dolor de cabeza de rebote.',
+        contraindicaciones: 'Enfermedad vascular periférica, cardiopatía isquémica, hipertensión severa, embarazo y lactancia.',
+        embarazo: 'Absolutamente contraindicado en el embarazo. Puede causar contracciones uterinas y aborto.'
+      },
+      {
+        name: 'Sumatriptán',
+        accion: 'Agonista selectivo de los receptores de serotonina (5-HT1B/1D) en los vasos sanguíneos intracraneales. Produce constricción de los vasos dilatados durante la migraña.',
+        indicaciones: 'Alivio sintomático rápido de las crisis agudas de migraña (con o sin aura). No está indicado como tratamiento preventivo.',
+        efectos: 'Sensación de hormigueo, pesadez o presión en el pecho y cuello, mareos, debilidad temporal y rubor facial.',
+        contraindicaciones: 'Antecedentes de infarto de miocardio, angina de pecho, hipertensión arterial no controlada y uso reciente de ergotamina.',
+        embarazo: 'Para uso en embarazo y lactancia se debe consultar previamente con un profesional médico.'
+      },
+      {
         name: 'Sertralina',
         accion: 'Antidepresivo inhibidor selectivo de la recaptación de serotonina (ISRS). Aumenta los niveles de serotonina disponibles en el espacio sináptico del cerebro.',
         indicaciones: 'Tratamiento de la depresión mayor, trastorno obsesivo-compulsivo (TOC), trastorno de pánico, trastorno de estrés postraumático (TEPT) y fobia social.',
