@@ -49,8 +49,8 @@ const AnatomyMap = ({ onPartClick, selectedPart }) => {
 
         {/* Pecho (Resp / Cardio) */}
         <g 
-          className={`body-part overlay-part ${selectedPart === 'resp' ? 'active' : ''}`}
-          onClick={() => onPartClick('resp')}
+          className={`body-part overlay-part ${selectedPart === 'neumo' ? 'active' : ''}`}
+          onClick={() => onPartClick('neumo')}
         >
           <path d="M75 90 Q100 110 125 90 Q125 115 100 135 Q75 115 75 90 Z" className="part-shape" />
           <text x="100" y="115" className="part-label" textAnchor="middle" fontSize="16">🫁</text>
@@ -67,8 +67,8 @@ const AnatomyMap = ({ onPartClick, selectedPart }) => {
 
         {/* Articulaciones (Reuma - Rodillas/Codos) */}
         <g 
-          className={`body-part overlay-part ${selectedPart === 'reuma' ? 'active' : ''}`}
-          onClick={() => onPartClick('reuma')}
+          className={`body-part overlay-part ${selectedPart === 'neuro' ? 'active' : ''}`}
+          onClick={() => onPartClick('neuro')}
         >
           {/* Codos */}
           <circle cx="35" cy="140" r="12" className="part-shape" />
