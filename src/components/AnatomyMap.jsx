@@ -47,13 +47,31 @@ const AnatomyMap = ({ onPartClick, selectedPart }) => {
           <text x="100" y="50" className="part-label" textAnchor="middle" fontSize="16">🧠</text>
         </g>
 
-        {/* Pecho (Resp / Cardio) */}
+        {/* Cuello / Tiroides (Metabolismo) */}
+        <g 
+          className={`body-part overlay-part ${selectedPart === 'metabolico' ? 'active' : ''}`}
+          onClick={() => onPartClick('metabolico')}
+        >
+          <circle cx="100" cy="72" r="12" className="part-shape" />
+          <text x="100" y="76" className="part-label" textAnchor="middle" fontSize="12">🦋</text>
+        </g>
+
+        {/* Pulmones (Neumo / Respiratorio) */}
         <g 
           className={`body-part overlay-part ${selectedPart === 'neumo' ? 'active' : ''}`}
           onClick={() => onPartClick('neumo')}
         >
-          <path d="M75 90 Q100 110 125 90 Q125 115 100 135 Q75 115 75 90 Z" className="part-shape" />
-          <text x="100" y="115" className="part-label" textAnchor="middle" fontSize="16">🫁</text>
+          <path d="M75 95 Q100 115 125 95 Q125 120 100 140 Q75 120 75 95 Z" className="part-shape" />
+          <text x="90" y="120" className="part-label" textAnchor="middle" fontSize="14">🫁</text>
+        </g>
+
+        {/* Corazón (Cardio) */}
+        <g 
+          className={`body-part overlay-part ${selectedPart === 'cardio' ? 'active' : ''}`}
+          onClick={() => onPartClick('cardio')}
+        >
+          <circle cx="115" cy="115" r="12" className="part-shape" />
+          <text x="115" y="119" className="part-label" textAnchor="middle" fontSize="14">❤️</text>
         </g>
 
         {/* Estómago (Gastro) */}

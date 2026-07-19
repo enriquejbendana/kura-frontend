@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
 import { MOCK_PRODUCTS, formatGs } from './mockData';
 import { drugDictionary as localDrugDictionary } from './drugDictionary';
@@ -1480,6 +1480,7 @@ function App() {
                     // Mapear los IDs visuales del mapa anatómico a las categorías de la base de datos
                     let mappedId = partId;
                     if (partId === 'resp') mappedId = 'neumo';
+                    if (partId === 'derma') mappedId = 'infeccioso';
                     
                     const category = diccionarioAnatomico.find(c => c.id === mappedId);
                     if (category) {
