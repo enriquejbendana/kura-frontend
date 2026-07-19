@@ -46,6 +46,30 @@ export const diccionarioAnatomico = [
         efectos: 'Frecuentemente causa insomnio o somnolencia, náuseas, pérdida de apetito, temblor leve, sequedad bucal y disfunción sexual (retraso eyaculatorio, anorgasmia). El efecto terapéutico completo demora 3-4 semanas.',
         contraindicaciones: 'Uso concomitante o reciente (en los últimos 14 días) con inhibidores de la monoaminooxidasa (IMAO) debido al riesgo de síndrome serotoninérgico fatal.',
         embarazo: 'Para uso en embarazo y lactancia se debe consultar previamente con un profesional médico.'
+      },
+      {
+        name: 'Paracetamol',
+        accion: 'Analgésico y antipirético de acción central. Actúa inhibiendo la síntesis de prostaglandinas a nivel del sistema nervioso central.',
+        indicaciones: 'Indicado para el tratamiento sintomático del dolor de intensidad leve a moderada, como cefaleas, dolores musculares, dolores de espalda, dolor dental y alivio de estados febriles.',
+        efectos: 'En general es bien tolerado. Raramente puede producir reacciones cutáneas alérgicas (erupciones, prurito), alteraciones sanguíneas o malestar general. A dosis muy elevadas existe riesgo grave de hepatotoxicidad.',
+        contraindicaciones: 'Contraindicado en pacientes con hipersensibilidad conocida al paracetamol, insuficiencia hepática grave, hepatitis vírica aguda y en pacientes con alcoholismo crónico.',
+        embarazo: 'Para uso en embarazo y lactancia se debe consultar previamente con un profesional médico.'
+      },
+      {
+        name: 'Ibuprofeno',
+        accion: 'Antiinflamatorio no esteroideo (AINE). Posee potentes propiedades analgésicas, antipiréticas y antiinflamatorias al inhibir la enzima ciclooxigenasa (COX) periférica.',
+        indicaciones: 'Tratamiento del dolor leve a moderado de origen articular, muscular o dental. Eficaz en el tratamiento de la dismenorrea primaria, cuadros inflamatorios agudos y reducción de la fiebre.',
+        efectos: 'Frecuentemente causa molestias gastrointestinales como dispepsia, ardor de estómago, náuseas y vómitos. El uso prolongado aumenta el riesgo de úlceras pépticas, sangrado gástrico y mareos.',
+        contraindicaciones: 'Antecedentes de úlcera péptica activa o hemorragia gastrointestinal, insuficiencia cardíaca grave, insuficiencia renal o hepática severa, y pacientes con asma exacerbado por aspirina u otros AINEs.',
+        embarazo: 'Para uso en embarazo y lactancia se debe consultar previamente con un profesional médico.'
+      },
+      {
+        name: 'Dipirona',
+        accion: 'Analgésico, antipirético y potente antiespasmódico del grupo de las pirazolonas. Actúa a nivel central y periférico.',
+        indicaciones: 'Tratamiento del dolor agudo intenso, dolores de tipo cólico (biliar, renal), dolor tumoral, y como antipirético de rescate en fiebre alta que no responde a otras medidas convencionales.',
+        efectos: 'Reacciones de hipersensibilidad cutánea, hipotensión arterial transitoria. En casos muy raros pero graves puede producir agranulocitosis (disminución de glóbulos blancos) de origen inmunoalérgico.',
+        contraindicaciones: 'Alergia conocida a las pirazolonas, porfiria hepática aguda, déficit de glucosa-6-fosfato deshidrogenasa, y alteraciones previas de la médula ósea o sistema hematopoyético.',
+        embarazo: 'Para uso en embarazo y lactancia se debe consultar previamente con un profesional médico.'
       }
     ]
   },
