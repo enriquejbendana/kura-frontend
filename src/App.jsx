@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
 import { MOCK_PRODUCTS, formatGs } from './mockData';
 import { drugDictionary as localDrugDictionary } from './drugDictionary';
@@ -459,12 +459,19 @@ function App() {
   const handleLiveSearch = async (termToSearch) => {
     setIsLiveSearching(true);
     try {
-      const res = await fetch(`/api/live-search?q=${encodeURIComponent(termToSearch)}&exact=${exactMatch}`);
+      const res = await fetch(`https://kura-api-mm3u.onrender.com/api/live-search?q=${encodeURIComponent(termToSearch)}`);
       const data = await res.json();
       if (data.results && data.results.length > 0) {
-        // Transformar los resultados planos en la estructura agrupada de productos
+        // Transformar los resultados del backend de Render a la estructura agrupada
         const grouped = {};
         data.results.forEach(item => {
+          // El backend Render ya devuelve un array de prices, extraemos el primero
+          const priceObj = item.prices[0];
+          if (!priceObj) return;
+          
+          const pharmacyId = priceObj.pharmacy.id;
+          const price = priceObj.price;
+          
           // Normalizar el nombre base
           const baseName = item.commercialName
             .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
@@ -483,23 +490,25 @@ function App() {
               laboratory: 'Desconocido',
               composition: termToSearch,
               details: '',
-              imageUrl: item.image_url,
+              imageUrl: item.imageUrl || null,
               prices: [],
               clicks: 0,
               relevanceScore: 1
             };
           }
           
-          let phName = item.pharmacy_id;
+          let phName = pharmacyId;
           if (phName === 'farmacenter') phName = 'Farmacenter';
           if (phName === 'farmatotal') phName = 'Farmatotal';
           if (phName === 'farmaoliva') phName = 'Farmaoliva';
           if (phName === 'catedral') phName = 'Farmacias Catedral';
+          if (phName === 'punto_farma') phName = 'Punto Farma';
 
           grouped[key].prices.push({
-            pharmacy: { id: item.pharmacy_id, name: phName, class: item.pharmacy_id },
-            price: item.price,
-            originalName: item.commercialName
+            pharmacy: { id: pharmacyId, name: phName, class: pharmacyId },
+            price: price,
+            originalName: item.commercialName,
+            url: priceObj.url || null
           });
         });
 
@@ -548,26 +557,6 @@ function App() {
             return { ...product, sortedPrices, savings, savingsPercent };
           });
         });
-
-        // Guardar silenciosamente en Supabase
-        try {
-          const cacheItems = data.results.map(item => ({
-            query: termToSearch.toLowerCase(),
-            commercial_name: item.commercialName,
-            price: item.price,
-            pharmacy_id: item.pharmacy_id,
-            image_url: item.image_url,
-            scraped_at: new Date().toISOString()
-          }));
-          
-          if (cacheItems.length > 0) {
-            supabase.from('medicamentos_cache').insert(cacheItems).then(({error}) => {
-              if (error) console.error('Error insertando en cache:', error);
-            });
-          }
-        } catch (e) {
-          console.error('No se pudo guardar en cache', e);
-        }
       }
     } catch (error) {
       console.error("Error en live search:", error);
