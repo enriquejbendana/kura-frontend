@@ -1146,7 +1146,7 @@ function App() {
                         {product.sortedPrices.map((priceEntry, idx) => {
                           const isBestPrice = idx === 0;
                           const domains = {
-                            'punto_farma': 'https://www.puntofarma.com.py/buscar?s=',
+                            'punto-farma': 'https://www.puntofarma.com.py/buscar?q=',
                             'farmacenter': 'https://www.farmacenter.com.py/catalogo?q=',
                             'catedral': 'https://www.farmaciacatedral.com.py/buscador?q=',
                             'farmaoliva': 'https://www.farmaoliva.com.py/catalogo?q=',
