@@ -358,6 +358,15 @@ function App() {
               .trim()
               .replace(/\s+/g, ' ');
             
+            // Bloqueador de compuestos: Si la búsqueda NO tiene prefijos/sufijos de compuestos, pero el nombre SÍ, lo rechazamos.
+            const compoundMarkers = ['ibu ', 'ergo ', 'plus', 'forte', 'compuesto', ' y ', 'sinus', 'flex', 'relax'];
+            const searchHasMarker = compoundMarkers.some(m => cleanTerm.toLowerCase().includes(m.trim()));
+            const nameHasMarker = compoundMarkers.some(m => nameLower.includes(m.trim()));
+            
+            if (!searchHasMarker && nameHasMarker) {
+              return false; // Destruir compuestos (ej. Ibu Dolanet) cuando se busca el base (ej. Dolanet)
+            }
+            
             const firstWordOfName = baseName.split(/\s+/)[0];
             const comp = (item.composition || '').toLowerCase();
             
@@ -494,6 +503,16 @@ function App() {
 
           // FILTRO ESTRICTO: Requerir que la primera palabra del nombre coincida
           const searchWords = termToSearch.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().split(/\s+/).filter(w => w.length > 2);
+          
+          // Bloqueador de compuestos: Si la búsqueda NO tiene prefijos/sufijos de compuestos, pero el nombre SÍ, lo rechazamos.
+          const compoundMarkers = ['ibu ', 'ergo ', 'plus', 'forte', 'compuesto', ' y ', 'sinus', 'flex', 'relax'];
+          const searchHasMarker = compoundMarkers.some(m => termToSearch.toLowerCase().includes(m.trim()));
+          const nameHasMarker = compoundMarkers.some(m => item.commercialName.toLowerCase().includes(m.trim()));
+          
+          if (!searchHasMarker && nameHasMarker) {
+            return; // Destruir compuestos cuando se busca el base
+          }
+
           if (searchWords.length > 0) {
             const mainWord = searchWords[0];
             const firstWordOfName = baseName.split(/\s+/)[0];
