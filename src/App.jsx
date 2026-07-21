@@ -349,9 +349,20 @@ function App() {
         const mainSearchWord = cleanTerm.toLowerCase().split(/\s+/).filter(w => w.length > 2)[0];
         if (mainSearchWord) {
           rawData = rawData.filter(item => {
-            const name = item.commercialName.toLowerCase();
+            const nameLower = item.commercialName.toLowerCase();
+            const baseName = nameLower
+              .replace(/\b(\d+(mg|ml|g|mcg|ui|kg|l|cm)\b|comp|cps|caps|caja|sobre|amp|iny|jbe|susp|gotas|grageas|env|fco|comprimidos|comprimido)\b/gi, '')
+              .replace(/[0-9]+/g, '')
+              .replace(/\bx\b/gi, '')
+              .replace(/[^a-z0-9\s]/gi, '')
+              .trim()
+              .replace(/\s+/g, ' ');
+            
+            const firstWordOfName = baseName.split(/\s+/)[0];
             const comp = (item.composition || '').toLowerCase();
-            return name.includes(mainSearchWord) || comp.includes(mainSearchWord);
+            
+            // Requerir que la primera palabra del nombre coincida, o que esté en la composición
+            return (firstWordOfName && firstWordOfName.includes(mainSearchWord)) || comp.includes(mainSearchWord);
           });
         }
       }
@@ -472,15 +483,6 @@ function App() {
           const pharmacyId = priceObj.pharmacy.id;
           const price = priceObj.price;
           
-          // FILTRO ESTRICTO: Requerir que la palabra principal esté en el nombre comercial
-          const normalizedName = item.commercialName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-          const searchWords = termToSearch.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().split(/\s+/).filter(w => w.length > 2);
-          
-          if (searchWords.length > 0) {
-            const mainWord = searchWords[0]; // La palabra principal, ej. "calmina"
-            if (!normalizedName.includes(mainWord)) return; // Saltar este resultado si no tiene la palabra principal
-          }
-          
           // Normalizar el nombre base
           const baseName = item.commercialName
             .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
@@ -489,6 +491,14 @@ function App() {
             .replace(/[^a-z0-9\s]/gi, '')
             .trim()
             .replace(/\s+/g, ' ');
+
+          // FILTRO ESTRICTO: Requerir que la primera palabra del nombre coincida
+          const searchWords = termToSearch.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().split(/\s+/).filter(w => w.length > 2);
+          if (searchWords.length > 0) {
+            const mainWord = searchWords[0];
+            const firstWordOfName = baseName.split(/\s+/)[0];
+            if (!firstWordOfName || !firstWordOfName.includes(mainWord)) return; // Saltar este resultado
+          }
 
           const key = (baseName || item.commercialName).toLowerCase();
           const searchWord = termToSearch.toLowerCase().trim();
