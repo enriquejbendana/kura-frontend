@@ -472,6 +472,15 @@ function App() {
           const pharmacyId = priceObj.pharmacy.id;
           const price = priceObj.price;
           
+          // FILTRO ESTRICTO: Solo aceptar si el nombre comercial contiene alguna de las palabras clave buscadas
+          const normalizedName = item.commercialName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+          const searchWords = termToSearch.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().split(/\s+/).filter(w => w.length > 2);
+          
+          if (searchWords.length > 0) {
+            const isValid = searchWords.some(word => normalizedName.includes(word));
+            if (!isValid) return; // Saltar este resultado porque no coincide con lo tipeado
+          }
+          
           // Normalizar el nombre base
           const baseName = item.commercialName
             .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
