@@ -487,9 +487,9 @@ function App() {
             grouped[key] = {
               id: 'live-' + Math.random().toString(36).substr(2, 9),
               commercialName: item.commercialName,
-              laboratory: 'Desconocido',
-              composition: termToSearch,
-              details: '',
+              laboratory: item.laboratory || 'Desconocido',
+              composition: item.composition || '---',
+              details: item.details || '',
               imageUrl: item.imageUrl || null,
               prices: [],
               clicks: 0,
