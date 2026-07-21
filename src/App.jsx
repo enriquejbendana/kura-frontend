@@ -39,9 +39,11 @@ function App() {
       let i = 0;
       setLiveLoadingMessage(messages[0]);
       interval = setInterval(() => {
-        i = (i + 1) % messages.length;
-        setLiveLoadingMessage(messages[i]);
-      }, 2500);
+        if (i < messages.length - 1) {
+          i++;
+          setLiveLoadingMessage(messages[i]);
+        }
+      }, 800);
     }
     return () => clearInterval(interval);
   }, [isLiveSearching]);
