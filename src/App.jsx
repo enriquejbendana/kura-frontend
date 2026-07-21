@@ -495,6 +495,7 @@ function App() {
           // Normalizar el nombre base
           const baseName = item.commercialName
             .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase()
             .replace(/\b(comp|cps|caps|caja|sobre|amp|iny|jbe|susp|gotas|grageas|env|fco|comprimidos|comprimido)\b/gi, '')
             .replace(/\bx\b/gi, '')
             .replace(/[^a-z0-9\s]/gi, '')
