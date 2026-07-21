@@ -25,16 +25,16 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('Consultando punto de venta 1...');
   const [isLiveSearching, setIsLiveSearching] = useState(false);
-  const [liveLoadingMessage, setLiveLoadingMessage] = useState('Consultando punto de venta 3...');
+  const [liveLoadingMessage, setLiveLoadingMessage] = useState('Consultando punto de venta 4...');
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   useEffect(() => {
     let interval;
     if (isLiveSearching) {
       const messages = [
-        'Consultando punto de venta 3...',
         'Consultando punto de venta 4...',
-        'Consultando punto de venta 5...'
+        'Consultando punto de venta 5...',
+        'Consultando punto de venta 6...'
       ];
       let i = 0;
       setLiveLoadingMessage(messages[0]);
@@ -293,6 +293,9 @@ function App() {
     setShowAllVariants(false);
     setBackendErrors([]);
 
+    // Simular el tiempo del punto de venta 1
+    await new Promise(r => setTimeout(r, 1000));
+
     let queryToFetch = cleanTerm;
     if (finalPresentation !== 'cualquiera') {
       queryToFetch += ` ${finalPresentation}`;
@@ -473,9 +476,9 @@ function App() {
 
       // Simulador de carga progresiva (Loading Psicológico)
       setLoadingMessage("Consultando punto de venta 2...");
-      await new Promise(r => setTimeout(r, 800));
+      await new Promise(r => setTimeout(r, 1000));
       setLoadingMessage("Consultando punto de venta 3...");
-      await new Promise(r => setTimeout(r, 800));
+      await new Promise(r => setTimeout(r, 1000));
 
       setResults(processedResults);
       setIsLoading(false);
