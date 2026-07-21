@@ -23,8 +23,28 @@ function App() {
   const [results, setResults] = useState([]);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('Consultando punto de venta 1...');
   const [isLiveSearching, setIsLiveSearching] = useState(false);
+  const [liveLoadingMessage, setLiveLoadingMessage] = useState('Consultando punto de venta 3...');
   const [showAdvanced, setShowAdvanced] = useState(false);
+
+  useEffect(() => {
+    let interval;
+    if (isLiveSearching) {
+      const messages = [
+        'Consultando punto de venta 3...',
+        'Consultando punto de venta 4...',
+        'Consultando punto de venta 5...'
+      ];
+      let i = 0;
+      setLiveLoadingMessage(messages[0]);
+      interval = setInterval(() => {
+        i = (i + 1) % messages.length;
+        setLiveLoadingMessage(messages[i]);
+      }, 2500);
+    }
+    return () => clearInterval(interval);
+  }, [isLiveSearching]);
   const [searchType, setSearchType] = useState('principio');
   const [presentation, setPresentation] = useState('cualquiera');
   const [sortBy, setSortBy] = useState('price_asc');
@@ -269,6 +289,7 @@ function App() {
 
     setHasSearched(true);
     setIsLoading(true);
+    setLoadingMessage("Consultando punto de venta 1...");
     setShowAllVariants(false);
     setBackendErrors([]);
 
@@ -450,18 +471,25 @@ function App() {
         };
       });
 
+      // Simulador de carga progresiva (Loading Psicológico)
+      setLoadingMessage("Consultando punto de venta 2...");
+      await new Promise(r => setTimeout(r, 800));
+      setLoadingMessage("Consultando punto de venta 3...");
+      await new Promise(r => setTimeout(r, 800));
+
       setResults(processedResults);
+      setIsLoading(false);
+      
+      // SIEMPRE disparar la búsqueda en vivo, incluso si Supabase falla
+      if (cleanTerm.length >= 3) {
+        handleLiveSearch(cleanTerm);
+      }
       
     } catch (error) {
       console.error("Error al buscar:", error);
       setResults([]);
       setBackendErrors([{ error: true, message: 'Fallo al conectar con el servidor', pharmacy: { name: 'Servidor Local' } }]);
-    } finally {
       setIsLoading(false);
-      // SIEMPRE disparar la búsqueda en vivo, incluso si Supabase falla (por ejemplo, si la tabla no existe todava)
-      if (cleanTerm.length >= 3) {
-        handleLiveSearch(cleanTerm);
-      }
     }
   };
 
@@ -478,6 +506,7 @@ function App() {
 
   const handleLiveSearch = async (termToSearch) => {
     setIsLiveSearching(true);
+    setLiveLoadingMessage("Buscando precios actualizados en Catedral, FarmaTotal y Farmacenter...");
     try {
       const res = await fetch(`https://kura-api-mm3u.onrender.com/api/live-search?q=${encodeURIComponent(termToSearch)}`);
       const data = await res.json();
@@ -1111,7 +1140,7 @@ function App() {
               <div className="loading-container" style={{ textAlign: 'center', padding: '4rem', color: 'var(--primary)' }}>
                 <svg className="spinner" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite', marginBottom: '1.5rem' }}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-dark)', marginBottom: '1rem' }}>
-                  ¡No te vayas! Estamos procesando tu búsqueda...
+                  {loadingMessage}
                 </h3>
                 
                 <div style={{ position: 'relative', height: '60px', marginBottom: '1.5rem', width: '100%', overflow: 'hidden' }}>
@@ -1147,7 +1176,7 @@ function App() {
                 {isLiveSearching && (
                   <div style={{ background: '#e0f2fe', color: '#0369a1', padding: '0.75rem 1rem', borderRadius: '0.5rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid #bae6fd' }}>
                     <div style={{ width: '20px', height: '20px', border: '2px solid #0369a1', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-                    <span style={{ fontWeight: '500' }}>Buscando precios actualizados en Catedral, FarmaTotal y Farmacenter...</span>
+                    <span style={{ fontWeight: '500' }}>{liveLoadingMessage}</span>
                   </div>
                 )}
                 
@@ -1292,7 +1321,7 @@ function App() {
                     <strong style={{ display: 'block', marginBottom: '0.25rem' }}>Aviso importante:</strong>
                     <ul style={{ margin: 0, paddingLeft: '1.5rem' }}>
                       {backendErrors.map((err, idx) => (
-                        <li key={idx}>El sistema de farmacia <strong>{err.pharmacy.name}</strong> est caido y no responde en este momento. ({err.message})</li>
+                        <li key={idx}>El sistema de farmacia <strong>{err.pharmacy.name}</strong> está caído y no responde en este momento. ({err.message})</li>
                       ))}
                     </ul>
                   </div>
@@ -1309,7 +1338,7 @@ function App() {
                 {isLiveSearching && (
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
                     <div style={{ width: '40px', height: '40px', border: '3px solid var(--border)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-                    <p style={{ fontWeight: '600', color: 'var(--primary-dark)' }}>Buscando en vivo en todas las farmacias...</p>
+                    <p style={{ fontWeight: '600', color: 'var(--primary-dark)' }}>{liveLoadingMessage}</p>
                   </div>
                 )}
               </div>
