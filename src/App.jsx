@@ -491,6 +491,18 @@ function App() {
             .replace(/\s+/g, ' ');
 
           const key = (baseName || item.commercialName).toLowerCase();
+          const searchWord = termToSearch.toLowerCase().trim();
+          
+          let relevanceScore = 4;
+          if (baseName === searchWord) {
+            relevanceScore = 1;
+          } else if (baseName.startsWith(searchWord)) {
+            relevanceScore = 2;
+          } else if (baseName.endsWith(searchWord)) {
+            relevanceScore = 3;
+          } else {
+            relevanceScore = 4;
+          }
           
           if (!grouped[key]) {
             grouped[key] = {
@@ -502,7 +514,7 @@ function App() {
               imageUrl: item.imageUrl || null,
               prices: [],
               clicks: 0,
-              relevanceScore: 1
+              relevanceScore: relevanceScore
             };
           }
           
