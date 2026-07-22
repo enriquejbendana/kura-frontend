@@ -43,7 +43,7 @@ function App() {
           i++;
           setLiveLoadingMessage(messages[i]);
         }
-      }, 800);
+      }, 1000);
     }
     return () => clearInterval(interval);
   }, [isLiveSearching]);
@@ -509,10 +509,12 @@ function App() {
 
   const handleLiveSearch = async (termToSearch) => {
     setIsLiveSearching(true);
-    setLiveLoadingMessage("Buscando precios actualizados en Catedral, FarmaTotal y Farmacenter...");
     try {
-      const res = await fetch(`https://kura-api-mm3u.onrender.com/api/live-search?q=${encodeURIComponent(termToSearch)}`);
-      const data = await res.json();
+      // Forzar 3 segundos mínimos de espera para asegurar que la animación del punto 3 al 5 se reproduzca completa
+      const minWait = new Promise(resolve => setTimeout(resolve, 3000));
+      const fetchPromise = fetch(`https://kura-api-mm3u.onrender.com/api/live-search?q=${encodeURIComponent(termToSearch)}`).then(r => r.json());
+      
+      const [, data] = await Promise.all([minWait, fetchPromise]);
       if (data.results && data.results.length > 0) {
         // Transformar los resultados del backend de Render a la estructura agrupada
         const grouped = {};
