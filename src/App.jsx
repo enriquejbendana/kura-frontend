@@ -23,30 +23,9 @@ function App() {
   const [results, setResults] = useState([]);
 
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState('Consultando punto de venta 1...');
-  const [isLiveSearching, setIsLiveSearching] = useState(false);
-  const [liveLoadingMessage, setLiveLoadingMessage] = useState('Consultando punto de venta 3...');
-  const [showAdvanced, setShowAdvanced] = useState(false);
+        const [showAdvanced, setShowAdvanced] = useState(false);
 
-  useEffect(() => {
-    let interval;
-    if (isLiveSearching) {
-      const messages = [
-        'Consultando punto de venta 3...',
-        'Consultando punto de venta 4...',
-        'Consultando punto de venta 5...'
-      ];
-      let i = 0;
-      setLiveLoadingMessage(messages[0]);
-      interval = setInterval(() => {
-        if (i < messages.length - 1) {
-          i++;
-          setLiveLoadingMessage(messages[i]);
-        }
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isLiveSearching]);
+  
   const [searchType, setSearchType] = useState('principio');
   const [presentation, setPresentation] = useState('cualquiera');
   const [sortBy, setSortBy] = useState('price_asc');
@@ -276,56 +255,39 @@ function App() {
     };
   };
 
-  const executeSearch = async (rawTerm) => {
-    if (!rawTerm.trim()) {
-      setHasSearched(false);
-      return;
-    }
-
-    const { cleanTerm, detectedPresentation, isMonoDrug } = parseNaturalLanguage(rawTerm);
+    const executeSearch = async (rawTerm) => {
+    if (!rawTerm || rawTerm.trim().length < 3) return;
     
-    const finalPresentation = detectedPresentation !== 'cualquiera' ? detectedPresentation : presentation;
-    if (detectedPresentation !== 'cualquiera' && presentation !== detectedPresentation) {
-      setPresentation(detectedPresentation);
-    }
+    const cleanTerm = rawTerm.trim();
+    const compoundMarkers = ['ibu ', 'ergo ', 'plus', 'forte', 'compuesto', ' y ', 'sinus', 'flex', 'relax'];
 
     setHasSearched(true);
     setIsLoading(true);
-    setLoadingMessage("Consultando punto de venta 1...");
     setShowAllVariants(false);
     setBackendErrors([]);
+    setResults([]);
+    setScannedPharmacies(0);
 
-    // Simular el tiempo del punto de venta 1
-    await new Promise(r => setTimeout(r, 1000));
+    const liveSearchPromise = fetch(`https://kura-api-mm3u.onrender.com/api/live-search?q=${encodeURIComponent(cleanTerm)}`)
+      .then(r => r.json())
+      .catch((error) => {
+        console.error("Error en live search:", error);
+        return { results: [] };
+      });
 
     let queryToFetch = cleanTerm;
-    if (finalPresentation !== 'cualquiera') {
-      queryToFetch += ` ${finalPresentation}`;
+    if (presentation !== 'cualquiera') {
+      queryToFetch += ` ${presentation}`;
     }
 
     try {
-      // Búsqueda en Supabase usando ilike en commercial_name o composition
-      const { data: dbProducts, error } = await supabase
+      const { data: dbProducts, error: dbError } = await supabase
         .from('products')
-        .select(`
-          *,
-          product_prices (
-            price,
-            pharmacies (
-              id,
-              name,
-              logo
-            )
-          )
-        `)
-        .or(`commercial_name.ilike.%${cleanTerm}%,composition.ilike.%${cleanTerm}%`);
+        .select('*, prices(price, pharmacy_id)')
+        .or(`commercial_name.ilike.%${queryToFetch}%,composition.ilike.%${queryToFetch}%`);
 
-      if (error) throw error;
-      
       let rawData = [];
-      
-      if (dbProducts) {
-        // Mapear la estructura de Supabase a la que esperaba el frontend
+      if (!dbError && dbProducts && dbProducts.length > 0) {
         rawData = dbProducts.map(p => ({
           id: p.id,
           commercialName: p.commercial_name,
@@ -333,254 +295,77 @@ function App() {
           laboratory: p.laboratory,
           details: p.details,
           imageUrl: p.image_url,
-          clicks: 0, // o agregar clicks a la tabla luego
-          prices: p.product_prices.map(pp => ({
-            price: pp.price,
-            pharmacy: {
-              id: pp.pharmacies.id,
-              name: pp.pharmacies.name,
-              logo: pp.pharmacies.logo
-            }
-          }))
+          clicks: p.clicks,
+          prices: p.prices.map(priceItem => {
+             return {
+               pharmacy: {
+                 id: priceItem.pharmacy_id,
+                 name: priceItem.pharmacy_id,
+                 class: priceItem.pharmacy_id
+               },
+               price: priceItem.price,
+               originalName: p.commercial_name,
+               url: null
+             };
+          })
         }));
       }
 
-      if (isMonoDrug) {
-        const combinationMarkers = ['+', ' y ', 'compuesto', 'plus', 'forte', 'grip', 'dual', 'flex', 'complex'];
-        rawData = rawData.filter(item => {
-          const nameLower = item.commercialName.toLowerCase();
-          return !combinationMarkers.some(marker => nameLower.includes(marker));
-        });
-      }
-
-      if (presentation !== 'cualquiera') {
-        const pLower = presentation.toLowerCase();
-        rawData = rawData.filter(item => {
-          const nameLower = item.commercialName.toLowerCase();
-          if (pLower === 'gotas') {
-            return nameLower.includes('gotas') || nameLower.includes('ml');
-          }
-          if (pLower === 'jarabe') {
-            return nameLower.includes('jarabe') || nameLower.includes('susp') || nameLower.includes('ml');
-          }
-          if (pLower === 'comprimidos') {
-            return nameLower.includes('comp') || nameLower.includes('caps') || nameLower.includes('cáps');
-          }
-          return nameLower.includes(pLower);
-        });
-      }
-
-      // Filtro Estricto Anti-Falsos Positivos
-      if (cleanTerm) {
-        const mainSearchWord = cleanTerm.toLowerCase().split(/\s+/).filter(w => w.length > 2)[0];
-        if (mainSearchWord) {
-          rawData = rawData.filter(item => {
-            const nameLower = item.commercialName.toLowerCase();
-            const baseName = nameLower
-              .replace(/\b(\d+(mg|ml|g|mcg|ui|kg|l|cm)\b|comp|cps|caps|caja|sobre|amp|iny|jbe|susp|gotas|grageas|env|fco|comprimidos|comprimido)\b/gi, '')
-              .replace(/[0-9]+/g, '')
-              .replace(/\bx\b/gi, '')
-              .replace(/[^a-z0-9\s]/gi, '')
-              .trim()
-              .replace(/\s+/g, ' ');
-            
-            // Bloqueador de compuestos: Si la búsqueda NO tiene prefijos/sufijos de compuestos, pero el nombre SÍ, lo rechazamos.
-            const compoundMarkers = ['ibu ', 'ergo ', 'plus', 'forte', 'compuesto', ' y ', 'sinus', 'flex', 'relax'];
-            const searchHasMarker = compoundMarkers.some(m => cleanTerm.toLowerCase().includes(m.trim()));
-            const nameHasMarker = compoundMarkers.some(m => nameLower.includes(m.trim()));
-            
-            if (!searchHasMarker && nameHasMarker) {
-              return false; // Destruir compuestos (ej. Ibu Dolanet) cuando se busca el base (ej. Dolanet)
-            }
-            
-            const firstWordOfName = baseName.split(/\s+/)[0];
-            const comp = (item.composition || '').toLowerCase();
-            
-            // Requerir que la primera palabra del nombre coincida, o que esté en la composición
-            return (firstWordOfName && firstWordOfName.includes(mainSearchWord)) || comp.includes(mainSearchWord);
-          });
-        }
-      }
-
-      const grouped = {};
+      const existingGrouped = {};
       rawData.forEach(item => {
         const groupingKey = item.id;
-        
-        if (!grouped[groupingKey]) {
-          grouped[groupingKey] = {
-            id: item.id,
-            commercialName: item.commercialName, // Mantenemos el nombre real completo
-            composition: item.composition,
-            laboratory: item.laboratory,
-            details: item.details,
-            imageUrl: item.imageUrl,
-            clicks: item.clicks || 0,
-            prices: []
-          };
-        }
-        if (!grouped[groupingKey].imageUrl && item.imageUrl) {
-          grouped[groupingKey].imageUrl = item.imageUrl;
+        if (!existingGrouped[groupingKey]) {
+           existingGrouped[groupingKey] = {
+             id: item.id,
+             commercialName: item.commercialName,
+             composition: item.composition,
+             laboratory: item.laboratory,
+             details: item.details,
+             imageUrl: item.imageUrl,
+             clicks: item.clicks || 0,
+             prices: [],
+             sortedPrices: []
+           };
         }
         item.prices.forEach(p => {
-          const existingIdx = grouped[groupingKey].prices.findIndex(ep => ep.pharmacy.id === p.pharmacy.id);
-          if (existingIdx >= 0) {
-            if (p.price < grouped[groupingKey].prices[existingIdx].price) {
-              grouped[groupingKey].prices[existingIdx] = { ...p, originalName: item.commercialName };
-            }
-          } else {
-            grouped[groupingKey].prices.push({ ...p, originalName: item.commercialName });
-          }
+          existingGrouped[groupingKey].prices.push({ ...p, originalName: item.commercialName });
+          existingGrouped[groupingKey].sortedPrices.push({ ...p, originalName: item.commercialName });
         });
       });
 
-      const matchedProducts = Object.values(grouped);
-
-      const processedResults = matchedProducts.map(product => {
-        let sortedPrices = [...product.prices].sort((a, b) => a.price - b.price);
-        
-        const minPrice = sortedPrices[0].price;
-        const maxPrice = Math.max(...sortedPrices.map(p => p.price));
-        const savings = maxPrice - minPrice;
-        const savingsPercent = Math.max(0, Math.round((savings / maxPrice) * 100)) || 0;
-
-        const nameLower = product.commercialName.toLowerCase();
-        const searchWord = (cleanTerm || searchTerm).toLowerCase().trim();
-        
-        // Extraer la "esencia" del nombre (sin mg, ml, cajas, números, etc.)
-        const baseName = nameLower
-          .replace(/\b(\d+(mg|ml|g|mcg|ui|kg|l|cm)\b|comp|cáps|caps|caja|sobre|amp|iny|jbe|susp|gotas|grageas|env|fco|comprimidos|comprimido)\b/gi, '')
-          .replace(/[0-9]+/g, '')
-          .replace(/\bx\b/gi, '')
-          .replace(/[^a-zñáéíóú\s]/gi, '')
-          .trim()
-          .replace(/\s+/g, ' ');
-
-        let relevanceScore = 4;
-        if (baseName === searchWord) {
-          relevanceScore = 1;
-        } else if (baseName.startsWith(searchWord)) {
-          relevanceScore = 2;
-        } else if (baseName.endsWith(searchWord)) {
-          relevanceScore = 3;
-        } else {
-          relevanceScore = 4;
-        }
-
-        return {
-          ...product,
-          sortedPrices,
-          savings,
-          savingsPercent,
-          clicks: product.clicks || 0,
-          relevanceScore
-        };
+      const finalResults = Object.values(existingGrouped).map(product => {
+        const sortedPrices = [...product.sortedPrices].sort((a, b) => a.price - b.price);
+        return { ...product, sortedPrices };
       });
 
-      // Simulador de carga progresiva (Loading Psicológico)
-      setLoadingMessage("Consultando punto de venta 2...");
-      await new Promise(r => setTimeout(r, 1000));
+      // --- CARGA GRADUAL "REALISTA" POR FARMACIA ---
+      const simulatedChains = ['punto_farma', 'farmacenter', 'catedral', 'farmaoliva', 'farmatotal'];
 
-      setResults(processedResults);
-      setIsLoading(false);
-      
-      // SIEMPRE disparar la búsqueda en vivo, incluso si Supabase falla
-      if (cleanTerm.length >= 3) {
-        handleLiveSearch(cleanTerm);
+      for (let i = 1; i <= 5; i++) {
+        setScannedPharmacies(i);
+        setLoadingMessageIdx(prev => prev === 0 ? 1 : 0);
+        
+        const currentResults = finalResults.map(product => {
+          const revealedSortedPrices = product.sortedPrices.filter(p => {
+             const idx = simulatedChains.indexOf(p.pharmacy.id);
+             if (idx === -1) return i === 5;
+             return idx < i;
+          });
+          return { ...product, sortedPrices: revealedSortedPrices };
+        }).filter(product => product.sortedPrices.length > 0);
+        
+        setResults(currentResults);
+        await new Promise(r => setTimeout(r, 1000));
       }
-      
-    } catch (error) {
-      console.error("Error al buscar:", error);
-      setResults([]);
-      setBackendErrors([{ error: true, message: 'Fallo al conectar con el servidor', pharmacy: { name: 'Servidor Local' } }]);
-      setIsLoading(false);
-    }
-  };
 
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    executeSearch(searchTerm);
-  };
-
-  const handleClearSearch = () => {
-    setSearchTerm('');
-    setHasSearched(false);
-    setResults([]);
-  };
-
-  const handleLiveSearch = async (termToSearch) => {
-    setIsLiveSearching(true);
-    try {
-      // Forzar 3 segundos mínimos de espera para asegurar que la animación del punto 3 al 5 se reproduzca completa
-      const minWait = new Promise(resolve => setTimeout(resolve, 3000));
-      const fetchPromise = fetch(`https://kura-api-mm3u.onrender.com/api/live-search?q=${encodeURIComponent(termToSearch)}`).then(r => r.json());
-      
-      const [, data] = await Promise.all([minWait, fetchPromise]);
-      if (data.results && data.results.length > 0) {
-        // Transformar los resultados del backend de Render a la estructura agrupada
-        const grouped = {};
-        data.results.forEach(item => {
-          // El backend Render ya devuelve un array de prices, extraemos el primero
+      const liveData = await liveSearchPromise;
+      if (liveData && liveData.results && liveData.results.length > 0) {
+        liveData.results.forEach(item => {
           const priceObj = item.prices[0];
           if (!priceObj) return;
           
           const pharmacyId = priceObj.pharmacy.id;
           const price = priceObj.price;
-          
-          // Normalizar el nombre base
-          const baseName = item.commercialName
-            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-            .toLowerCase()
-            .replace(/\b(comp|cps|caps|caja|sobre|amp|iny|jbe|susp|gotas|grageas|env|fco|comprimidos|comprimido)\b/gi, '')
-            .replace(/\bx\b/gi, '')
-            .replace(/[^a-z0-9\s]/gi, '')
-            .trim()
-            .replace(/\s+/g, ' ');
-
-          // FILTRO ESTRICTO: Requerir que la primera palabra del nombre coincida
-          const searchWords = termToSearch.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().split(/\s+/).filter(w => w.length > 2);
-          
-          // Bloqueador de compuestos: Si la búsqueda NO tiene prefijos/sufijos de compuestos, pero el nombre SÍ, lo rechazamos.
-          const compoundMarkers = ['ibu ', 'ergo ', 'plus', 'forte', 'compuesto', ' y ', 'sinus', 'flex', 'relax'];
-          const searchHasMarker = compoundMarkers.some(m => termToSearch.toLowerCase().includes(m.trim()));
-          const nameHasMarker = compoundMarkers.some(m => item.commercialName.toLowerCase().includes(m.trim()));
-          
-          if (!searchHasMarker && nameHasMarker) {
-            return; // Destruir compuestos cuando se busca el base
-          }
-
-          if (searchWords.length > 0) {
-            const mainWord = searchWords[0];
-            const firstWordOfName = baseName.split(/\s+/)[0];
-            if (!firstWordOfName || !firstWordOfName.includes(mainWord)) return; // Saltar este resultado
-          }
-
-          const key = (baseName || item.commercialName).toLowerCase();
-          const searchWord = termToSearch.toLowerCase().trim();
-          
-          let relevanceScore = 4;
-          if (baseName === searchWord) {
-            relevanceScore = 1;
-          } else if (baseName.startsWith(searchWord)) {
-            relevanceScore = 2;
-          } else if (baseName.endsWith(searchWord)) {
-            relevanceScore = 3;
-          } else {
-            relevanceScore = 4;
-          }
-          
-          if (!grouped[key]) {
-            grouped[key] = {
-              id: 'live-' + Math.random().toString(36).substr(2, 9),
-              commercialName: item.commercialName,
-              laboratory: item.laboratory || 'Desconocido',
-              composition: item.composition || '---',
-              details: item.details || '',
-              imageUrl: item.imageUrl || null,
-              prices: [],
-              clicks: 0,
-              relevanceScore: relevanceScore
-            };
-          }
           
           let phName = pharmacyId;
           if (phName === 'farmacenter') phName = 'Farmacenter';
@@ -589,66 +374,54 @@ function App() {
           if (phName === 'catedral') phName = 'Farmacias Catedral';
           if (phName === 'punto_farma') phName = 'Punto Farma';
 
-          grouped[key].prices.push({
+          const newPriceObj = {
             pharmacy: { id: pharmacyId, name: phName, class: pharmacyId },
             price: price,
             originalName: item.commercialName,
             url: priceObj.url || null
-          });
-        });
+          };
 
-        // Combinar con los resultados existentes (los de Supabase)
-        setResults(prevResults => {
-          const existingGrouped = {};
-          prevResults.forEach(p => {
-             const baseName = p.commercialName
-              .replace(/\b(\d+(mg|ml|g|mcg|ui|kg|l|cm)\b|comp|cáps|caps|caja|sobre|amp|iny|jbe|susp|gotas|grageas|env|fco|comprimidos|comprimido)\b/gi, '')
-              .replace(/[0-9]+/g, '')
-              .replace(/\bx\b/gi, '')
-              .replace(/[^a-zñáéíóú\s]/gi, '')
-              .trim()
-              .replace(/\s+/g, ' ');
-             const key = (baseName || p.commercialName).toLowerCase();
-             existingGrouped[key] = p;
+          const key = (item.commercialName).toLowerCase();
+          
+          let foundExisting = null;
+          Object.values(existingGrouped).forEach(ep => {
+              if (ep.commercialName.toLowerCase() === key) foundExisting = ep;
           });
 
-          // Mezclar los nuevos
-          Object.keys(grouped).forEach(k => {
-             if (existingGrouped[k]) {
-               const newPrices = grouped[k].prices;
-               newPrices.forEach(np => {
-                 if (!existingGrouped[k].prices) existingGrouped[k].prices = [...existingGrouped[k].sortedPrices]; // Fallback
-                 if (!existingGrouped[k].sortedPrices.some(ep => ep.pharmacy.id === np.pharmacy.id)) {
-                   existingGrouped[k].sortedPrices.push(np);
-                 }
-               });
-             } else {
-               existingGrouped[k] = grouped[k];
-               existingGrouped[k].sortedPrices = grouped[k].prices;
-             }
-          });
-
-          // Recalcular ahorros para todo
-          return Object.values(existingGrouped).map(product => {
-            const sortedPrices = [...(product.sortedPrices || product.prices)].sort((a, b) => a.price - b.price);
-            let savings = 0;
-            let savingsPercent = 0;
-            if (sortedPrices.length > 1) {
-              const minPrice = sortedPrices[0].price;
-              const maxPrice = sortedPrices[sortedPrices.length - 1].price;
-              savings = maxPrice - minPrice;
-              savingsPercent = Math.round((savings / maxPrice) * 100);
+          if (foundExisting) {
+            if (!foundExisting.sortedPrices.some(ep => ep.pharmacy.id === pharmacyId)) {
+               foundExisting.sortedPrices.push(newPriceObj);
             }
-            return { ...product, sortedPrices, savings, savingsPercent };
-          });
+          } else {
+            existingGrouped[key] = {
+              id: 'live-' + Math.random().toString(36).substr(2, 9),
+              commercialName: item.commercialName,
+              laboratory: item.laboratory || 'Desconocido',
+              composition: item.composition || '---',
+              details: item.details || '',
+              imageUrl: item.imageUrl || null,
+              prices: [],
+              sortedPrices: [newPriceObj],
+              clicks: 0,
+              relevanceScore: 4
+            };
+          }
         });
+        
+        const finalResultsIncludingLive = Object.values(existingGrouped).map(product => {
+          const sortedPrices = [...product.sortedPrices].sort((a, b) => a.price - b.price);
+          return { ...product, sortedPrices };
+        });
+        setResults(finalResultsIncludingLive);
       }
+      
     } catch (error) {
-      console.error("Error en live search:", error);
-      // MOSTRAR ERROR EN PANTALLA PARA DEPURAR
-      setBackendErrors(prev => [...prev, { error: true, pharmacy: { name: 'Vercel API (' + error.message + ')' } }]);
+      console.error("Error al buscar:", error);
+      setResults([]);
+      setBackendErrors([{ error: true, message: 'Fallo al conectar con el servidor' }]);
     } finally {
-      setIsLiveSearching(false);
+      setIsLoading(false);
+      setScannedPharmacies(0);
     }
   };
 
@@ -1141,19 +914,16 @@ function App() {
               )}
             </div>
 
-            {isLoading ? (
+            {isLoading && (
               <div className="loading-container" style={{ textAlign: 'center', padding: '4rem', color: 'var(--primary)' }}>
                 <svg className="spinner" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite', marginBottom: '1.5rem' }}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-dark)', marginBottom: '1rem' }}>
-                  {loadingMessage}
+                  Consultando punto de venta {scannedPharmacies || 1}...
                 </h3>
                 
                 <div style={{ position: 'relative', height: '60px', marginBottom: '1.5rem', width: '100%', overflow: 'hidden' }}>
-                  <p className={`animated-loading-text ${loadingMessageIdx === 0 ? 'visible' : 'hidden'}`}>
+                  <p className="animated-loading-text">
                     Nos estamos tomando tiempo para buscar los mejores precios en las mejores farmacias.
-                  </p>
-                  <p className={`animated-loading-text ${loadingMessageIdx === 1 ? 'visible' : 'hidden'}`}>
-                    Sos nuestro visitante número {visitCount} a nuestra página en la semana. ¡Gracias!
                   </p>
                 </div>
 
@@ -1165,7 +935,9 @@ function App() {
                 </p>
                 <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
               </div>
-            ) : results.length > 0 ? (
+            )}
+            
+            {!isLoading && results.length > 0 && (
               <>
                 {backendErrors.length > 0 && (
                   <div className="error-banner" style={{ background: '#fee2e2', color: '#991b1b', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1.5rem', border: '1px solid #fca5a5' }}>
@@ -1178,12 +950,7 @@ function App() {
                   </div>
                 )}
 
-                {isLiveSearching && (
-                  <div style={{ background: '#e0f2fe', color: '#0369a1', padding: '0.75rem 1rem', borderRadius: '0.5rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid #bae6fd' }}>
-                    <div style={{ width: '20px', height: '20px', border: '2px solid #0369a1', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-                    <span style={{ fontWeight: '500' }}>{liveLoadingMessage}</span>
-                  </div>
-                )}
+                
                 
                 <div className="results-grid">
                   {(() => {
@@ -1231,7 +998,7 @@ function App() {
                         {product.sortedPrices.map((priceEntry, idx) => {
                           const isBestPrice = idx === 0;
                           const domains = {
-                            'punto-farma': 'https://www.puntofarma.com.py/buscar?q=',
+                            'punto_farma': 'https://www.puntofarma.com.py/buscar?q=',
                             'farmacenter': 'https://www.farmacenter.com.py/catalogo?q=',
                             'catedral': 'https://www.farmaciacatedral.com.py/buscador?q=',
                             'farmaoliva': 'https://www.farmaoliva.com.py/catalogo?q=',
@@ -1319,7 +1086,9 @@ function App() {
                   })()}
                 </div>
               </>
-            ) : (
+            )}
+            
+            {!isLoading && results.length === 0 && hasSearched && (
               <div className="no-results" style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-muted)' }}>
                 {backendErrors.length > 0 && (
                   <div className="error-banner" style={{ background: '#fee2e2', color: '#991b1b', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1.5rem', border: '1px solid #fca5a5', textAlign: 'left' }}>
@@ -1340,12 +1109,7 @@ function App() {
                   <p style={{ fontSize: '1.2rem', color: 'var(--text-main)', fontWeight: '600' }}>No encontramos "{searchTerm}" en nuestra base rápida.</p>
                 </div>
                 
-                {isLiveSearching && (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ width: '40px', height: '40px', border: '3px solid var(--border)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-                    <p style={{ fontWeight: '600', color: 'var(--primary-dark)' }}>{liveLoadingMessage}</p>
-                  </div>
-                )}
+                
               </div>
             )}
           </section>
