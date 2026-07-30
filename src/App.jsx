@@ -268,11 +268,18 @@ function App() {
     setResults([]);
     setScannedPharmacies(0);
 
+    let resolvedLiveData = null;
     const liveSearchPromise = fetch(`https://kura-api-mm3u.onrender.com/api/live-search?q=${encodeURIComponent(cleanTerm)}`)
       .then(r => r.json())
+      .then(data => {
+         resolvedLiveData = data;
+         return data;
+      })
       .catch((error) => {
         console.error("Error en live search:", error);
-        return { results: [] };
+        const errData = { results: [] };
+        resolvedLiveData = errData;
+        return errData;
       });
 
     let queryToFetch = cleanTerm;
@@ -333,19 +340,80 @@ function App() {
         });
       });
 
-      const finalResults = Object.values(existingGrouped).map(product => {
-        const sortedPrices = [...product.sortedPrices].sort((a, b) => a.price - b.price);
-        return { ...product, sortedPrices };
-      });
+      const mergeLiveDataToResults = (liveDataResults) => {
+        if (liveDataResults && liveDataResults.length > 0) {
+          liveDataResults.forEach(item => {
+            const priceObj = item.prices[0];
+            if (!priceObj) return;
+            
+            const pharmacyId = priceObj.pharmacy.id;
+            const price = priceObj.price;
+            
+            let phName = pharmacyId;
+            if (phName === 'farmacenter') phName = 'Farmacenter';
+            if (phName === 'farmatotal') phName = 'Farmatotal';
+            if (phName === 'farmaoliva') phName = 'Farmaoliva';
+            if (phName === 'catedral') phName = 'Farmacias Catedral';
+            if (phName === 'punto_farma') phName = 'Punto Farma';
+
+            const newPriceObj = {
+              pharmacy: { id: pharmacyId, name: phName, class: pharmacyId },
+              price: price,
+              originalName: item.commercialName,
+              url: priceObj.url || null
+            };
+
+            const key = (item.commercialName).toLowerCase();
+            
+            let foundExisting = null;
+            Object.values(existingGrouped).forEach(ep => {
+                if (ep.commercialName.toLowerCase() === key) foundExisting = ep;
+            });
+
+            if (foundExisting) {
+              if (!foundExisting.sortedPrices.some(ep => ep.pharmacy.id === pharmacyId)) {
+                 foundExisting.sortedPrices.push(newPriceObj);
+              }
+            } else {
+              existingGrouped[key] = {
+                id: 'live-' + Math.random().toString(36).substr(2, 9),
+                commercialName: item.commercialName,
+                laboratory: item.laboratory || 'Desconocido',
+                composition: item.composition || '---',
+                details: item.details || '',
+                imageUrl: item.imageUrl || null,
+                prices: [],
+                sortedPrices: [newPriceObj],
+                clicks: 0,
+                relevanceScore: 4
+              };
+            }
+          });
+        }
+        
+        return Object.values(existingGrouped).map(product => {
+          const sortedPrices = [...product.sortedPrices].sort((a, b) => a.price - b.price);
+          return { ...product, sortedPrices };
+        });
+      };
 
       // --- CARGA GRADUAL "REALISTA" POR FARMACIA ---
       const simulatedChains = ['punto_farma', 'farmacenter', 'catedral', 'farmaoliva', 'farmatotal'];
+      let latestFinalResults = Object.values(existingGrouped).map(product => {
+        const sortedPrices = [...product.sortedPrices].sort((a, b) => a.price - b.price);
+        return { ...product, sortedPrices };
+      });
 
       for (let i = 1; i <= 5; i++) {
         setScannedPharmacies(i);
         setLoadingMessageIdx(prev => prev === 0 ? 1 : 0);
         
-        const currentResults = finalResults.map(product => {
+        if (resolvedLiveData && resolvedLiveData.results) {
+           latestFinalResults = mergeLiveDataToResults(resolvedLiveData.results);
+           resolvedLiveData.results = null; // Evitar mezclar múltiples veces
+        }
+        
+        const currentResults = latestFinalResults.map(product => {
           const revealedSortedPrices = product.sortedPrices.filter(p => {
              const idx = simulatedChains.indexOf(p.pharmacy.id);
              if (idx === -1) return i === 5;
@@ -358,61 +426,14 @@ function App() {
         await new Promise(r => setTimeout(r, 1000));
       }
 
-      const liveData = await liveSearchPromise;
-      if (liveData && liveData.results && liveData.results.length > 0) {
-        liveData.results.forEach(item => {
-          const priceObj = item.prices[0];
-          if (!priceObj) return;
-          
-          const pharmacyId = priceObj.pharmacy.id;
-          const price = priceObj.price;
-          
-          let phName = pharmacyId;
-          if (phName === 'farmacenter') phName = 'Farmacenter';
-          if (phName === 'farmatotal') phName = 'Farmatotal';
-          if (phName === 'farmaoliva') phName = 'Farmaoliva';
-          if (phName === 'catedral') phName = 'Farmacias Catedral';
-          if (phName === 'punto_farma') phName = 'Punto Farma';
-
-          const newPriceObj = {
-            pharmacy: { id: pharmacyId, name: phName, class: pharmacyId },
-            price: price,
-            originalName: item.commercialName,
-            url: priceObj.url || null
-          };
-
-          const key = (item.commercialName).toLowerCase();
-          
-          let foundExisting = null;
-          Object.values(existingGrouped).forEach(ep => {
-              if (ep.commercialName.toLowerCase() === key) foundExisting = ep;
-          });
-
-          if (foundExisting) {
-            if (!foundExisting.sortedPrices.some(ep => ep.pharmacy.id === pharmacyId)) {
-               foundExisting.sortedPrices.push(newPriceObj);
+      if (!resolvedLiveData) {
+         liveSearchPromise.then(liveData => {
+            if (liveData && liveData.results && liveData.results.length > 0) {
+               setResults(mergeLiveDataToResults(liveData.results));
             }
-          } else {
-            existingGrouped[key] = {
-              id: 'live-' + Math.random().toString(36).substr(2, 9),
-              commercialName: item.commercialName,
-              laboratory: item.laboratory || 'Desconocido',
-              composition: item.composition || '---',
-              details: item.details || '',
-              imageUrl: item.imageUrl || null,
-              prices: [],
-              sortedPrices: [newPriceObj],
-              clicks: 0,
-              relevanceScore: 4
-            };
-          }
-        });
-        
-        const finalResultsIncludingLive = Object.values(existingGrouped).map(product => {
-          const sortedPrices = [...product.sortedPrices].sort((a, b) => a.price - b.price);
-          return { ...product, sortedPrices };
-        });
-        setResults(finalResultsIncludingLive);
+         });
+      } else if (resolvedLiveData && resolvedLiveData.results) {
+         setResults(mergeLiveDataToResults(resolvedLiveData.results));
       }
       
     } catch (error) {
