@@ -425,6 +425,17 @@ function App() {
     }
   };
 
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    executeSearch(searchTerm);
+  };
+
+  const handleClearSearch = () => {
+    setSearchTerm('');
+    setHasSearched(false);
+    setResults([]);
+  };
+
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
     if (e.target.value.trim() === '') {
