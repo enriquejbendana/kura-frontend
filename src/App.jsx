@@ -291,33 +291,38 @@ function App() {
 
     try {
       const { data: dbProducts, error: dbError } = await supabase
-        .from('products')
-        .select('*, prices(price, pharmacy_id)')
-        .or(`commercial_name.ilike.%${queryToFetch}%,composition.ilike.%${queryToFetch}%`);
+        .from('medicamentos_cache')
+        .select('*')
+        .or(`commercial_name.ilike.%${queryToFetch}%`);
 
       let rawData = [];
       if (!dbError && dbProducts && dbProducts.length > 0) {
-        rawData = dbProducts.map(p => ({
-          id: p.id,
-          commercialName: p.commercial_name,
-          composition: p.composition,
-          laboratory: p.laboratory,
-          details: p.details,
-          imageUrl: p.image_url,
-          clicks: p.clicks,
-          prices: p.prices.map(priceItem => {
-             return {
+        const grouped = {};
+        dbProducts.forEach(p => {
+           if (!grouped[p.commercial_name]) {
+              grouped[p.commercial_name] = {
+                 id: p.id,
+                 commercialName: p.commercial_name,
+                 composition: '---',
+                 laboratory: 'Desconocido',
+                 details: '',
+                 imageUrl: p.image_url,
+                 clicks: 0,
+                 prices: []
+              };
+           }
+           grouped[p.commercial_name].prices.push({
                pharmacy: {
-                 id: priceItem.pharmacy_id,
-                 name: priceItem.pharmacy_id,
-                 class: priceItem.pharmacy_id
+                 id: p.pharmacy_id,
+                 name: p.pharmacy_id,
+                 class: p.pharmacy_id
                },
-               price: priceItem.price,
+               price: p.price,
                originalName: p.commercial_name,
                url: null
-             };
-          })
-        }));
+           });
+        });
+        rawData = Object.values(grouped);
       }
 
       const existingGrouped = {};
