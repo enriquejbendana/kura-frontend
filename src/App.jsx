@@ -923,9 +923,14 @@ function App() {
                 {!isLoading && (
                   <>
                     <span className="results-count" style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--primary-dark)', background: 'var(--primary-light)', padding: '0.25rem 0.75rem', borderRadius: '1rem', border: '1px solid var(--primary)' }}>
-                      {results.length} productos encontrados
+                      {isLiveSearchPending && results.length === 0 ? 'Buscando resultados...' : `${results.length} productos encontrados`}
                     </span>
-                    
+                    {isLiveSearchPending && results.length > 0 && (
+                      <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <svg className="spinner" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite' }}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                        Buscando más...
+                      </span>
+                    )}
                   </>
                 )}
               </div>
