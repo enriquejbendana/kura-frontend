@@ -1147,7 +1147,7 @@ function App() {
                 {isLiveSearchPending ? (
                   <div style={{ marginBottom: '2rem' }}>
                     <svg className="spinner" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite', color: 'var(--primary)', marginBottom: '1rem' }}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-                    <p style={{ fontSize: '1.2rem', color: 'var(--text-main)', fontWeight: '600' }}>No lo encontramos en la base rápida.<br/>Buscando en vivo en sucursales...</p>
+                    <p style={{ fontSize: '1.2rem', color: 'var(--text-main)', fontWeight: '600' }}>Sincronizando con los sistemas de las farmacias...<br/><span style={{ fontSize: '1rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>Esto puede tomar unos segundos adicionales</span></p>
                   </div>
                 ) : (
                   <div style={{ marginBottom: '2rem' }}>
