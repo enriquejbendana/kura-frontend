@@ -23,6 +23,7 @@ function App() {
   const [results, setResults] = useState([]);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isLiveSearchPending, setIsLiveSearchPending] = useState(false);
         const [showAdvanced, setShowAdvanced] = useState(false);
 
   
@@ -263,6 +264,7 @@ function App() {
 
     setHasSearched(true);
     setIsLoading(true);
+    setIsLiveSearchPending(true);
     setShowAllVariants(false);
     setBackendErrors([]);
     setResults([]);
@@ -411,6 +413,7 @@ function App() {
         if (resolvedLiveData && resolvedLiveData.results) {
            latestFinalResults = mergeLiveDataToResults(resolvedLiveData.results);
            resolvedLiveData.results = null; // Evitar mezclar múltiples veces
+           setIsLiveSearchPending(false);
         }
         
         const currentResults = latestFinalResults.map(product => {
@@ -431,9 +434,12 @@ function App() {
             if (liveData && liveData.results && liveData.results.length > 0) {
                setResults(mergeLiveDataToResults(liveData.results));
             }
-         });
+         }).finally(() => setIsLiveSearchPending(false));
       } else if (resolvedLiveData && resolvedLiveData.results) {
          setResults(mergeLiveDataToResults(resolvedLiveData.results));
+         setIsLiveSearchPending(false);
+      } else {
+         setIsLiveSearchPending(false);
       }
       
     } catch (error) {
@@ -1133,13 +1139,20 @@ function App() {
                   </div>
                 )}
                 
-                <div style={{ marginBottom: '2rem' }}>
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--border)', marginBottom: '1rem' }}>
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                  </svg>
-                  <p style={{ fontSize: '1.2rem', color: 'var(--text-main)', fontWeight: '600' }}>No encontramos "{searchTerm}" en nuestra base rápida.</p>
-                </div>
+                {isLiveSearchPending ? (
+                  <div style={{ marginBottom: '2rem' }}>
+                    <svg className="spinner" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite', color: 'var(--primary)', marginBottom: '1rem' }}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                    <p style={{ fontSize: '1.2rem', color: 'var(--text-main)', fontWeight: '600' }}>No lo encontramos en la base rápida.<br/>Buscando en vivo en sucursales...</p>
+                  </div>
+                ) : (
+                  <div style={{ marginBottom: '2rem' }}>
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--border)', marginBottom: '1rem' }}>
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <p style={{ fontSize: '1.2rem', color: 'var(--text-main)', fontWeight: '600' }}>No encontramos "{searchTerm}" en ninguna farmacia.</p>
+                  </div>
+                )}
                 
                 
               </div>
