@@ -668,25 +668,25 @@ function App() {
             Kura <span className="logo-tag">PY</span>
           </div>
           
-          <nav className="header-nav" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <nav className="header-nav" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <button 
               onClick={() => setActiveTab('inicio')} 
-              style={{ background: 'none', border: 'none', padding: '0.8rem 1.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '1.2rem', color: activeTab === 'inicio' ? 'var(--primary)' : 'var(--text)', borderBottom: activeTab === 'inicio' ? '4px solid var(--primary)' : '4px solid transparent', transition: 'all 0.2s' }}>
+              style={{ background: 'none', border: 'none', padding: '0.4rem 0.8rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem', color: activeTab === 'inicio' ? 'var(--primary)' : 'var(--text)', borderBottom: activeTab === 'inicio' ? '4px solid var(--primary)' : '4px solid transparent', transition: 'all 0.2s' }}>
               Inicio
             </button>
             <button 
               onClick={() => setActiveTab('farmacias')} 
-              style={{ background: 'none', border: 'none', padding: '0.8rem 1.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '1.2rem', color: activeTab === 'farmacias' ? 'var(--primary)' : 'var(--text)', borderBottom: activeTab === 'farmacias' ? '4px solid var(--primary)' : '4px solid transparent', transition: 'all 0.2s' }}>
+              style={{ background: 'none', border: 'none', padding: '0.4rem 0.8rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem', color: activeTab === 'farmacias' ? 'var(--primary)' : 'var(--text)', borderBottom: activeTab === 'farmacias' ? '4px solid var(--primary)' : '4px solid transparent', transition: 'all 0.2s' }}>
               Farmacias
             </button>
             <button 
               onClick={() => setActiveTab('principios')} 
-              style={{ background: 'none', border: 'none', padding: '0.8rem 1.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '1.2rem', color: activeTab === 'principios' ? 'var(--primary)' : 'var(--text)', borderBottom: activeTab === 'principios' ? '4px solid var(--primary)' : '4px solid transparent', transition: 'all 0.2s' }}>
+              style={{ background: 'none', border: 'none', padding: '0.4rem 0.8rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem', color: activeTab === 'principios' ? 'var(--primary)' : 'var(--text)', borderBottom: activeTab === 'principios' ? '4px solid var(--primary)' : '4px solid transparent', transition: 'all 0.2s' }}>
               Principios Activos
             </button>
             <button 
               onClick={() => setActiveTab('ofertas')} 
-              style={{ background: 'none', border: 'none', padding: '0.8rem 1.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '1.2rem', color: activeTab === 'ofertas' ? 'var(--primary)' : 'var(--text)', borderBottom: activeTab === 'ofertas' ? '4px solid var(--primary)' : '4px solid transparent', transition: 'all 0.2s' }}>
+              style={{ background: 'none', border: 'none', padding: '0.4rem 0.8rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem', color: activeTab === 'ofertas' ? 'var(--primary)' : 'var(--text)', borderBottom: activeTab === 'ofertas' ? '4px solid var(--primary)' : '4px solid transparent', transition: 'all 0.2s' }}>
               Ofertas
             </button>
           </nav>
@@ -782,7 +782,7 @@ function App() {
             </div>
 
             {showAdvanced && (
-              <div className="advanced-search-panel" style={{ background: 'var(--surface)', padding: '1rem', borderRadius: '0.5rem', marginTop: '0.5rem', border: '1px solid var(--border)', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+              <div className="advanced-search-panel" style={{ background: 'var(--surface)', padding: '1rem', borderRadius: '0.5rem', marginTop: '0.5rem', border: '1px solid var(--border)', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                 <div style={{ flex: 1, minWidth: '200px' }}>
                   <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.25rem', fontWeight: 500 }}>Tipo de Búsqueda</label>
                   <select 
@@ -885,7 +885,7 @@ function App() {
               <h3 className="section-title" style={{ fontSize: '1.25rem', color: 'var(--text)', marginBottom: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 💳 Promociones del Día
               </h3>
-              <div className="promos-grid" style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+              <div className="promos-grid" style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
                 {(() => {
                   const today = new Date().getDay();
                   const promosHoy = alianzasDescuentos.filter(o => o.category === 'bancos' && o.dayIds.includes(today)).slice(0, 3);
@@ -922,8 +922,8 @@ function App() {
               <span style={{ fontWeight: 500, color: 'var(--text)', fontSize: '1.15rem' }}>Resultados para "{searchTerm}"</span>
             </div>
 
-            <div className="results-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+            <div className="results-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                 <h2 className="results-title" style={{ margin: 0 }}>Resultados de búsqueda</h2>
                 {!isLoading && (
                   <>
@@ -978,7 +978,7 @@ function App() {
                 <div style={{ background: 'var(--background)', borderRadius: '999px', height: '10px', width: '250px', margin: '0 auto', overflow: 'hidden', border: '1px solid var(--border)' }}>
                   <div style={{ height: '100%', background: 'var(--primary)', width: `${(scannedPharmacies / 5) * 100}%`, transition: 'width 0.8s ease-in-out', borderRadius: '999px' }}></div>
                 </div>
-                <p style={{ marginTop: '0.75rem', fontSize: '1rem', fontWeight: 600, color: 'var(--primary-dark)' }}>
+                <p style={{ marginTop: '0.75rem', fontSize: '0.9rem', fontWeight: 600, color: 'var(--primary-dark)' }}>
                   Analizando... {scannedPharmacies} farmacias listas
                 </p>
                 <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
@@ -1008,7 +1008,7 @@ function App() {
                     
                     const renderProductCard = (product) => (
                       <div key={product.id} className="product-card">
-                        <div className="card-header" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                        <div className="card-header" style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
                           <div className="product-image-container" style={{ flexShrink: 0, width: '80px', height: '80px', backgroundColor: 'var(--surface)', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.25rem' }}>
                             {product.imageUrl ? (
                               <img src={product.imageUrl} alt={product.commercialName} style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.parentElement.innerHTML = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'; }} />
@@ -1121,7 +1121,7 @@ function App() {
                                 <button 
                                   onClick={() => setShowAllVariants(!showAllVariants)} 
                                   className="tag-btn"
-                                  style={{ padding: '0.75rem 2rem', fontWeight: 600, fontSize: '1rem' }}
+                                  style={{ padding: '0.75rem 2rem', fontWeight: 600, fontSize: '0.9rem' }}
                                 >
                                   {showAllVariants ? 'Ocultar presentaciones' : `Ver ${relatedMatches.length - 4} presentaciones más`}
                                 </button>
@@ -1152,7 +1152,7 @@ function App() {
                 {isLiveSearchPending ? (
                   <div style={{ marginBottom: '2rem' }}>
                     <svg className="spinner" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite', color: 'var(--primary)', marginBottom: '1rem' }}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-                    <p style={{ fontSize: '1.2rem', color: 'var(--text-main)', fontWeight: '600' }}>Sincronizando con los sistemas de las farmacias...<br/><span style={{ fontSize: '1rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>Esto puede tomar unos segundos adicionales</span></p>
+                    <p style={{ fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: '600' }}>Sincronizando con los sistemas de las farmacias...<br/><span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>Esto puede tomar unos segundos adicionales</span></p>
                   </div>
                 ) : (
                   <div style={{ marginBottom: '2rem' }}>
@@ -1160,7 +1160,7 @@ function App() {
                       <circle cx="11" cy="11" r="8"></circle>
                       <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg>
-                    <p style={{ fontSize: '1.2rem', color: 'var(--text-main)', fontWeight: '600' }}>No encontramos "{searchTerm}" en ninguna farmacia.</p>
+                    <p style={{ fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: '600' }}>No encontramos "{searchTerm}" en ninguna farmacia.</p>
                   </div>
                 )}
                 
@@ -1223,7 +1223,7 @@ function App() {
                     <span style={{ color: 'white', fontSize: '0.8rem', fontWeight: 600 }}>{pharma.status}</span>
                   </div>
                   <h3 style={{ margin: 0, fontSize: '2.5rem', color: pharma.textColor, fontWeight: 900, textAlign: 'center', letterSpacing: '-0.5px' }}>{pharma.name}</h3>
-                  <p style={{ margin: '1rem 0 0 0', color: 'rgba(255,255,255,0.8)', fontSize: '1rem', fontWeight: 500 }}>Toca para ver información ➔</p>
+                  <p style={{ margin: '1rem 0 0 0', color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem', fontWeight: 500 }}>Toca para ver información ➔</p>
                 </div>
               ))}
             </div>
@@ -1291,7 +1291,7 @@ function App() {
                   href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedPharmacy.data.mapsQuery)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ width: '100%', padding: '1.5rem', backgroundColor: '#4285F4', color: 'white', borderRadius: '1rem', border: 'none', fontSize: '1.2rem', fontWeight: 700, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.8rem', boxShadow: '0 4px 15px rgba(66, 133, 244, 0.3)', textDecoration: 'none', transition: 'background-color 0.2s', marginTop: 'auto' }}
+                  style={{ width: '100%', padding: '1.5rem', backgroundColor: '#4285F4', color: 'white', borderRadius: '1rem', border: 'none', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.8rem', boxShadow: '0 4px 15px rgba(66, 133, 244, 0.3)', textDecoration: 'none', transition: 'background-color 0.2s', marginTop: 'auto' }}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                   Ver sucursal más cercana en Google Maps
@@ -1394,8 +1394,8 @@ function App() {
                   </div>
                 ) : !selectedDrugDetails ? (
                   // VISTA 1: Lista de medicamentos de la zona anatómica
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', animation: 'fadeIn 0.3s' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)', marginBottom: '1rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', animation: 'fadeIn 0.3s' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)', marginBottom: '1rem' }}>
                       <div style={{ backgroundColor: `${selectedCategory.colorHex}`, padding: '1rem', borderRadius: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <img src={selectedCategory.iconPath} alt={selectedCategory.name} style={{ width: '32px', height: '32px' }} onError={(e) => e.target.style.display = 'none'} />
                       </div>
@@ -1490,7 +1490,7 @@ function App() {
                         setSelectedCategory(null);
                         setTimeout(() => handleSearchSubmit({ preventDefault: () => {} }), 100);
                       }}
-                      style={{ width: '100%', padding: '1.5rem', backgroundColor: 'var(--primary)', color: 'white', borderRadius: '1rem', border: 'none', fontSize: '1.2rem', fontWeight: 700, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)', transition: 'background-color 0.2s', marginTop: 'auto' }}
+                      style={{ width: '100%', padding: '1.5rem', backgroundColor: 'var(--primary)', color: 'white', borderRadius: '1rem', border: 'none', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)', transition: 'background-color 0.2s', marginTop: 'auto' }}
                       onMouseOver={e => e.currentTarget.style.backgroundColor = 'var(--primary-dark)'}
                       onMouseOut={e => e.currentTarget.style.backgroundColor = 'var(--primary)'}
                     >
@@ -1529,7 +1529,7 @@ function App() {
                   >
                     <div style={{ position: 'absolute', top: 0, right: 0, width: '120px', height: '120px', backgroundColor: category.iconColor, opacity: 0.05, borderBottomLeftRadius: '100%', pointerEvents: 'none' }}></div>
                     
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
                       <div style={{ backgroundColor: `${category.colorHex}`, padding: '1rem', borderRadius: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <img src={category.iconPath} alt={category.name} style={{ width: '32px', height: '32px' }} onError={(e) => { e.target.style.display = 'none' }} />
                       </div>
@@ -1564,7 +1564,7 @@ function App() {
             </div>
 
             {/* Filtros de Categoría (Perfil de Ahorro) - Glassmorphism */}
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginBottom: '2rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginBottom: '2rem', flexWrap: 'wrap' }}>
               <button
                 onClick={() => setOfferCategory('bancos')}
                 style={{
@@ -1671,10 +1671,10 @@ function App() {
                       key={dia.id}
                       onClick={() => setSelectedDay(dia.id)}
                       style={{
-                        padding: '0.8rem 1.5rem',
+                        padding: '0.4rem 0.8rem',
                         borderRadius: '2rem',
                         border: 'none',
-                        fontSize: '1rem',
+                        fontSize: '0.9rem',
                         fontWeight: 700,
                         cursor: 'pointer',
                         transition: 'all 0.2s',
@@ -1700,7 +1700,7 @@ function App() {
               {alianzasDescuentos.filter(oferta => oferta.category === offerCategory && ((offerCategory !== 'bancos' && offerCategory !== 'eventos') || oferta.dayIds.includes(selectedDay))).length === 0 ? (
                 <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '4rem', color: 'var(--text-muted)', backgroundColor: 'var(--surface)', borderRadius: '1.5rem' }}>
                   <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.3, marginBottom: '1rem' }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                  <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>No hay alianzas registradas para este día</h3>
+                  <h3 style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>No hay alianzas registradas para este día</h3>
                   <p>Seleccioná otro día de la semana para ver más descuentos.</p>
                 </div>
               ) : (
@@ -1727,7 +1727,7 @@ function App() {
                     >
                       <div style={{ position: 'absolute', top: 0, right: 0, width: '150px', height: '150px', backgroundColor: oferta.bankHighlight || '#ffffff', opacity: 0.2, borderBottomLeftRadius: '100%', pointerEvents: 'none' }}></div>
                       
-                      <div style={{ padding: '2.5rem 2rem', display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1, zIndex: 1 }}>
+                      <div style={{ padding: '2.5rem 2rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1, zIndex: 1 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ backgroundColor: 'white', color: oferta.bankColor, padding: '0.4rem 1rem', borderRadius: '2rem', fontWeight: 900, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
                             {oferta.bank}
@@ -1736,14 +1736,14 @@ function App() {
                         
                         <div>
                           <h3 style={{ color: 'white', fontSize: isLongDiscount ? '2.8rem' : '3.5rem', fontWeight: 900, margin: '1rem 0 0 0', lineHeight: 1 }}>{oferta.discount}</h3>
-                          <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '1.2rem', fontWeight: 600 }}>de ahorro</span>
+                          <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '0.9rem', fontWeight: 600 }}>de ahorro</span>
                         </div>
 
-                        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1rem', margin: 0 }}>Válido pagando con:<br/><strong style={{ color: 'white' }}>{oferta.type}</strong></p>
+                        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem', margin: 0 }}>Válido pagando con:<br/><strong style={{ color: 'white' }}>{oferta.type}</strong></p>
                       </div>
 
                       <div style={{ backgroundColor: oferta.pharmacyColor, padding: '1.5rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ color: 'white', fontSize: '1rem', opacity: 0.8 }}>Exclusivo en:</span>
+                        <span style={{ color: 'white', fontSize: '0.9rem', opacity: 0.8 }}>Exclusivo en:</span>
                         <h4 style={{ color: 'white', margin: 0, fontSize: '1.5rem', fontWeight: 900 }}>{oferta.pharmacy}</h4>
                       </div>
                     </div>
@@ -1781,7 +1781,7 @@ function App() {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                   <div className="cart-items-list">
-                    <h3 style={{ fontSize: '1rem', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Medicamentos ({cart.length})</h3>
+                    <h3 style={{ fontSize: '0.9rem', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Medicamentos ({cart.length})</h3>
                     {cart.map(item => (
                       <div key={item.id} className="cart-item">
                         <div style={{ flex: 1 }}>
@@ -1796,7 +1796,7 @@ function App() {
                   </div>
                   
                   <div className="cart-totals">
-                    <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: 'var(--primary)' }}>Comparativa Total</h3>
+                    <h3 style={{ fontSize: '0.9rem', marginBottom: '1rem', color: 'var(--primary)' }}>Comparativa Total</h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                       {calculateCartTotals().map((pharma, idx) => (
                         <div key={pharma.id} className={`cart-total-row ${idx === 0 && pharma.missingItems === 0 ? 'winner' : ''} ${pharma.missingItems > 0 ? 'incomplete' : ''}`}>
@@ -1810,7 +1810,7 @@ function App() {
                             {pharma.missingItems > 0 ? (
                               <span style={{ color: '#ef4444', fontSize: '0.9rem', fontWeight: 500 }}>Faltan {pharma.missingItems} item(s)</span>
                             ) : (
-                              <span style={{ fontSize: '1.2rem', fontWeight: 700, color: idx === 0 ? 'var(--primary-dark)' : 'inherit' }}>{formatGs(pharma.total)}</span>
+                              <span style={{ fontSize: '0.9rem', fontWeight: 700, color: idx === 0 ? 'var(--primary-dark)' : 'inherit' }}>{formatGs(pharma.total)}</span>
                             )}
                           </div>
                         </div>
