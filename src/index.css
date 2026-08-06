@@ -1,5 +1,21 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 
+html {
+  font-size: 16px;
+}
+
+@media (max-width: 1440px) {
+  html {
+    font-size: 13.5px;
+  }
+}
+
+@media (max-width: 1024px) {
+  html {
+    font-size: 12px;
+  }
+}
+
 :root {
   --primary: #0284c7;       /* Azul Celeste (Sky Blue) para acentos y legibilidad */
   --primary-dark: #0369a1;
