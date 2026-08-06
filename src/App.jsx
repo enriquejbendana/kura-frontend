@@ -668,25 +668,25 @@ function App() {
             Kura <span className="logo-tag">PY</span>
           </div>
           
-          <nav className="header-nav" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <nav className="header-nav" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
             <button 
               onClick={() => setActiveTab('inicio')} 
-              style={{ background: 'none', border: 'none', padding: '0.4rem 0.8rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem', color: activeTab === 'inicio' ? 'var(--primary)' : 'var(--text)', borderBottom: activeTab === 'inicio' ? '4px solid var(--primary)' : '4px solid transparent', transition: 'all 0.2s' }}>
+              style={{ background: 'none', border: 'none', padding: '0.8rem 1rem', cursor: 'pointer', fontWeight: 700, fontSize: '1.1rem', color: activeTab === 'inicio' ? 'var(--primary)' : 'var(--text)', borderBottom: activeTab === 'inicio' ? '4px solid var(--primary)' : '4px solid transparent', transition: 'all 0.2s' }}>
               Inicio
             </button>
             <button 
               onClick={() => setActiveTab('farmacias')} 
-              style={{ background: 'none', border: 'none', padding: '0.4rem 0.8rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem', color: activeTab === 'farmacias' ? 'var(--primary)' : 'var(--text)', borderBottom: activeTab === 'farmacias' ? '4px solid var(--primary)' : '4px solid transparent', transition: 'all 0.2s' }}>
+              style={{ background: 'none', border: 'none', padding: '0.8rem 1rem', cursor: 'pointer', fontWeight: 700, fontSize: '1.1rem', color: activeTab === 'farmacias' ? 'var(--primary)' : 'var(--text)', borderBottom: activeTab === 'farmacias' ? '4px solid var(--primary)' : '4px solid transparent', transition: 'all 0.2s' }}>
               Farmacias
             </button>
             <button 
               onClick={() => setActiveTab('principios')} 
-              style={{ background: 'none', border: 'none', padding: '0.4rem 0.8rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem', color: activeTab === 'principios' ? 'var(--primary)' : 'var(--text)', borderBottom: activeTab === 'principios' ? '4px solid var(--primary)' : '4px solid transparent', transition: 'all 0.2s' }}>
+              style={{ background: 'none', border: 'none', padding: '0.8rem 1rem', cursor: 'pointer', fontWeight: 700, fontSize: '1.1rem', color: activeTab === 'principios' ? 'var(--primary)' : 'var(--text)', borderBottom: activeTab === 'principios' ? '4px solid var(--primary)' : '4px solid transparent', transition: 'all 0.2s' }}>
               Principios Activos
             </button>
             <button 
               onClick={() => setActiveTab('ofertas')} 
-              style={{ background: 'none', border: 'none', padding: '0.4rem 0.8rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem', color: activeTab === 'ofertas' ? 'var(--primary)' : 'var(--text)', borderBottom: activeTab === 'ofertas' ? '4px solid var(--primary)' : '4px solid transparent', transition: 'all 0.2s' }}>
+              style={{ background: 'none', border: 'none', padding: '0.8rem 1rem', cursor: 'pointer', fontWeight: 700, fontSize: '1.1rem', color: activeTab === 'ofertas' ? 'var(--primary)' : 'var(--text)', borderBottom: activeTab === 'ofertas' ? '4px solid var(--primary)' : '4px solid transparent', transition: 'all 0.2s' }}>
               Ofertas
             </button>
           </nav>
@@ -727,7 +727,7 @@ function App() {
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>
                   )}
-                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'nowrap', flexShrink: 0 }}>
+                  <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'nowrap', flexShrink: 0 }}>
                     <button type="submit" className="search-button">Buscar</button>
                   </div>
                 </form>
@@ -760,7 +760,7 @@ function App() {
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>
                   )}
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'nowrap', flexShrink: 0 }}>
+              <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'nowrap', flexShrink: 0 }}>
                 <button type="submit" className="search-button">Buscar</button>
                 </div>
               </form>
@@ -782,7 +782,7 @@ function App() {
             </div>
 
             {showAdvanced && (
-              <div className="advanced-search-panel" style={{ background: 'var(--surface)', padding: '1rem', borderRadius: '0.5rem', marginTop: '0.5rem', border: '1px solid var(--border)', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <div className="advanced-search-panel" style={{ background: 'var(--surface)', padding: '1rem', borderRadius: '0.5rem', marginTop: '0.5rem', border: '1px solid var(--border)', display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
                 <div style={{ flex: 1, minWidth: '200px' }}>
                   <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.25rem', fontWeight: 500 }}>Tipo de Búsqueda</label>
                   <select 
@@ -882,10 +882,10 @@ function App() {
 
           {!hasSearched && (
             <div className="bank-promos-section" style={{ marginTop: '2rem', maxWidth: '700px', margin: '2rem auto 0' }}>
-              <h3 className="section-title" style={{ fontSize: '1.25rem', color: 'var(--text)', marginBottom: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <h3 className="section-title" style={{ fontSize: '1.25rem', color: 'var(--text)', marginBottom: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                 💳 Promociones del Día
               </h3>
-              <div className="promos-grid" style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+              <div className="promos-grid" style={{ display: 'flex', gap: '1.5rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
                 {(() => {
                   const today = new Date().getDay();
                   const promosHoy = alianzasDescuentos.filter(o => o.category === 'bancos' && o.dayIds.includes(today)).slice(0, 3);
@@ -910,7 +910,7 @@ function App() {
 
         {hasSearched && (
           <section className="results-section">
-            <div className="breadcrumbs" style={{ marginBottom: '1.5rem', fontSize: '1.15rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div className="breadcrumbs" style={{ marginBottom: '1.5rem', fontSize: '1.15rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
               <button 
                 onClick={handleClearSearch}
                 style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', padding: 0, fontWeight: 600, fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
@@ -922,8 +922,8 @@ function App() {
               <span style={{ fontWeight: 500, color: 'var(--text)', fontSize: '1.15rem' }}>Resultados para "{searchTerm}"</span>
             </div>
 
-            <div className="results-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1.5rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <div className="results-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
                 <h2 className="results-title" style={{ margin: 0 }}>Resultados de búsqueda</h2>
                 {!isLoading && (
                   <>
@@ -931,7 +931,7 @@ function App() {
                       {isLiveSearchPending && results.length === 0 ? 'Buscando resultados...' : `${results.length} productos encontrados`}
                     </span>
                     {isLiveSearchPending && results.length > 0 && (
-                      <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                      <span style={{ fontSize: '1.1rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                         <svg className="spinner" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite' }}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
                         Buscando más...
                       </span>
@@ -944,7 +944,7 @@ function App() {
                 <div className="sort-container" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'var(--surface)', padding: '0.5rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border)', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
                   <div style={{display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--primary)'}}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5h10"/><path d="M11 9h7"/><path d="M11 13h4"/><path d="M3 17l3 3 3-3"/><path d="M6 18V4"/></svg>
-                    <label style={{ fontSize: '0.9rem', fontWeight: 600 }}>Ordenar:</label>
+                    <label style={{ fontSize: '1.1rem', fontWeight: 600 }}>Ordenar:</label>
                   </div>
                   <select 
                     value={sortBy}
@@ -978,7 +978,7 @@ function App() {
                 <div style={{ background: 'var(--background)', borderRadius: '999px', height: '10px', width: '250px', margin: '0 auto', overflow: 'hidden', border: '1px solid var(--border)' }}>
                   <div style={{ height: '100%', background: 'var(--primary)', width: `${(scannedPharmacies / 5) * 100}%`, transition: 'width 0.8s ease-in-out', borderRadius: '999px' }}></div>
                 </div>
-                <p style={{ marginTop: '0.75rem', fontSize: '0.9rem', fontWeight: 600, color: 'var(--primary-dark)' }}>
+                <p style={{ marginTop: '0.75rem', fontSize: '1.1rem', fontWeight: 600, color: 'var(--primary-dark)' }}>
                   Analizando... {scannedPharmacies} farmacias listas
                 </p>
                 <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
@@ -1008,7 +1008,7 @@ function App() {
                     
                     const renderProductCard = (product) => (
                       <div key={product.id} className="product-card">
-                        <div className="card-header" style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
+                        <div className="card-header" style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
                           <div className="product-image-container" style={{ flexShrink: 0, width: '80px', height: '80px', backgroundColor: 'var(--surface)', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.25rem' }}>
                             {product.imageUrl ? (
                               <img src={product.imageUrl} alt={product.commercialName} style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.parentElement.innerHTML = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'; }} />
@@ -1087,7 +1087,7 @@ function App() {
                                 </div>
                                 {priceEntry.specialPrice && (
                                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginTop: '-0.2rem' }}>
-                                    <span style={{ fontSize: '0.9rem', fontWeight: '700', color: '#0288d1', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                                    <span style={{ fontSize: '1.1rem', fontWeight: '700', color: '#0288d1', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
                                       <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
                                       {formatGs(priceEntry.specialPrice)}
                                     </span>
@@ -1121,7 +1121,7 @@ function App() {
                                 <button 
                                   onClick={() => setShowAllVariants(!showAllVariants)} 
                                   className="tag-btn"
-                                  style={{ padding: '0.75rem 2rem', fontWeight: 600, fontSize: '0.9rem' }}
+                                  style={{ padding: '0.75rem 2rem', fontWeight: 600, fontSize: '1.1rem' }}
                                 >
                                   {showAllVariants ? 'Ocultar presentaciones' : `Ver ${relatedMatches.length - 4} presentaciones más`}
                                 </button>
@@ -1152,7 +1152,7 @@ function App() {
                 {isLiveSearchPending ? (
                   <div style={{ marginBottom: '2rem' }}>
                     <svg className="spinner" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite', color: 'var(--primary)', marginBottom: '1rem' }}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-                    <p style={{ fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: '600' }}>Sincronizando con los sistemas de las farmacias...<br/><span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>Esto puede tomar unos segundos adicionales</span></p>
+                    <p style={{ fontSize: '1.1rem', color: 'var(--text-main)', fontWeight: '600' }}>Sincronizando con los sistemas de las farmacias...<br/><span style={{ fontSize: '1.1rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>Esto puede tomar unos segundos adicionales</span></p>
                   </div>
                 ) : (
                   <div style={{ marginBottom: '2rem' }}>
@@ -1160,7 +1160,7 @@ function App() {
                       <circle cx="11" cy="11" r="8"></circle>
                       <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg>
-                    <p style={{ fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: '600' }}>No encontramos "{searchTerm}" en ninguna farmacia.</p>
+                    <p style={{ fontSize: '1.1rem', color: 'var(--text-main)', fontWeight: '600' }}>No encontramos "{searchTerm}" en ninguna farmacia.</p>
                   </div>
                 )}
                 
@@ -1218,12 +1218,12 @@ function App() {
                   onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-8px)'; e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.2)'; }}
                   onMouseOut={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.1)'; }}
                 >
-                  <div style={{ position: 'absolute', top: '10px', right: '15px', display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'rgba(255,255,255,0.2)', padding: '0.3rem 0.8rem', borderRadius: '2rem' }}>
+                  <div style={{ position: 'absolute', top: '10px', right: '15px', display: 'flex', alignItems: 'center', gap: '1.5rem', backgroundColor: 'rgba(255,255,255,0.2)', padding: '0.3rem 0.8rem', borderRadius: '2rem' }}>
                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#4ade80', boxShadow: '0 0 10px #4ade80' }}></div>
                     <span style={{ color: 'white', fontSize: '0.8rem', fontWeight: 600 }}>{pharma.status}</span>
                   </div>
                   <h3 style={{ margin: 0, fontSize: '2.5rem', color: pharma.textColor, fontWeight: 900, textAlign: 'center', letterSpacing: '-0.5px' }}>{pharma.name}</h3>
-                  <p style={{ margin: '1rem 0 0 0', color: 'rgba(255,255,255,0.8)', fontSize: '0.9rem', fontWeight: 500 }}>Toca para ver información ➔</p>
+                  <p style={{ margin: '1rem 0 0 0', color: 'rgba(255,255,255,0.8)', fontSize: '1.1rem', fontWeight: 500 }}>Toca para ver información ➔</p>
                 </div>
               ))}
             </div>
@@ -1247,7 +1247,7 @@ function App() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
                   
                   <div style={{ padding: '1.5rem', backgroundColor: '#f8fafc', borderRadius: '1rem', borderLeft: `4px solid ${selectedPharmacy.themeColor}` }}>
-                    <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={selectedPharmacy.themeColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 18H3c-.6 0-1-.4-1-1V7c0-.6.4-1 1-1h10c.6 0 1 .4 1 1v11"/><path d="M14 9h4l4 4v5c0 .6-.4 1-1 1h-2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
                       Delivery
                     </h4>
@@ -1255,7 +1255,7 @@ function App() {
                   </div>
 
                   <div style={{ padding: '1.5rem', backgroundColor: '#f8fafc', borderRadius: '1rem', borderLeft: `4px solid ${selectedPharmacy.themeColor}` }}>
-                    <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={selectedPharmacy.themeColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                       Horarios de Atención
                     </h4>
@@ -1263,7 +1263,7 @@ function App() {
                   </div>
 
                   <div style={{ padding: '1.5rem', backgroundColor: '#f8fafc', borderRadius: '1rem', borderLeft: `4px solid ${selectedPharmacy.themeColor}` }}>
-                    <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={selectedPharmacy.themeColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                       Métodos de Pago
                     </h4>
@@ -1271,7 +1271,7 @@ function App() {
                   </div>
 
                   <div style={{ padding: '1.5rem', backgroundColor: '#f8fafc', borderRadius: '1rem', borderLeft: `4px solid ${selectedPharmacy.themeColor}` }}>
-                    <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={selectedPharmacy.themeColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                       Seguros Médicos Asociados
                     </h4>
@@ -1279,7 +1279,7 @@ function App() {
                   </div>
 
                   <div style={{ padding: '1.5rem', backgroundColor: '#f8fafc', borderRadius: '1rem', borderLeft: `4px solid ${selectedPharmacy.themeColor}` }}>
-                    <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={selectedPharmacy.themeColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                       Contacto WhatsApp
                     </h4>
@@ -1291,7 +1291,7 @@ function App() {
                   href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedPharmacy.data.mapsQuery)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ width: '100%', padding: '1.5rem', backgroundColor: '#4285F4', color: 'white', borderRadius: '1rem', border: 'none', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.8rem', boxShadow: '0 4px 15px rgba(66, 133, 244, 0.3)', textDecoration: 'none', transition: 'background-color 0.2s', marginTop: 'auto' }}
+                  style={{ width: '100%', padding: '1.5rem', backgroundColor: '#4285F4', color: 'white', borderRadius: '1rem', border: 'none', fontSize: '1.1rem', fontWeight: 700, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.8rem', boxShadow: '0 4px 15px rgba(66, 133, 244, 0.3)', textDecoration: 'none', transition: 'background-color 0.2s', marginTop: 'auto' }}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                   Ver sucursal más cercana en Google Maps
@@ -1394,8 +1394,8 @@ function App() {
                   </div>
                 ) : !selectedDrugDetails ? (
                   // VISTA 1: Lista de medicamentos de la zona anatómica
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', animation: 'fadeIn 0.3s' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)', marginBottom: '1rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', animation: 'fadeIn 0.3s' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)', marginBottom: '1rem' }}>
                       <div style={{ backgroundColor: `${selectedCategory.colorHex}`, padding: '1rem', borderRadius: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <img src={selectedCategory.iconPath} alt={selectedCategory.name} style={{ width: '32px', height: '32px' }} onError={(e) => e.target.style.display = 'none'} />
                       </div>
@@ -1424,7 +1424,7 @@ function App() {
                   <div style={{ overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column' }}>
                     <button 
                       onClick={() => setSelectedDrugDetails(null)} 
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)', fontSize: '1.1rem', fontWeight: 600, padding: 0, marginBottom: '2rem', transition: 'color 0.2s' }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '1.5rem', color: 'var(--text-muted)', fontSize: '1.1rem', fontWeight: 600, padding: 0, marginBottom: '2rem', transition: 'color 0.2s' }}
                       onMouseOver={e => e.currentTarget.style.color = selectedCategory.iconColor}
                       onMouseOut={e => e.currentTarget.style.color = 'var(--text-muted)'}
                     >
@@ -1436,7 +1436,7 @@ function App() {
                     
                     <div style={{ display: 'grid', gap: '1.5rem', marginBottom: '3rem' }}>
                       <div style={{ padding: '1.5rem', backgroundColor: '#f8fafc', borderRadius: '1rem', borderLeft: `4px solid ${selectedCategory.iconColor}` }}>
-                        <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={selectedCategory.iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
                           Acción Terapéutica
                         </h4>
@@ -1444,7 +1444,7 @@ function App() {
                       </div>
 
                       <div style={{ padding: '1.5rem', backgroundColor: '#f8fafc', borderRadius: '1rem', borderLeft: `4px solid ${selectedCategory.iconColor}` }}>
-                        <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={selectedCategory.iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
                           Indicaciones
                         </h4>
@@ -1453,7 +1453,7 @@ function App() {
 
                       {selectedDrugDetails.efectos && (
                         <div style={{ padding: '1.5rem', backgroundColor: '#f8fafc', borderRadius: '1rem', borderLeft: '4px solid #f59e0b' }}>
-                          <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
                             Efectos Secundarios Comunes
                           </h4>
@@ -1463,7 +1463,7 @@ function App() {
 
                       {selectedDrugDetails.contraindicaciones && (
                         <div style={{ padding: '1.5rem', backgroundColor: '#fff1f2', borderRadius: '1rem', borderLeft: '4px solid #e11d48' }}>
-                          <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
                             Contraindicaciones
                           </h4>
@@ -1473,7 +1473,7 @@ function App() {
 
                       {selectedDrugDetails.embarazo && (
                         <div style={{ padding: '1.5rem', backgroundColor: '#f0fdf4', borderRadius: '1rem', borderLeft: '4px solid #10b981' }}>
-                          <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
                             Embarazo y Lactancia
                           </h4>
@@ -1490,7 +1490,7 @@ function App() {
                         setSelectedCategory(null);
                         setTimeout(() => handleSearchSubmit({ preventDefault: () => {} }), 100);
                       }}
-                      style={{ width: '100%', padding: '1.5rem', backgroundColor: 'var(--primary)', color: 'white', borderRadius: '1rem', border: 'none', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)', transition: 'background-color 0.2s', marginTop: 'auto' }}
+                      style={{ width: '100%', padding: '1.5rem', backgroundColor: 'var(--primary)', color: 'white', borderRadius: '1rem', border: 'none', fontSize: '1.1rem', fontWeight: 700, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1.5rem', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)', transition: 'background-color 0.2s', marginTop: 'auto' }}
                       onMouseOver={e => e.currentTarget.style.backgroundColor = 'var(--primary-dark)'}
                       onMouseOut={e => e.currentTarget.style.backgroundColor = 'var(--primary)'}
                     >
@@ -1529,16 +1529,16 @@ function App() {
                   >
                     <div style={{ position: 'absolute', top: 0, right: 0, width: '120px', height: '120px', backgroundColor: category.iconColor, opacity: 0.05, borderBottomLeftRadius: '100%', pointerEvents: 'none' }}></div>
                     
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem' }}>
                       <div style={{ backgroundColor: `${category.colorHex}`, padding: '1rem', borderRadius: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <img src={category.iconPath} alt={category.name} style={{ width: '32px', height: '32px' }} onError={(e) => { e.target.style.display = 'none' }} />
                       </div>
                       <h3 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--text)', fontWeight: 800 }}>{category.name}</h3>
                     </div>
                     
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                       {topDrugs.map((drug, idx) => (
-                        <div key={idx} style={{ backgroundColor: 'var(--background)', padding: '0.75rem 1rem', borderRadius: '0.75rem', fontSize: '0.9rem', color: 'var(--text)', fontWeight: 600, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--border)' }}>
+                        <div key={idx} style={{ backgroundColor: 'var(--background)', padding: '0.75rem 1rem', borderRadius: '0.75rem', fontSize: '1.1rem', color: 'var(--text)', fontWeight: 600, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--border)' }}>
                           {drug.name}
                         </div>
                       ))}
@@ -1564,7 +1564,7 @@ function App() {
             </div>
 
             {/* Filtros de Categoría (Perfil de Ahorro) - Glassmorphism */}
-            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginBottom: '2rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', marginBottom: '2rem', flexWrap: 'wrap' }}>
               <button
                 onClick={() => setOfferCategory('bancos')}
                 style={{
@@ -1671,10 +1671,10 @@ function App() {
                       key={dia.id}
                       onClick={() => setSelectedDay(dia.id)}
                       style={{
-                        padding: '0.4rem 0.8rem',
+                        padding: '0.8rem 1rem',
                         borderRadius: '2rem',
                         border: 'none',
-                        fontSize: '0.9rem',
+                        fontSize: '1.1rem',
                         fontWeight: 700,
                         cursor: 'pointer',
                         transition: 'all 0.2s',
@@ -1700,7 +1700,7 @@ function App() {
               {alianzasDescuentos.filter(oferta => oferta.category === offerCategory && ((offerCategory !== 'bancos' && offerCategory !== 'eventos') || oferta.dayIds.includes(selectedDay))).length === 0 ? (
                 <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '4rem', color: 'var(--text-muted)', backgroundColor: 'var(--surface)', borderRadius: '1.5rem' }}>
                   <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.3, marginBottom: '1rem' }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                  <h3 style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>No hay alianzas registradas para este día</h3>
+                  <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>No hay alianzas registradas para este día</h3>
                   <p>Seleccioná otro día de la semana para ver más descuentos.</p>
                 </div>
               ) : (
@@ -1727,23 +1727,23 @@ function App() {
                     >
                       <div style={{ position: 'absolute', top: 0, right: 0, width: '150px', height: '150px', backgroundColor: oferta.bankHighlight || '#ffffff', opacity: 0.2, borderBottomLeftRadius: '100%', pointerEvents: 'none' }}></div>
                       
-                      <div style={{ padding: '2.5rem 2rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1, zIndex: 1 }}>
+                      <div style={{ padding: '2.5rem 2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', flex: 1, zIndex: 1 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ backgroundColor: 'white', color: oferta.bankColor, padding: '0.4rem 1rem', borderRadius: '2rem', fontWeight: 900, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                          <span style={{ backgroundColor: 'white', color: oferta.bankColor, padding: '0.4rem 1rem', borderRadius: '2rem', fontWeight: 900, fontSize: '1.1rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
                             {oferta.bank}
                           </span>
                         </div>
                         
                         <div>
                           <h3 style={{ color: 'white', fontSize: isLongDiscount ? '2.8rem' : '3.5rem', fontWeight: 900, margin: '1rem 0 0 0', lineHeight: 1 }}>{oferta.discount}</h3>
-                          <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '0.9rem', fontWeight: 600 }}>de ahorro</span>
+                          <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '1.1rem', fontWeight: 600 }}>de ahorro</span>
                         </div>
 
-                        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem', margin: 0 }}>Válido pagando con:<br/><strong style={{ color: 'white' }}>{oferta.type}</strong></p>
+                        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.1rem', margin: 0 }}>Válido pagando con:<br/><strong style={{ color: 'white' }}>{oferta.type}</strong></p>
                       </div>
 
                       <div style={{ backgroundColor: oferta.pharmacyColor, padding: '1.5rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ color: 'white', fontSize: '0.9rem', opacity: 0.8 }}>Exclusivo en:</span>
+                        <span style={{ color: 'white', fontSize: '1.1rem', opacity: 0.8 }}>Exclusivo en:</span>
                         <h4 style={{ color: 'white', margin: 0, fontSize: '1.5rem', fontWeight: 900 }}>{oferta.pharmacy}</h4>
                       </div>
                     </div>
@@ -1781,7 +1781,7 @@ function App() {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                   <div className="cart-items-list">
-                    <h3 style={{ fontSize: '0.9rem', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Medicamentos ({cart.length})</h3>
+                    <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Medicamentos ({cart.length})</h3>
                     {cart.map(item => (
                       <div key={item.id} className="cart-item">
                         <div style={{ flex: 1 }}>
@@ -1796,11 +1796,11 @@ function App() {
                   </div>
                   
                   <div className="cart-totals">
-                    <h3 style={{ fontSize: '0.9rem', marginBottom: '1rem', color: 'var(--primary)' }}>Comparativa Total</h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', color: 'var(--primary)' }}>Comparativa Total</h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                       {calculateCartTotals().map((pharma, idx) => (
                         <div key={pharma.id} className={`cart-total-row ${idx === 0 && pharma.missingItems === 0 ? 'winner' : ''} ${pharma.missingItems > 0 ? 'incomplete' : ''}`}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                             {idx === 0 && pharma.missingItems === 0 && (
                               <svg style={{ color: 'var(--warning)' }} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
                             )}
@@ -1808,9 +1808,9 @@ function App() {
                           </div>
                           <div style={{ textAlign: 'right' }}>
                             {pharma.missingItems > 0 ? (
-                              <span style={{ color: '#ef4444', fontSize: '0.9rem', fontWeight: 500 }}>Faltan {pharma.missingItems} item(s)</span>
+                              <span style={{ color: '#ef4444', fontSize: '1.1rem', fontWeight: 500 }}>Faltan {pharma.missingItems} item(s)</span>
                             ) : (
-                              <span style={{ fontSize: '0.9rem', fontWeight: 700, color: idx === 0 ? 'var(--primary-dark)' : 'inherit' }}>{formatGs(pharma.total)}</span>
+                              <span style={{ fontSize: '1.1rem', fontWeight: 700, color: idx === 0 ? 'var(--primary-dark)' : 'inherit' }}>{formatGs(pharma.total)}</span>
                             )}
                           </div>
                         </div>
@@ -1858,7 +1858,7 @@ function App() {
       {/* Footer / Disclaimer */}
       <footer className="app-footer" style={{ marginTop: '5rem', padding: '3rem 0', backgroundColor: '#0f172a', color: '#94a3b8' }}>
         <div className="container" style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
-          <p style={{ fontSize: '0.9rem', lineHeight: '1.7', margin: 0 }}>
+          <p style={{ fontSize: '1.1rem', lineHeight: '1.7', margin: 0 }}>
             <span style={{ color: '#f8fafc', fontWeight: 600 }}>El objetivo de Kura es contribuir al ahorro en tus gastos de salud. </span> 
             Somos una plataforma de búsqueda y comparación de precios, no una farmacia ni un proveedor médico. Los precios y la disponibilidad mostrados son estimaciones basadas en información pública y pueden no reflejar actualizaciones en tiempo real. El precio final y el stock real están sujetos a variaciones en el mostrador dependiendo de la sucursal, políticas internas o la presentación exacta del medicamento. Te recomendamos verificar el precio directamente con la farmacia antes de tu compra.
           </p>
