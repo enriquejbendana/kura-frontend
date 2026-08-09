@@ -530,7 +530,12 @@ function App() {
       const availB = b.sortedPrices.length;
       if (availA !== availB) return availB - availA;
       
-      // 3. Marca reconocida
+      // 3. Penalizar productos que parecen snacks/accesorios si no hay otra forma de desempatar
+      const isJunkA = /barra|snack|chicle|caramelo|cereal|galleta|chocolate|toallita|cepillo/i.test(a.commercialName) ? 1 : 0;
+      const isJunkB = /barra|snack|chicle|caramelo|cereal|galleta|chocolate|toallita|cepillo/i.test(b.commercialName) ? 1 : 0;
+      if (isJunkA !== isJunkB) return isJunkA - isJunkB; // Los junk (1) van abajo (positivo significa A va después que B)
+
+      // 4. Marca reconocida
       const hasLabA = a.laboratory !== 'Desconocido' ? 1 : 0;
       const hasLabB = b.laboratory !== 'Desconocido' ? 1 : 0;
       if (hasLabA !== hasLabB) return hasLabB - hasLabA;
