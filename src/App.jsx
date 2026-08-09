@@ -410,7 +410,16 @@ function App() {
         }
         
         return Object.values(existingGrouped).map(product => {
-          const sortedPrices = [...product.sortedPrices].sort((a, b) => a.price - b.price);
+          // Deduplicar precios por farmacia, manteniendo el mejor precio (menor)
+          const uniquePrices = {};
+          product.sortedPrices.forEach(p => {
+             // Normalizar el ID de la farmacia para evitar duplicados por guiones o espacios
+             const pid = p.pharmacy.id.toLowerCase().replace('-', '_');
+             if (!uniquePrices[pid] || uniquePrices[pid].price > p.price) {
+                 uniquePrices[pid] = { ...p, pharmacy: { ...p.pharmacy, id: pid, class: pid } };
+             }
+          });
+          const sortedPrices = Object.values(uniquePrices).sort((a, b) => a.price - b.price);
           return { ...product, sortedPrices };
         });
       };
