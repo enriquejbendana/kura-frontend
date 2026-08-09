@@ -29,7 +29,7 @@ function App() {
   
   const [searchType, setSearchType] = useState('principio');
   const [presentation, setPresentation] = useState('cualquiera');
-  const [sortBy, setSortBy] = useState('price_asc');
+  const [sortBy, setSortBy] = useState('popularity_desc');
   const [showAllVariants, setShowAllVariants] = useState(false);
 
   const [backendErrors, setBackendErrors] = useState([]);
@@ -964,7 +964,7 @@ function App() {
                   >
                     <option value="price_asc">Menor precio primero</option>
                     <option value="price_desc">Mayor precio primero</option>
-                    <option value="popularity_desc">Mayor popularidad</option>
+                    <option value="popularity_desc">Relevancia (Recomendado)</option>
                     <option value="name_asc">Orden alfabético (A-Z)</option>
                     <option value="content_desc">Mayor contenido (mg/ml/comp)</option>
                     <option value="pharmacy">Cadena de Farmacia (Ganadora)</option>
