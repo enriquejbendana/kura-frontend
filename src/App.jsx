@@ -265,7 +265,7 @@ function App() {
     const stopWords = ['busca', 'buscar', 'buscando', 'buscame', 'encuentra', 'encontrar', 'tienen', 'tiene', 'hay', 'quiero', 'un', 'una', 'unos', 'unas', 'para', 'el', 'la', 'los', 'las', 'de', 'del', 'que', 'sirva', 'algo', 'busco', 'necesito', 'comprar', 'remedio', 'producto', 'medicamento', 'pastilla', 'pastillas', 'jarabe', 'crema', 'pomada', 'me', 'duele', 'tengo'];
     const words = cleanTerm.toLowerCase().split(/\s+/);
     if (words.length > 1) {
-        const filteredWords = words.filter(w => !stopWords.includes(w) && w.length > 2);
+        const filteredWords = words.filter(w => !stopWords.includes(w));
         if (filteredWords.length > 0) {
             cleanTerm = filteredWords.join(' ');
         }
