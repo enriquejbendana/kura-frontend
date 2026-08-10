@@ -271,6 +271,10 @@ function App() {
         }
     }
 
+    // Strict token filtering to prevent e-commerce backends from returning unrelated products
+    const searchTokens = cleanTerm.toLowerCase().split(/\s+/);
+    const requiredTokens = searchTokens.filter(t => /^\d+$/.test(t) || t.length > 3);
+
     const compoundMarkers = ['ibu ', 'ergo ', 'plus', 'forte', 'compuesto', ' y ', 'sinus', 'flex', 'relax'];
 
     setHasSearched(true);
@@ -409,7 +413,7 @@ function App() {
           });
         }
         
-        return Object.values(existingGrouped).map(product => {
+        const merged = Object.values(existingGrouped).map(product => {
           // Deduplicar precios por farmacia, manteniendo el mejor precio (menor)
           const uniquePrices = {};
           product.sortedPrices.forEach(p => {
@@ -422,6 +426,11 @@ function App() {
           const sortedPrices = Object.values(uniquePrices).sort((a, b) => a.price - b.price);
           return { ...product, sortedPrices };
         });
+
+        return merged.filter(product => {
+            const name = product.commercialName.toLowerCase();
+            return requiredTokens.every(req => name.includes(req));
+        });
       };
 
       // --- CARGA GRADUAL "REALISTA" POR FARMACIA ---
@@ -429,6 +438,9 @@ function App() {
       let latestFinalResults = Object.values(existingGrouped).map(product => {
         const sortedPrices = [...product.sortedPrices].sort((a, b) => a.price - b.price);
         return { ...product, sortedPrices };
+      }).filter(product => {
+          const name = product.commercialName.toLowerCase();
+          return requiredTokens.every(req => name.includes(req));
       });
 
       for (let i = 1; i <= 5; i++) {
