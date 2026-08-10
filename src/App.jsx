@@ -271,9 +271,14 @@ function App() {
         }
     }
 
-    // Strict token filtering to prevent e-commerce backends from returning unrelated products
+    // Strict token filtering: Only enforce numbers locally to avoid deleting valid branded names
     const searchTokens = cleanTerm.toLowerCase().split(/\s+/);
-    const requiredTokens = searchTokens.filter(t => /^\d+$/.test(t) || t.length > 3);
+    const requiredTokens = searchTokens.filter(t => /^\d+$/.test(t));
+    
+    // We send ONLY the non-numeric words to the external APIs.
+    // If we send "10", the external APIs get confused and return completely unrelated products that happen to have "10" in the name.
+    const nonNumberTokens = searchTokens.filter(t => !/^\d+$/.test(t));
+    const apiQueryTerm = nonNumberTokens.join(' ') || cleanTerm;
 
     const compoundMarkers = ['ibu ', 'ergo ', 'plus', 'forte', 'compuesto', ' y ', 'sinus', 'flex', 'relax'];
 
@@ -286,7 +291,7 @@ function App() {
     setScannedPharmacies(0);
 
     let resolvedLiveData = null;
-    const liveSearchPromise = fetch(`https://kura-api-mm3u.onrender.com/api/live-search?q=${encodeURIComponent(cleanTerm)}`)
+    const liveSearchPromise = fetch(`https://kura-api-mm3u.onrender.com/api/live-search?q=${encodeURIComponent(apiQueryTerm)}`)
       .then(r => r.json())
       .then(data => {
          resolvedLiveData = data;
@@ -299,7 +304,7 @@ function App() {
         return errData;
       });
 
-    let queryToFetch = cleanTerm;
+    let queryToFetch = apiQueryTerm;
     if (presentation !== 'cualquiera') {
       queryToFetch += ` ${presentation}`;
     }
