@@ -358,7 +358,8 @@ function App() {
              imageUrl: item.imageUrl,
              clicks: item.clicks || 0,
              prices: [],
-             sortedPrices: []
+             sortedPrices: [],
+             relevanceScore: 1
            };
         }
         item.prices.forEach(p => {
