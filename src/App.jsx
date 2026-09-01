@@ -272,8 +272,13 @@ function App() {
     }
 
     // Strict token filtering: Only enforce numbers locally to avoid deleting valid branded names
+    // Si exactMatch es true, requerimos todas las palabras (excepto unidades). Si es false, solo requerimos los números.
     const searchTokens = cleanTerm.toLowerCase().split(/\s+/);
-    const requiredTokens = searchTokens.filter(t => /^\d+$/.test(t));
+    const requiredTokens = searchTokens.filter(t => {
+      if (/^\d+$/.test(t)) return true;
+      if (exactMatch && !['mg', 'ml', 'gr', 'g', 'mcg', 'ui'].includes(t)) return true;
+      return false;
+    });
     
     // We send ONLY the non-numeric words to the external APIs, AND we also filter out units like "mg" or "ml".
     // If we send "10" or "mg", the external APIs get confused and return completely unrelated products that happen to have "10" or "mg" in the name.
