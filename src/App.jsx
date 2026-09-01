@@ -780,9 +780,10 @@ function App() {
                   </div>
                 </form>
 
-              <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "10px", fontSize: "0.9rem", color: "var(--text-main)", cursor: "pointer", userSelect: "none", width: "fit-content" }}>
+              <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "10px", fontSize: "0.9rem", color: "var(--text-main)", cursor: "pointer", userSelect: "none", width: "fit-content" }} title="Activa esta opción si las farmacias te muestran productos mezclados o que no corresponden a tu búsqueda.">
                 <input type="checkbox" checked={exactMatch} onChange={(e) => setExactMatch(e.target.checked)} style={{ cursor: "pointer" }} />
                 Buscar coincidencia exacta
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.6 }}><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
               </label>
               </div>
             </div>
@@ -813,9 +814,10 @@ function App() {
                 </div>
               </form>
 
-              <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "10px", fontSize: "0.9rem", color: "var(--text-main)", cursor: "pointer", userSelect: "none", width: "fit-content" }}>
+              <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "10px", fontSize: "0.9rem", color: "var(--text-main)", cursor: "pointer", userSelect: "none", width: "fit-content" }} title="Activa esta opción si las farmacias te muestran productos mezclados o que no corresponden a tu búsqueda.">
                 <input type="checkbox" checked={exactMatch} onChange={(e) => setExactMatch(e.target.checked)} style={{ cursor: "pointer" }} />
                 Buscar coincidencia exacta
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.6 }}><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
               </label>
 
               <div className="advanced-search-toggle" style={{ textAlign: 'right', marginTop: '0.5rem' }}>
@@ -969,6 +971,16 @@ function App() {
               <span style={{ fontSize: '1.15rem' }}>/</span>
               <span style={{ fontWeight: 500, color: 'var(--text)', fontSize: '1.15rem' }}>Resultados para "{searchTerm}"</span>
             </div>
+
+            {/* Smart tip for fuzzy searches */}
+            {!exactMatch && hasSearched && searchTerm && !/\d/.test(searchTerm) && sortedResults.length > 3 && (
+              <div style={{ backgroundColor: '#fff8e1', border: '1px solid #ffe082', borderRadius: '8px', padding: '0.75rem 1rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+                <span style={{ fontSize: '1.2rem' }}>💡</span>
+                <p style={{ margin: 0, fontSize: '0.9rem', color: '#8f6e00', lineHeight: 1.4 }}>
+                  <strong>¿Ves resultados que no tienen nada que ver?</strong> Las farmacias a veces devuelven listas mezcladas. Activa la casilla de <strong>Coincidencia exacta</strong> arriba para limpiar la lista.
+                </p>
+              </div>
+            )}
 
             <div className="results-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem', marginBottom: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
