@@ -762,46 +762,125 @@ function App() {
         {activeTab === 'inicio' && (
           <>
             {!hasSearched && (
-          <div className="hero-section">
-            <div className="hero-content">
-              <h1 className="hero-title">Encontrá tu bienestar<br/>al mejor precio</h1>
-              <p className="hero-subtitle">Buscá y compará medicamentos en las mejores farmacias del país, sin salir de tu casa.</p>
-              
-              <div className="search-container" style={{ margin: 0, width: '100%', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
-                <form onSubmit={handleSearchSubmit} className="search-input-wrapper">
-                  <svg className="search-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                  <textarea 
-                    className="search-input multiline-search" 
-                    placeholder="Decime en palabras qué querés encontrar, escribí la composición o marca, o bien, hace click en..." 
-                    value={searchTerm}
-                    onChange={handleSearchChange}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSearchSubmit(e);
-                      }
-                    }}
-                    rows={3}
-                  />
-                  {searchTerm && (
-                    <button type="button" onClick={handleClearSearch} className="clear-search-btn" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem', color: 'var(--text-muted)', position: 'absolute', right: '110px', top: '50%', transform: 'translateY(-50%)' }}>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                    </button>
-                  )}
-                  <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'nowrap', flexShrink: 0 }}>
-                    <button type="submit" className="search-button">Buscar</button>
-                  </div>
-                </form>
+          <div className="hero-v2-container">
+            <div className="hero-v2-bg-blob"></div>
+            
+            <div className="hero-v2-content">
+              <div className="hero-v2-badge">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                Tu buscador de precios de medicamentos
+              </div>
 
-              <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "10px", fontSize: "0.9rem", color: "var(--text-main)", cursor: "pointer", userSelect: "none", width: "fit-content" }} title="Activa esta opción si las farmacias te muestran productos mezclados o que no corresponden a tu búsqueda.">
-                <input type="checkbox" checked={exactMatch} onChange={(e) => setExactMatch(e.target.checked)} style={{ cursor: "pointer" }} />
-                Buscar coincidencia exacta
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.6 }}><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-              </label>
+              <h1 className="hero-v2-title">
+                Compará precios.<br/>
+                Elegí mejor.<br/>
+                <span>Ahorrá en tus medicamentos.</span>
+              </h1>
+
+              <p className="hero-v2-subtitle">
+                Buscá un medicamento y compará su precio en diferentes farmacias de Paraguay.
+              </p>
+
+              <form onSubmit={handleSearchSubmit} className="hero-v2-search">
+                <svg style={{color: '#94a3b8'}} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <input 
+                  type="text" 
+                  placeholder="¿Qué medicamento estás buscando?" 
+                  className="hero-v2-input"
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                />
+                <button type="submit" className="hero-v2-button">
+                  Buscar
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </button>
+              </form>
+
+              <div className="hero-v2-features">
+                <div className="hero-v2-feature">
+                  <div className="hero-v2-feature-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  </div>
+                  <div className="hero-v2-feature-text">
+                    Precios actualizados
+                    <span>Hoy, 08:30 hs</span>
+                  </div>
+                </div>
+                
+                <div className="hero-v2-feature">
+                  <div className="hero-v2-feature-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                  </div>
+                  <div className="hero-v2-feature-text">
+                    Comparación<br/>entre farmacias
+                  </div>
+                </div>
+
+                <div className="hero-v2-feature">
+                  <div className="hero-v2-feature-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                  </div>
+                  <div className="hero-v2-feature-text">
+                    Encontrá el<br/>mejor precio
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="hero-image-container">
-              <img src="/hero-image.png" alt="Farmacéutica Kura" className="hero-image" />
+
+            <div className="hero-v2-visual">
+              <div className="hero-v2-phone-badge">
+                <div style={{width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#0d9488', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white'}}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div>
+                  <p style={{fontSize: '0.75rem', fontWeight: 600, color: '#0f172a', lineHeight: 1.2}}>Precios<br/>actualizados hoy</p>
+                  <p style={{fontSize: '0.65rem', color: '#64748b', marginTop: '2px'}}>08:30 hs</p>
+                </div>
+              </div>
+
+              <div className="hero-v2-phone">
+                <div className="hero-v2-notch"></div>
+                
+                <div className="hero-v2-screen">
+                  <div className="hero-v2-card" style={{marginTop: '2rem'}}>
+                    <div style={{width: '40px', height: '40px', backgroundColor: '#eff6ff', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem'}}>💊</div>
+                    <div>
+                      <p style={{fontSize: '0.75rem', fontWeight: 600, color: '#0f172a'}}>Paracetamol 500 mg</p>
+                      <p style={{fontSize: '0.65rem', color: '#64748b'}}>x 10 comprimidos</p>
+                    </div>
+                  </div>
+
+                  <div className="hero-v2-card hero-v2-card-best" style={{marginTop: '0.5rem'}}>
+                    <span className="hero-v2-badge-best">Mejor precio</span>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem'}}>
+                      <div style={{width: '20px', height: '20px', backgroundColor: '#dcfce7', color: '#15803d', borderRadius: '4px', fontSize: '0.65rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'}}>F</div>
+                      <p style={{fontSize: '0.75rem', fontWeight: 500}}>Farmacenter</p>
+                    </div>
+                    <p style={{fontSize: '1.25rem', fontWeight: 700, color: '#0f172a'}}>G. 12.500</p>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.25rem', fontSize: '0.55rem', color: '#94a3b8'}}>
+                      <span>2,3 km</span> • <span>Actualizado hoy, 08:15</span>
+                    </div>
+                  </div>
+
+                  <div className="hero-v2-card">
+                    <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem'}}>
+                      <div style={{width: '20px', height: '20px', backgroundColor: '#dbeafe', color: '#1d4ed8', borderRadius: '4px', fontSize: '0.65rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'}}>P</div>
+                      <p style={{fontSize: '0.75rem', fontWeight: 500}}>PuntoFarma</p>
+                    </div>
+                    <div style={{display: 'flex', flexDirection: 'column'}}>
+                      <p style={{fontSize: '1.125rem', fontWeight: 700, color: '#0f172a'}}>G. 14.200</p>
+                      <div style={{display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.25rem', fontSize: '0.55rem', color: '#94a3b8'}}>
+                        <span>3,1 km</span> • <span>Actualizado hoy, 07:42</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="hero-v2-save">
+                    <p style={{fontSize: '0.65rem', color: '#0d9488', fontWeight: 500, marginBottom: '2px'}}>Podés ahorrar hasta</p>
+                    <p style={{fontSize: '1.125rem', fontWeight: 700, color: '#0d9488'}}>G. 3.300</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
