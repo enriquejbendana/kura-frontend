@@ -280,9 +280,10 @@ function App() {
       return false;
     });
     
-    // We send ONLY the non-numeric words to the external APIs, AND we also filter out units like "mg" or "ml".
+    // We send ONLY the non-numeric words to the external APIs, AND we also filter out units like "mg" or "ml", and packaging words like "frasco".
     // If we send "10" or "mg", the external APIs get confused and return completely unrelated products that happen to have "10" or "mg" in the name.
-    const nonNumberTokens = searchTokens.filter(t => !/^\d+$/.test(t) && !['mg', 'ml', 'gr', 'g', 'mcg', 'ui'].includes(t));
+    const genericWords = ['mg', 'ml', 'gr', 'g', 'mcg', 'ui', 'frasco', 'fco', 'caja', 'cj', 'comp', 'comprimido', 'comprimidos', 'jarabe', 'jbe', 'gotas', 'gts', 'suspension', 'susp', 'polvo', 'crema', 'pomada', 'ampolla', 'amp', 'sobre', 'capsula', 'capsulas', 'caps'];
+    const nonNumberTokens = searchTokens.filter(t => !/^\d+$/.test(t) && !genericWords.includes(t));
     const apiQueryTerm = nonNumberTokens.join(' ') || cleanTerm;
 
     const compoundMarkers = ['ibu ', 'ergo ', 'plus', 'forte', 'compuesto', ' y ', 'sinus', 'flex', 'relax'];
@@ -535,7 +536,19 @@ function App() {
 
   const quickTags = ['Paracetamol', 'Ibuprofeno', 'Loratadina', 'Losartán', 'Alergia', 'Fuerte'];
 
-  const sortedResults = [...results].sort((a, b) => {
+  const currentSearchTokens = searchTerm.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const scoringTokens = currentSearchTokens.filter(t => !['mg', 'ml', 'gr', 'g', 'mcg', 'ui'].includes(t));
+  
+  const scoredResults = results.map(product => {
+     let missingTokens = 0;
+     const name = product.commercialName.toLowerCase();
+     scoringTokens.forEach(t => {
+        if (!name.includes(t)) missingTokens++;
+     });
+     return { ...product, relevanceScore: 1 + missingTokens };
+  });
+
+  const sortedResults = [...scoredResults].sort((a, b) => {
     // 1. PRIORIDAD ABSOLUTA: Puntuación de Relevancia (1 a 4)
     if (a.relevanceScore !== b.relevanceScore) {
       return a.relevanceScore - b.relevanceScore;
