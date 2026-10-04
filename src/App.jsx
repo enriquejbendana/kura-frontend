@@ -845,7 +845,7 @@ function App() {
                   <div className="hero-v2-card" style={{marginTop: '2rem'}}>
                     <div style={{width: '40px', height: '40px', backgroundColor: '#eff6ff', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem'}}>💊</div>
                     <div>
-                      <p style={{fontSize: '0.75rem', fontWeight: 600, color: '#0f172a'}}>Paracetamol 500 mg</p>
+                      <p style={{fontSize: '0.75rem', fontWeight: 600, color: '#0f172a'}}>Dolanet 500 mg</p>
                       <p style={{fontSize: '0.65rem', color: '#64748b'}}>x 10 comprimidos</p>
                     </div>
                   </div>
@@ -854,7 +854,7 @@ function App() {
                     <span className="hero-v2-badge-best">Mejor precio</span>
                     <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem'}}>
                       <div style={{width: '20px', height: '20px', backgroundColor: '#dcfce7', color: '#15803d', borderRadius: '4px', fontSize: '0.65rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'}}>F</div>
-                      <p style={{fontSize: '0.75rem', fontWeight: 500}}>Farmacenter</p>
+                      <p style={{fontSize: '0.75rem', fontWeight: 500}}>Farmacia A</p>
                     </div>
                     <p style={{fontSize: '1.25rem', fontWeight: 700, color: '#0f172a'}}>G. 12.500</p>
                     <div style={{display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.25rem', fontSize: '0.55rem', color: '#94a3b8'}}>
@@ -864,8 +864,8 @@ function App() {
 
                   <div className="hero-v2-card">
                     <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem'}}>
-                      <div style={{width: '20px', height: '20px', backgroundColor: '#dbeafe', color: '#1d4ed8', borderRadius: '4px', fontSize: '0.65rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'}}>P</div>
-                      <p style={{fontSize: '0.75rem', fontWeight: 500}}>PuntoFarma</p>
+                      <div style={{width: '20px', height: '20px', backgroundColor: '#dbeafe', color: '#1d4ed8', borderRadius: '4px', fontSize: '0.65rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'}}>F</div>
+                      <p style={{fontSize: '0.75rem', fontWeight: 500}}>Farmacia B</p>
                     </div>
                     <div style={{display: 'flex', flexDirection: 'column'}}>
                       <p style={{fontSize: '1.125rem', fontWeight: 700, color: '#0f172a'}}>G. 14.200</p>
