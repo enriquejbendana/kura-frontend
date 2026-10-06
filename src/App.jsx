@@ -1201,109 +1201,85 @@ function App() {
 
                 
                 
-                <div className="results-grid">
+                <div className="results-container-v2">
                   {(() => {
                     const exactMatches = sortedResults.filter(p => p.relevanceScore === 1);
                     const relatedMatches = sortedResults.filter(p => p.relevanceScore > 1);
                     const hasExactMatches = exactMatches.length > 0;
                     
-                    const renderProductCard = (product) => (
-                      <div key={product.id} className="product-card">
-                        <div className="card-header" style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
-                          <div className="product-image-container" style={{ flexShrink: 0, width: '80px', height: '80px', backgroundColor: 'var(--surface)', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.25rem' }}>
-                            {product.imageUrl ? (
-                              <img src={product.imageUrl} alt={product.commercialName} style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.parentElement.innerHTML = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'; }} />
-                            ) : (
-                              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--border)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.5 20.5 7 17l5-5-3.5-3.5L12 5l7 7-3.5 3.5Z"/><path d="M14 9.5 9.5 14"/></svg>
-                            )}
-                          </div>
-                          <div className="product-info-wrapper">
-                            {product.laboratory && !product.laboratory.toLowerCase().includes('esconocido') && !product.laboratory.toLowerCase().includes('genérico') && (
-                              <span className="laboratory-name">{product.laboratory}</span>
-                            )}
-                            <h3 className="product-title">{product.commercialName}</h3>
-                            <p className="product-subtitle">{product.composition}</p>
-                            
-                            {product.savings > 0 && (
-                              <div className="savings-pill">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20"/><path d="m17 19-5 5-5-5"/><path d="m17 5-5-5-5 5"/></svg>
-                                Ahorra {product.savingsPercent}% (hasta {formatGs(product.savings)})
+                    const renderProductCard = (product) => {
+                      return product.sortedPrices.map((priceEntry, idx) => {
+                        const isBestPrice = idx === 0;
+                        const domains = {
+                          'punto_farma': 'https://www.puntofarma.com.py/buscar?q=',
+                          'farmacenter': 'https://www.farmacenter.com.py/catalogo?q=',
+                          'catedral': 'https://www.farmaciacatedral.com.py/buscador?q=',
+                          'farmaoliva': 'https://www.farmaoliva.com.py/catalogo?q=',
+                          'farmatotal': 'https://www.farmatotal.com.py/?post_type=product&s='
+                        };
+                        const baseUrl = domains[priceEntry.pharmacy.id] || 'https://';
+                        const mockUrl = `${baseUrl}${encodeURIComponent(product.commercialName)}`;
+                        const finalUrl = priceEntry.url || mockUrl;
+
+                        return (
+                          <div key={product.id + '-' + priceEntry.pharmacy.id + '-' + idx} className="result-card-v2">
+                            <div className="result-image-v2">
+                              {product.imageUrl ? (
+                                <img src={product.imageUrl} alt={product.commercialName} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '10px' }} onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.parentElement.innerHTML = '💊'; }} />
+                              ) : '💊'}
+                            </div>
+
+                            <div className="result-content-v2">
+                              <div>
+                                <span className="result-badge-stock">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                                  En stock
+                                </span>
                               </div>
-                            )}
-                            <div style={{ marginTop: '0.75rem' }}>
-                              <button 
-                                className="btn-add-cart"
-                                onClick={() => addToCart(product)}
-                                disabled={cart.some(item => item.id === product.id)}
-                              >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-                                {cart.some(item => item.id === product.id) ? 'Añadido' : 'Añadir a la Canasta'}
-                              </button>
+                              
+                              <h2 className="result-title-main">{product.commercialName}</h2>
+                              <h3 className="result-title-sub">{product.details || 'Presentación no especificada'}</h3>
+                              <p className="result-text-active">Principio activo: {product.composition}</p>
+
+                              <div className="result-spacer"></div>
+
+                              <div className="result-icons-row">
+                                <div className="result-icon-item">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                  <div className="result-icon-text-block">
+                                    <span className="result-icon-title">Actualizado hoy,</span>
+                                    <span className="result-icon-sub">08:30 hs</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="result-price-card">
+                              <div className="result-pharmacy-header">
+                                <div className="result-pharmacy-name">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                                  {priceEntry.pharmacy.name}
+                                </div>
+                                {isBestPrice && (
+                                  <span className="result-badge-best">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                                    Mejor precio
+                                  </span>
+                                )}
+                              </div>
+                              <div className="result-price-main">{formatGs(priceEntry.price)}</div>
+                              <div>
+                                <span className="result-badge-pill">Precio por presentación</span>
+                              </div>
+                              <a href={finalUrl} target="_blank" rel="noopener noreferrer" className="result-btn-action" style={{ textDecoration: 'none' }} onClick={() => handleProductClick(product.commercialName, product)}>
+                                Ir a la farmacia
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                              </a>
                             </div>
                           </div>
-                        </div>
-                        
-                        <div className="price-table-container">
-                        {product.sortedPrices.map((priceEntry, idx) => {
-                          const isBestPrice = idx === 0;
-                          const domains = {
-                            'punto_farma': 'https://www.puntofarma.com.py/buscar?q=',
-                            'farmacenter': 'https://www.farmacenter.com.py/catalogo?q=',
-                            'catedral': 'https://www.farmaciacatedral.com.py/buscador?q=',
-                            'farmaoliva': 'https://www.farmaoliva.com.py/catalogo?q=',
-                            'farmatotal': 'https://www.farmatotal.com.py/?post_type=product&s='
-                          };
-                          const baseUrl = domains[priceEntry.pharmacy.id] || 'https://';
-                          const mockUrl = `${baseUrl}${encodeURIComponent(product.commercialName)}`;
-                          const finalUrl = priceEntry.url || mockUrl;
-                          
-                          return (
-                            <a 
-                              key={priceEntry.pharmacy.id + idx} 
-                              href={finalUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={`pharmacy-row ${priceEntry.pharmacy.class} ${isBestPrice ? 'best-price' : ''}`}
-                              onClick={() => handleProductClick(product.commercialName, product)}
-                            >
-                              <div className="row-pharmacy-info" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                                <span style={{ fontWeight: '600', fontSize: '0.95rem', color: 'var(--text-main)', textAlign: 'center', letterSpacing: '-0.01em' }}>
-                                  {priceEntry.pharmacy.name}
-                                </span>
-                                {priceEntry.originalName && (
-                                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '0.4rem', maxWidth: '180px', lineHeight: '1.2' }}>
-                                    {priceEntry.originalName}
-                                  </span>
-                                )}
-                              </div>
-                              <div className="row-price-info" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.2rem' }}>
-                                <div style={{ display: 'flex', alignItems: 'center' }}>
-                                  {isBestPrice && (
-                                    <svg className="best-price-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                                  )}
-                                  <span className="price-text" style={{color: isBestPrice ? 'var(--primary-dark)' : 'inherit'}}>
-                                    {formatGs(priceEntry.price)}
-                                  </span>
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{color: 'var(--text-muted)', marginLeft: '0.25rem'}}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                                </div>
-                                {priceEntry.specialPrice && (
-                                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginTop: '-0.2rem' }}>
-                                    <span style={{ fontSize: '1.1rem', fontWeight: '700', color: '#0288d1', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-                                      {formatGs(priceEntry.specialPrice)}
-                                    </span>
-                                    <span style={{ fontSize: '0.65rem', color: '#0288d1', fontWeight: '600', textTransform: 'uppercase' }}>
-                                      {priceEntry.specialMethod}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                            </a>
-                          );
-                        })}
-                      </div>
-                    </div>
-                    );
+                        );
+                      });
+                    };
 
                     return (
                       <>
