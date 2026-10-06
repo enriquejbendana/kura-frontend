@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 @import './hero.css';
 
 html {
@@ -52,7 +52,7 @@ html {
 }
 
 body {
-  font-family: 'Outfit', -apple-system, system-ui, sans-serif;
+  font-family: 'Poppins', -apple-system, system-ui, sans-serif;
   background-color: var(--bg-color);
   color: var(--text-main);
   line-height: 1.5;
