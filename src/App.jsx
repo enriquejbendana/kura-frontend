@@ -931,61 +931,6 @@ function App() {
               </div>
             </div>
 
-            <div className="hero-v2-visual">
-              <div className="hero-v2-phone-badge">
-                <div style={{width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#0d9488', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white'}}>
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                </div>
-                <div>
-                  <p style={{fontSize: '0.75rem', fontWeight: 600, color: '#0f172a', lineHeight: 1.2}}>Precios<br/>actualizados hoy</p>
-                  <p style={{fontSize: '0.65rem', color: '#64748b', marginTop: '2px'}}>08:30 hs</p>
-                </div>
-              </div>
-
-              <div className="hero-v2-phone">
-                <div className="hero-v2-notch"></div>
-                
-                <div className="hero-v2-screen">
-                  <div className="hero-v2-card" style={{marginTop: '2rem'}}>
-                    <div style={{width: '40px', height: '40px', backgroundColor: '#eff6ff', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem'}}>💊</div>
-                    <div>
-                      <p style={{fontSize: '0.75rem', fontWeight: 600, color: '#0f172a'}}>Dolanet 500 mg</p>
-                      <p style={{fontSize: '0.65rem', color: '#64748b'}}>x 10 comprimidos</p>
-                    </div>
-                  </div>
-
-                  <div className="hero-v2-card hero-v2-card-best" style={{marginTop: '0.5rem'}}>
-                    <span className="hero-v2-badge-best">Mejor precio</span>
-                    <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem'}}>
-                      <div style={{width: '20px', height: '20px', backgroundColor: '#dcfce7', color: '#15803d', borderRadius: '4px', fontSize: '0.65rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'}}>F</div>
-                      <p style={{fontSize: '0.75rem', fontWeight: 500}}>Farmacia A</p>
-                    </div>
-                    <p style={{fontSize: '1.25rem', fontWeight: 700, color: '#0f172a'}}>G. 12.500</p>
-                    <div style={{display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.25rem', fontSize: '0.55rem', color: '#94a3b8'}}>
-                      <span>2,3 km</span> • <span>Actualizado hoy, 08:15</span>
-                    </div>
-                  </div>
-
-                  <div className="hero-v2-card">
-                    <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem'}}>
-                      <div style={{width: '20px', height: '20px', backgroundColor: '#dbeafe', color: '#1d4ed8', borderRadius: '4px', fontSize: '0.65rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'}}>F</div>
-                      <p style={{fontSize: '0.75rem', fontWeight: 500}}>Farmacia B</p>
-                    </div>
-                    <div style={{display: 'flex', flexDirection: 'column'}}>
-                      <p style={{fontSize: '1.125rem', fontWeight: 700, color: '#0f172a'}}>G. 14.200</p>
-                      <div style={{display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.25rem', fontSize: '0.55rem', color: '#94a3b8'}}>
-                        <span>3,1 km</span> • <span>Actualizado hoy, 07:42</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="hero-v2-save">
-                    <p style={{fontSize: '0.65rem', color: '#0d9488', fontWeight: 500, marginBottom: '2px'}}>Podés ahorrar hasta</p>
-                    <p style={{fontSize: '1.125rem', fontWeight: 700, color: '#0d9488'}}>G. 3.300</p>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         )}
 
