@@ -34,6 +34,10 @@ function App() {
 
   const [backendErrors, setBackendErrors] = useState([]);
   
+  // Sugerencias de búsqueda
+  const [liveSuggestions, setLiveSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  
   // Estados de la canasta inteligente
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -513,10 +517,54 @@ function App() {
   };
 
   const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-    if (e.target.value.trim() === '') {
+    const val = e.target.value;
+    setSearchTerm(val);
+    if (val.trim() === '') {
       handleClearSearch();
+      setShowSuggestions(false);
+    } else {
+      setShowSuggestions(true);
     }
+  };
+
+  useEffect(() => {
+    if (searchTerm.length < 2) {
+      setLiveSuggestions([]);
+      return;
+    }
+    const term = searchTerm.toLowerCase();
+    const suggestions = [];
+
+    // Buscar marcas en MOCK_PRODUCTS
+    MOCK_PRODUCTS.forEach(p => {
+      const brand = p.commercialName.toLowerCase();
+      const comp = p.composition.toLowerCase();
+      if ((brand.includes(term) || comp.includes(term)) && suggestions.length < 4) {
+        const title = `${p.commercialName} ${p.composition}`;
+        if (!suggestions.find(s => s.title === title)) {
+          suggestions.push({ type: 'brand', title, subtitle: p.details, original: p.commercialName });
+        }
+      }
+    });
+
+    // Buscar drogas genéricas
+    drugDictionary.forEach(cat => {
+      cat.drugs.forEach(d => {
+        if (d.name.toLowerCase().includes(term) && suggestions.length < 6) {
+          if (!suggestions.find(s => s.title === d.name)) {
+            suggestions.push({ type: 'drug', title: d.name, subtitle: 'Principio Activo', original: d.name });
+          }
+        }
+      });
+    });
+
+    setLiveSuggestions(suggestions);
+  }, [searchTerm, drugDictionary]);
+
+  const handleSuggestionClick = (suggestion) => {
+    setSearchTerm(suggestion.original);
+    setShowSuggestions(false);
+    executeSearch(suggestion.original);
   };
 
   const handleTagClick = (tag) => {
@@ -781,20 +829,76 @@ function App() {
                 Buscá un medicamento y compará su precio en diferentes farmacias de Paraguay.
               </p>
 
-              <form onSubmit={handleSearchSubmit} className="hero-v2-search">
-                <svg style={{color: '#94a3b8'}} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                <input 
-                  type="text" 
-                  placeholder="¿Qué medicamento estás buscando?" 
-                  className="hero-v2-input"
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                />
-                <button type="submit" className="hero-v2-button">
-                  Buscar
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                </button>
-              </form>
+              <div style={{ position: 'relative', width: '100%', maxWidth: '650px', marginBottom: '2.5rem' }}>
+                <form onSubmit={handleSearchSubmit} className="hero-v2-search" style={{ marginBottom: 0 }}>
+                  <svg style={{color: '#94a3b8'}} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                  <input 
+                    type="text" 
+                    placeholder="¿Qué medicamento estás buscando?" 
+                    className="hero-v2-input"
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    onFocus={() => { if(searchTerm.trim() !== '') setShowSuggestions(true); }}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                  />
+                  <button type="submit" className="hero-v2-button">
+                    Buscar
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                  </button>
+                </form>
+
+                {showSuggestions && liveSuggestions.length > 0 && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
+                    backgroundColor: 'white',
+                    borderRadius: '16px',
+                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
+                    marginTop: '0.5rem',
+                    zIndex: 50,
+                    overflow: 'hidden',
+                    border: '1px solid #f1f5f9'
+                  }}>
+                    <div style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', backgroundColor: '#f8fafc', borderBottom: '1px solid #f1f5f9' }}>
+                      Resultados para: <span style={{ color: '#0d9488' }}>{searchTerm}</span>
+                    </div>
+                    <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                      {liveSuggestions.map((sug, idx) => (
+                        <li 
+                          key={idx} 
+                          onClick={() => handleSuggestionClick(sug)}
+                          style={{
+                            padding: '0.75rem 1rem',
+                            borderBottom: idx < liveSuggestions.length - 1 ? '1px solid #f1f5f9' : 'none',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.75rem',
+                            transition: 'background-color 0.2s'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0fdfa'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                          <div style={{
+                            width: '32px', height: '32px', borderRadius: '8px', 
+                            backgroundColor: sug.type === 'brand' ? '#eff6ff' : '#f0fdfa',
+                            color: sug.type === 'brand' ? '#3b82f6' : '#0d9488',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                          }}>
+                            {sug.type === 'brand' ? '📦' : '🔬'}
+                          </div>
+                          <div>
+                            <p style={{ margin: 0, fontSize: '0.875rem', fontWeight: 600, color: '#0f172a' }}>{sug.title}</p>
+                            <p style={{ margin: 0, fontSize: '0.75rem', color: '#64748b' }}>{sug.subtitle}</p>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
 
               <div className="hero-v2-features">
                 <div className="hero-v2-feature">
