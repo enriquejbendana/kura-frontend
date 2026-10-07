@@ -529,6 +529,57 @@ function App() {
     }
   };
 
+  useEffect(() => {
+    let active = true;
+
+    const fetchSuggestions = async () => {
+      if (searchTerm.length < 2) {
+        if (active) setLiveSuggestions([]);
+        return;
+      }
+      
+      const term = searchTerm.toLowerCase();
+      const suggestions = [];
+
+      // Buscar drogas genéricas
+      drugDictionary.forEach(cat => {
+        cat.drugs.forEach(d => {
+          if (d.name.toLowerCase().includes(term) && suggestions.length < 6) {
+            if (!suggestions.find(s => s.title === d.name)) {
+              suggestions.push({ type: 'drug', title: d.name, subtitle: 'Principio Activo', original: d.name });
+            }
+          }
+        });
+      });
+
+      // Buscar en nuestro catálogo semilla curado (Marcas Limpias)
+      MARCAS_LIMPIAS.forEach(brand => {
+        if (brand.name.toLowerCase().includes(term) || brand.active.toLowerCase().includes(term)) {
+          if (!suggestions.find(s => s.original.toLowerCase() === brand.name.toLowerCase())) {
+            suggestions.push({ 
+              type: 'brand', 
+              title: brand.name, 
+              subtitle: 'Marca', 
+              original: brand.name 
+            });
+          }
+        }
+      });
+
+      if (active) {
+        setLiveSuggestions(suggestions.slice(0, 7));
+      }
+    };
+
+    const timer = setTimeout(() => {
+      fetchSuggestions();
+    }, 250);
+
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [searchTerm, drugDictionary]);
 
   const handleSuggestionClick = (suggestion) => {
     setSearchTerm(suggestion.original);
@@ -816,6 +867,28 @@ function App() {
                   </button>
                 </form>
 
+                {false && showSuggestions && liveSuggestions.length > 0 && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
+                    backgroundColor: 'white',
+                    borderRadius: '16px',
+                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
+                    marginTop: '0.5rem',
+                    zIndex: 50,
+                    overflow: 'hidden',
+                    border: '1px solid #f1f5f9'
+                  }}>
+                    <div style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', backgroundColor: '#f8fafc', borderBottom: '1px solid #f1f5f9' }}>
+                      Resultados para: <span style={{ color: '#0d9488' }}>{searchTerm}</span>
+                    </div>
+                    <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                      {liveSuggestions.map((sug, idx) => (
+                        <li 
+                          key={idx} 
+                          onClick={() => handleSuggestionClick(sug)}
                           style={{
                             padding: '0.75rem 1rem',
                             borderBottom: idx < liveSuggestions.length - 1 ? '1px solid #f1f5f9' : 'none',
