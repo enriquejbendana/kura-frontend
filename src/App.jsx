@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
 import { formatGs } from './mockData';
 import { drugDictionary as localDrugDictionary } from './drugDictionary';
+import { MARCAS_LIMPIAS } from './data/marcasLimpias';
 import { diccionarioAnatomico } from './data/diccionarioAnatomico';
 import { cadenasFarmacias as localCadenasFarmacias } from './data/cadenasFarmacias';
 import { diasSemana, alianzasDescuentos as localAlianzasDescuentos } from './data/ofertasBancarias';
@@ -551,27 +552,19 @@ function App() {
         });
       });
 
-      // Si no tenemos suficientes sugerencias, consultamos rápido a Supabase
-      if (suggestions.length < 5) {
-        try {
-          const { data, error } = await supabase
-            .from('medicamentos_cache')
-            .select('commercial_name')
-            .ilike('commercial_name', `%${term}%`)
-            .limit(10);
-            
-          if (!error && data && active) {
-            data.forEach(p => {
-              const title = p.commercial_name.trim();
-              if (!suggestions.find(s => s.original.toLowerCase() === p.commercial_name.toLowerCase())) {
-                suggestions.push({ type: 'brand', title, subtitle: 'Medicamento en farmacias', original: p.commercial_name });
-              }
+      // Buscar en nuestro catálogo semilla curado (Marcas Limpias)
+      MARCAS_LIMPIAS.forEach(brand => {
+        if (brand.name.toLowerCase().includes(term) || brand.active.toLowerCase().includes(term)) {
+          if (!suggestions.find(s => s.original.toLowerCase() === brand.name.toLowerCase())) {
+            suggestions.push({ 
+              type: 'brand', 
+              title: brand.name, 
+              subtitle: brand.active, 
+              original: brand.name 
             });
           }
-        } catch (err) {
-          console.error("Error en autocomplete supabase", err);
         }
-      }
+      });
 
       if (active) {
         setLiveSuggestions(suggestions.slice(0, 7));
