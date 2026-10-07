@@ -356,6 +356,23 @@ function App() {
       }
 
       const existingGrouped = {};
+      
+      // -- INYECTAR DATOS LOCALES DE PRUEBA (MOCK_PRODUCTS) --
+      MOCK_PRODUCTS.forEach(p => {
+        existingGrouped['mock-' + p.id] = {
+           id: 'mock-' + p.id,
+           commercialName: p.commercialName,
+           composition: p.composition,
+           laboratory: p.laboratory,
+           details: p.details,
+           imageUrl: null,
+           clicks: 0,
+           prices: p.prices.map(price => ({...price, originalName: p.commercialName})),
+           sortedPrices: p.prices.map(price => ({...price, originalName: p.commercialName})),
+           relevanceScore: 1
+        };
+      });
+
       rawData.forEach(item => {
         const groupingKey = item.id;
         if (!existingGrouped[groupingKey]) {
