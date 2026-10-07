@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
-import { formatGs } from './mockData';
+import { MOCK_PRODUCTS, formatGs } from './mockData';
 import { drugDictionary as localDrugDictionary } from './drugDictionary';
 import { diccionarioAnatomico } from './data/diccionarioAnatomico';
 import { cadenasFarmacias as localCadenasFarmacias } from './data/cadenasFarmacias';
@@ -23,20 +23,36 @@ function App() {
   const [results, setResults] = useState([]);
 
   const [isLoading, setIsLoading] = useState(false);
-  const [isLiveSearchPending, setIsLiveSearchPending] = useState(false);
-        const [showAdvanced, setShowAdvanced] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('Consultando punto de venta 1...');
+  const [isLiveSearching, setIsLiveSearching] = useState(false);
+  const [liveLoadingMessage, setLiveLoadingMessage] = useState('Consultando punto de venta 3...');
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
-  
+  useEffect(() => {
+    let interval;
+    if (isLiveSearching) {
+      const messages = [
+        'Consultando punto de venta 3...',
+        'Consultando punto de venta 4...',
+        'Consultando punto de venta 5...'
+      ];
+      let i = 0;
+      setLiveLoadingMessage(messages[0]);
+      interval = setInterval(() => {
+        if (i < messages.length - 1) {
+          i++;
+          setLiveLoadingMessage(messages[i]);
+        }
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isLiveSearching]);
   const [searchType, setSearchType] = useState('principio');
   const [presentation, setPresentation] = useState('cualquiera');
-  const [sortBy, setSortBy] = useState('popularity_desc');
+  const [sortBy, setSortBy] = useState('price_asc');
   const [showAllVariants, setShowAllVariants] = useState(false);
 
   const [backendErrors, setBackendErrors] = useState([]);
-  
-  // Sugerencias de búsqueda
-  const [liveSuggestions, setLiveSuggestions] = useState([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
   
   // Estados de la canasta inteligente
   const [cart, setCart] = useState([]);
@@ -260,249 +276,223 @@ function App() {
     };
   };
 
-    const executeSearch = async (rawTerm) => {
-    if (!rawTerm || rawTerm.trim().length < 3) return;
-    
-    let cleanTerm = rawTerm.trim();
-    
-    // Filtro de palabras comunes para búsquedas con lenguaje natural
-    const stopWords = ['busca', 'buscar', 'buscando', 'buscame', 'encuentra', 'encontrar', 'tienen', 'tiene', 'hay', 'quiero', 'un', 'una', 'unos', 'unas', 'para', 'el', 'la', 'los', 'las', 'de', 'del', 'que', 'sirva', 'algo', 'busco', 'necesito', 'comprar', 'remedio', 'producto', 'medicamento', 'pastilla', 'pastillas', 'jarabe', 'crema', 'pomada', 'me', 'duele', 'tengo'];
-    const words = cleanTerm.toLowerCase().split(/\s+/);
-    if (words.length > 1) {
-        const filteredWords = words.filter(w => !stopWords.includes(w));
-        if (filteredWords.length > 0) {
-            cleanTerm = filteredWords.join(' ');
-        }
+  const executeSearch = async (rawTerm) => {
+    if (!rawTerm.trim()) {
+      setHasSearched(false);
+      return;
     }
 
-    // Strict token filtering: Only enforce numbers locally to avoid deleting valid branded names
-    // Si exactMatch es true, requerimos todas las palabras (excepto unidades). Si es false, solo requerimos los números.
-    const searchTokens = cleanTerm.toLowerCase().split(/\s+/);
-    const requiredTokens = searchTokens.filter(t => {
-      if (/^\d+$/.test(t)) return true;
-      if (exactMatch && !['mg', 'ml', 'gr', 'g', 'mcg', 'ui'].includes(t)) return true;
-      return false;
-    });
+    const { cleanTerm, detectedPresentation, isMonoDrug } = parseNaturalLanguage(rawTerm);
     
-    // We send ONLY the non-numeric words to the external APIs, AND we also filter out units like "mg" or "ml", and packaging words like "frasco".
-    // If we send "10" or "mg", the external APIs get confused and return completely unrelated products that happen to have "10" or "mg" in the name.
-    const genericWords = ['mg', 'ml', 'gr', 'g', 'mcg', 'ui', 'frasco', 'fco', 'caja', 'cj', 'comp', 'comprimido', 'comprimidos', 'jarabe', 'jbe', 'gotas', 'gts', 'suspension', 'susp', 'polvo', 'crema', 'pomada', 'ampolla', 'amp', 'sobre', 'capsula', 'capsulas', 'caps'];
-    const nonNumberTokens = searchTokens.filter(t => !/^\d+$/.test(t) && !genericWords.includes(t));
-    const apiQueryTerm = nonNumberTokens.join(' ') || cleanTerm;
-
-    const compoundMarkers = ['ibu ', 'ergo ', 'plus', 'forte', 'compuesto', ' y ', 'sinus', 'flex', 'relax'];
+    const finalPresentation = detectedPresentation !== 'cualquiera' ? detectedPresentation : presentation;
+    if (detectedPresentation !== 'cualquiera' && presentation !== detectedPresentation) {
+      setPresentation(detectedPresentation);
+    }
 
     setHasSearched(true);
     setIsLoading(true);
-    setIsLiveSearchPending(true);
+    setLoadingMessage("Consultando punto de venta 1...");
     setShowAllVariants(false);
     setBackendErrors([]);
-    setResults([]);
-    setScannedPharmacies(0);
 
-    let resolvedLiveData = null;
-    const liveSearchPromise = fetch(`https://kura-api-mm3u.onrender.com/api/live-search?q=${encodeURIComponent(apiQueryTerm)}`)
-      .then(r => r.json())
-      .then(data => {
-         resolvedLiveData = data;
-         return data;
-      })
-      .catch((error) => {
-        console.error("Error en live search:", error);
-        const errData = { results: [] };
-        resolvedLiveData = errData;
-        return errData;
-      });
+    // Simular el tiempo del punto de venta 1
+    await new Promise(r => setTimeout(r, 1000));
 
-    let queryToFetch = apiQueryTerm;
-    if (presentation !== 'cualquiera') {
-      queryToFetch += ` ${presentation}`;
+    let queryToFetch = cleanTerm;
+    if (finalPresentation !== 'cualquiera') {
+      queryToFetch += ` ${finalPresentation}`;
     }
 
     try {
-      const { data: dbProducts, error: dbError } = await supabase
-        .from('medicamentos_cache')
-        .select('*')
-        .or(`commercial_name.ilike.%${queryToFetch}%`);
+      // Búsqueda en Supabase usando ilike en commercial_name o composition
+      const { data: dbProducts, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          product_prices (
+            price,
+            pharmacies (
+              id,
+              name,
+              logo
+            )
+          )
+        `)
+        .or(`commercial_name.ilike.%${cleanTerm}%,composition.ilike.%${cleanTerm}%`);
 
+      if (error) throw error;
+      
       let rawData = [];
-      if (!dbError && dbProducts && dbProducts.length > 0) {
-        const grouped = {};
-        dbProducts.forEach(p => {
-           if (!grouped[p.commercial_name]) {
-              grouped[p.commercial_name] = {
-                 id: p.id,
-                 commercialName: p.commercial_name,
-                 composition: '---',
-                 laboratory: 'Desconocido',
-                 details: '',
-                 imageUrl: p.image_url,
-                 clicks: 0,
-                 prices: []
-              };
-           }
-           grouped[p.commercial_name].prices.push({
-               pharmacy: {
-                 id: p.pharmacy_id,
-                 name: p.pharmacy_id,
-                 class: p.pharmacy_id
-               },
-               price: p.price,
-               originalName: p.commercial_name,
-               url: null
-           });
-        });
-        rawData = Object.values(grouped);
+      
+      if (dbProducts) {
+        // Mapear la estructura de Supabase a la que esperaba el frontend
+        rawData = dbProducts.map(p => ({
+          id: p.id,
+          commercialName: p.commercial_name,
+          composition: p.composition,
+          laboratory: p.laboratory,
+          details: p.details,
+          imageUrl: p.image_url,
+          clicks: 0, // o agregar clicks a la tabla luego
+          prices: p.product_prices.map(pp => ({
+            price: pp.price,
+            pharmacy: {
+              id: pp.pharmacies.id,
+              name: pp.pharmacies.name,
+              logo: pp.pharmacies.logo
+            }
+          }))
+        }));
       }
 
-      const existingGrouped = {};
-      
+      if (isMonoDrug) {
+        const combinationMarkers = ['+', ' y ', 'compuesto', 'plus', 'forte', 'grip', 'dual', 'flex', 'complex'];
+        rawData = rawData.filter(item => {
+          const nameLower = item.commercialName.toLowerCase();
+          return !combinationMarkers.some(marker => nameLower.includes(marker));
+        });
+      }
+
+      if (presentation !== 'cualquiera') {
+        const pLower = presentation.toLowerCase();
+        rawData = rawData.filter(item => {
+          const nameLower = item.commercialName.toLowerCase();
+          if (pLower === 'gotas') {
+            return nameLower.includes('gotas') || nameLower.includes('ml');
+          }
+          if (pLower === 'jarabe') {
+            return nameLower.includes('jarabe') || nameLower.includes('susp') || nameLower.includes('ml');
+          }
+          if (pLower === 'comprimidos') {
+            return nameLower.includes('comp') || nameLower.includes('caps') || nameLower.includes('cáps');
+          }
+          return nameLower.includes(pLower);
+        });
+      }
+
+      // Filtro Estricto Anti-Falsos Positivos
+      if (cleanTerm) {
+        const mainSearchWord = cleanTerm.toLowerCase().split(/\s+/).filter(w => w.length > 2)[0];
+        if (mainSearchWord) {
+          rawData = rawData.filter(item => {
+            const nameLower = item.commercialName.toLowerCase();
+            const baseName = nameLower
+              .replace(/\b(\d+(mg|ml|g|mcg|ui|kg|l|cm)\b|comp|cps|caps|caja|sobre|amp|iny|jbe|susp|gotas|grageas|env|fco|comprimidos|comprimido)\b/gi, '')
+              .replace(/[0-9]+/g, '')
+              .replace(/\bx\b/gi, '')
+              .replace(/[^a-z0-9\s]/gi, '')
+              .trim()
+              .replace(/\s+/g, ' ');
+            
+            // Bloqueador de compuestos: Si la búsqueda NO tiene prefijos/sufijos de compuestos, pero el nombre SÍ, lo rechazamos.
+            const compoundMarkers = ['ibu ', 'ergo ', 'plus', 'forte', 'compuesto', ' y ', 'sinus', 'flex', 'relax'];
+            const searchHasMarker = compoundMarkers.some(m => cleanTerm.toLowerCase().includes(m.trim()));
+            const nameHasMarker = compoundMarkers.some(m => nameLower.includes(m.trim()));
+            
+            if (!searchHasMarker && nameHasMarker) {
+              return false; // Destruir compuestos (ej. Ibu Dolanet) cuando se busca el base (ej. Dolanet)
+            }
+            
+            const firstWordOfName = baseName.split(/\s+/)[0];
+            const comp = (item.composition || '').toLowerCase();
+            
+            // Requerir que la primera palabra del nombre coincida, o que esté en la composición
+            return (firstWordOfName && firstWordOfName.includes(mainSearchWord)) || comp.includes(mainSearchWord);
+          });
+        }
+      }
+
+      const grouped = {};
       rawData.forEach(item => {
         const groupingKey = item.id;
-        if (!existingGrouped[groupingKey]) {
-           existingGrouped[groupingKey] = {
-             id: item.id,
-             commercialName: item.commercialName,
-             composition: item.composition,
-             laboratory: item.laboratory,
-             details: item.details,
-             imageUrl: item.imageUrl,
-             clicks: item.clicks || 0,
-             prices: [],
-             sortedPrices: [],
-             relevanceScore: 1
-           };
+        
+        if (!grouped[groupingKey]) {
+          grouped[groupingKey] = {
+            id: item.id,
+            commercialName: item.commercialName, // Mantenemos el nombre real completo
+            composition: item.composition,
+            laboratory: item.laboratory,
+            details: item.details,
+            imageUrl: item.imageUrl,
+            clicks: item.clicks || 0,
+            prices: []
+          };
+        }
+        if (!grouped[groupingKey].imageUrl && item.imageUrl) {
+          grouped[groupingKey].imageUrl = item.imageUrl;
         }
         item.prices.forEach(p => {
-          existingGrouped[groupingKey].prices.push({ ...p, originalName: item.commercialName });
-          existingGrouped[groupingKey].sortedPrices.push({ ...p, originalName: item.commercialName });
+          const existingIdx = grouped[groupingKey].prices.findIndex(ep => ep.pharmacy.id === p.pharmacy.id);
+          if (existingIdx >= 0) {
+            if (p.price < grouped[groupingKey].prices[existingIdx].price) {
+              grouped[groupingKey].prices[existingIdx] = { ...p, originalName: item.commercialName };
+            }
+          } else {
+            grouped[groupingKey].prices.push({ ...p, originalName: item.commercialName });
+          }
         });
       });
 
-      const mergeLiveDataToResults = (liveDataResults) => {
-        if (liveDataResults && liveDataResults.length > 0) {
-          liveDataResults.forEach(item => {
-            const priceObj = item.prices[0];
-            if (!priceObj) return;
-            
-            const pharmacyId = priceObj.pharmacy.id;
-            const price = priceObj.price;
-            
-            let phName = pharmacyId;
-            if (phName === 'farmacenter') phName = 'Farmacenter';
-            if (phName === 'farmatotal') phName = 'Farmatotal';
-            if (phName === 'farmaoliva') phName = 'Farmaoliva';
-            if (phName === 'catedral') phName = 'Farmacias Catedral';
-            if (phName === 'punto_farma') phName = 'Punto Farma';
+      const matchedProducts = Object.values(grouped);
 
-            const newPriceObj = {
-              pharmacy: { id: pharmacyId, name: phName, class: pharmacyId },
-              price: price,
-              originalName: item.commercialName,
-              url: priceObj.url || null
-            };
-
-            const key = (item.commercialName).toLowerCase();
-            
-            let foundExisting = null;
-            Object.values(existingGrouped).forEach(ep => {
-                if (ep.commercialName.toLowerCase() === key) foundExisting = ep;
-            });
-
-            if (foundExisting) {
-              if (!foundExisting.sortedPrices.some(ep => ep.pharmacy.id === pharmacyId)) {
-                 foundExisting.sortedPrices.push(newPriceObj);
-              }
-            } else {
-              existingGrouped[key] = {
-                id: 'live-' + Math.random().toString(36).substr(2, 9),
-                commercialName: item.commercialName,
-                laboratory: item.laboratory || 'Desconocido',
-                composition: item.composition || '---',
-                details: item.details || '',
-                imageUrl: item.imageUrl || null,
-                prices: [],
-                sortedPrices: [newPriceObj],
-                clicks: 0,
-                relevanceScore: 4
-              };
-            }
-          });
-        }
+      const processedResults = matchedProducts.map(product => {
+        let sortedPrices = [...product.prices].sort((a, b) => a.price - b.price);
         
-        const merged = Object.values(existingGrouped).map(product => {
-          // Deduplicar precios por farmacia, manteniendo el mejor precio (menor)
-          const uniquePrices = {};
-          product.sortedPrices.forEach(p => {
-             // Normalizar el ID de la farmacia para evitar duplicados por guiones o espacios
-             const pid = p.pharmacy.id.toLowerCase().replace('-', '_');
-             if (!uniquePrices[pid] || uniquePrices[pid].price > p.price) {
-                 uniquePrices[pid] = { ...p, pharmacy: { ...p.pharmacy, id: pid, class: pid } };
-             }
-          });
-          const sortedPrices = Object.values(uniquePrices).sort((a, b) => a.price - b.price);
-          return { ...product, sortedPrices };
-        });
+        const minPrice = sortedPrices[0].price;
+        const maxPrice = Math.max(...sortedPrices.map(p => p.price));
+        const savings = maxPrice - minPrice;
+        const savingsPercent = Math.max(0, Math.round((savings / maxPrice) * 100)) || 0;
 
-        return merged.filter(product => {
-            const name = product.commercialName.toLowerCase();
-            return requiredTokens.every(req => name.includes(req));
-        });
-      };
+        const nameLower = product.commercialName.toLowerCase();
+        const searchWord = (cleanTerm || searchTerm).toLowerCase().trim();
+        
+        // Extraer la "esencia" del nombre (sin mg, ml, cajas, números, etc.)
+        const baseName = nameLower
+          .replace(/\b(\d+(mg|ml|g|mcg|ui|kg|l|cm)\b|comp|cáps|caps|caja|sobre|amp|iny|jbe|susp|gotas|grageas|env|fco|comprimidos|comprimido)\b/gi, '')
+          .replace(/[0-9]+/g, '')
+          .replace(/\bx\b/gi, '')
+          .replace(/[^a-zñáéíóú\s]/gi, '')
+          .trim()
+          .replace(/\s+/g, ' ');
 
-      // --- CARGA GRADUAL "REALISTA" POR FARMACIA ---
-      const simulatedChains = ['punto_farma', 'farmacenter', 'catedral', 'farmaoliva', 'farmatotal'];
-      let latestFinalResults = Object.values(existingGrouped).map(product => {
-        const sortedPrices = [...product.sortedPrices].sort((a, b) => a.price - b.price);
-        return { ...product, sortedPrices };
-      }).filter(product => {
-          const name = product.commercialName.toLowerCase();
-          return requiredTokens.every(req => name.includes(req));
+        let relevanceScore = 4;
+        if (baseName === searchWord) {
+          relevanceScore = 1;
+        } else if (baseName.startsWith(searchWord)) {
+          relevanceScore = 2;
+        } else if (baseName.endsWith(searchWord)) {
+          relevanceScore = 3;
+        } else {
+          relevanceScore = 4;
+        }
+
+        return {
+          ...product,
+          sortedPrices,
+          savings,
+          savingsPercent,
+          clicks: product.clicks || 0,
+          relevanceScore
+        };
       });
 
-      for (let i = 1; i <= 5; i++) {
-        setScannedPharmacies(i);
-        setLoadingMessageIdx(prev => prev === 0 ? 1 : 0);
-        
-        if (resolvedLiveData && resolvedLiveData.results) {
-           latestFinalResults = mergeLiveDataToResults(resolvedLiveData.results);
-           resolvedLiveData.results = null; // Evitar mezclar múltiples veces
-           setIsLiveSearchPending(false);
-        }
-        
-        const currentResults = latestFinalResults.map(product => {
-          const revealedSortedPrices = product.sortedPrices.filter(p => {
-             const idx = simulatedChains.indexOf(p.pharmacy.id);
-             if (idx === -1) return i === 5;
-             return idx < i;
-          });
-          return { ...product, sortedPrices: revealedSortedPrices };
-        }).filter(product => product.sortedPrices.length > 0);
-        
-        setResults(currentResults);
-        await new Promise(r => setTimeout(r, 1000));
-      }
+      // Simulador de carga progresiva (Loading Psicológico)
+      setLoadingMessage("Consultando punto de venta 2...");
+      await new Promise(r => setTimeout(r, 1000));
 
-      if (!resolvedLiveData) {
-         liveSearchPromise.then(liveData => {
-            if (liveData && liveData.results && liveData.results.length > 0) {
-               setResults(mergeLiveDataToResults(liveData.results));
-            }
-         }).finally(() => setIsLiveSearchPending(false));
-      } else if (resolvedLiveData && resolvedLiveData.results) {
-         setResults(mergeLiveDataToResults(resolvedLiveData.results));
-         setIsLiveSearchPending(false);
-      } else {
-         setIsLiveSearchPending(false);
+      setResults(processedResults);
+      setIsLoading(false);
+      
+      // SIEMPRE disparar la búsqueda en vivo, incluso si Supabase falla
+      if (cleanTerm.length >= 3) {
+        handleLiveSearch(cleanTerm);
       }
       
     } catch (error) {
       console.error("Error al buscar:", error);
       setResults([]);
-      setBackendErrors([{ error: true, message: 'Fallo al conectar con el servidor' }]);
-    } finally {
+      setBackendErrors([{ error: true, message: 'Fallo al conectar con el servidor', pharmacy: { name: 'Servidor Local' } }]);
       setIsLoading(false);
-      setScannedPharmacies(0);
     }
   };
 
@@ -517,81 +507,156 @@ function App() {
     setResults([]);
   };
 
-  const handleSearchChange = (e) => {
-    const val = e.target.value;
-    setSearchTerm(val);
-    if (val.trim() === '') {
-      handleClearSearch();
-      setShowSuggestions(false);
-    } else {
-      setShowSuggestions(true);
+  const handleLiveSearch = async (termToSearch) => {
+    setIsLiveSearching(true);
+    try {
+      // Forzar 3 segundos mínimos de espera para asegurar que la animación del punto 3 al 5 se reproduzca completa
+      const minWait = new Promise(resolve => setTimeout(resolve, 3000));
+      const fetchPromise = fetch(`https://kura-api-mm3u.onrender.com/api/live-search?q=${encodeURIComponent(termToSearch)}`).then(r => r.json());
+      
+      const [, data] = await Promise.all([minWait, fetchPromise]);
+      if (data.results && data.results.length > 0) {
+        // Transformar los resultados del backend de Render a la estructura agrupada
+        const grouped = {};
+        data.results.forEach(item => {
+          // El backend Render ya devuelve un array de prices, extraemos el primero
+          const priceObj = item.prices[0];
+          if (!priceObj) return;
+          
+          const pharmacyId = priceObj.pharmacy.id;
+          const price = priceObj.price;
+          
+          // Normalizar el nombre base
+          const baseName = item.commercialName
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase()
+            .replace(/\b(comp|cps|caps|caja|sobre|amp|iny|jbe|susp|gotas|grageas|env|fco|comprimidos|comprimido)\b/gi, '')
+            .replace(/\bx\b/gi, '')
+            .replace(/[^a-z0-9\s]/gi, '')
+            .trim()
+            .replace(/\s+/g, ' ');
+
+          // FILTRO ESTRICTO: Requerir que la primera palabra del nombre coincida
+          const searchWords = termToSearch.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().split(/\s+/).filter(w => w.length > 2);
+          
+          // Bloqueador de compuestos: Si la búsqueda NO tiene prefijos/sufijos de compuestos, pero el nombre SÍ, lo rechazamos.
+          const compoundMarkers = ['ibu ', 'ergo ', 'plus', 'forte', 'compuesto', ' y ', 'sinus', 'flex', 'relax'];
+          const searchHasMarker = compoundMarkers.some(m => termToSearch.toLowerCase().includes(m.trim()));
+          const nameHasMarker = compoundMarkers.some(m => item.commercialName.toLowerCase().includes(m.trim()));
+          
+          if (!searchHasMarker && nameHasMarker) {
+            return; // Destruir compuestos cuando se busca el base
+          }
+
+          if (searchWords.length > 0) {
+            const mainWord = searchWords[0];
+            const firstWordOfName = baseName.split(/\s+/)[0];
+            if (!firstWordOfName || !firstWordOfName.includes(mainWord)) return; // Saltar este resultado
+          }
+
+          const key = (baseName || item.commercialName).toLowerCase();
+          const searchWord = termToSearch.toLowerCase().trim();
+          
+          let relevanceScore = 4;
+          if (baseName === searchWord) {
+            relevanceScore = 1;
+          } else if (baseName.startsWith(searchWord)) {
+            relevanceScore = 2;
+          } else if (baseName.endsWith(searchWord)) {
+            relevanceScore = 3;
+          } else {
+            relevanceScore = 4;
+          }
+          
+          if (!grouped[key]) {
+            grouped[key] = {
+              id: 'live-' + Math.random().toString(36).substr(2, 9),
+              commercialName: item.commercialName,
+              laboratory: item.laboratory || 'Desconocido',
+              composition: item.composition || '---',
+              details: item.details || '',
+              imageUrl: item.imageUrl || null,
+              prices: [],
+              clicks: 0,
+              relevanceScore: relevanceScore
+            };
+          }
+          
+          let phName = pharmacyId;
+          if (phName === 'farmacenter') phName = 'Farmacenter';
+          if (phName === 'farmatotal') phName = 'Farmatotal';
+          if (phName === 'farmaoliva') phName = 'Farmaoliva';
+          if (phName === 'catedral') phName = 'Farmacias Catedral';
+          if (phName === 'punto_farma') phName = 'Punto Farma';
+
+          grouped[key].prices.push({
+            pharmacy: { id: pharmacyId, name: phName, class: pharmacyId },
+            price: price,
+            originalName: item.commercialName,
+            url: priceObj.url || null
+          });
+        });
+
+        // Combinar con los resultados existentes (los de Supabase)
+        setResults(prevResults => {
+          const existingGrouped = {};
+          prevResults.forEach(p => {
+             const baseName = p.commercialName
+              .replace(/\b(\d+(mg|ml|g|mcg|ui|kg|l|cm)\b|comp|cáps|caps|caja|sobre|amp|iny|jbe|susp|gotas|grageas|env|fco|comprimidos|comprimido)\b/gi, '')
+              .replace(/[0-9]+/g, '')
+              .replace(/\bx\b/gi, '')
+              .replace(/[^a-zñáéíóú\s]/gi, '')
+              .trim()
+              .replace(/\s+/g, ' ');
+             const key = (baseName || p.commercialName).toLowerCase();
+             existingGrouped[key] = p;
+          });
+
+          // Mezclar los nuevos
+          Object.keys(grouped).forEach(k => {
+             if (existingGrouped[k]) {
+               const newPrices = grouped[k].prices;
+               newPrices.forEach(np => {
+                 if (!existingGrouped[k].prices) existingGrouped[k].prices = [...existingGrouped[k].sortedPrices]; // Fallback
+                 if (!existingGrouped[k].sortedPrices.some(ep => ep.pharmacy.id === np.pharmacy.id)) {
+                   existingGrouped[k].sortedPrices.push(np);
+                 }
+               });
+             } else {
+               existingGrouped[k] = grouped[k];
+               existingGrouped[k].sortedPrices = grouped[k].prices;
+             }
+          });
+
+          // Recalcular ahorros para todo
+          return Object.values(existingGrouped).map(product => {
+            const sortedPrices = [...(product.sortedPrices || product.prices)].sort((a, b) => a.price - b.price);
+            let savings = 0;
+            let savingsPercent = 0;
+            if (sortedPrices.length > 1) {
+              const minPrice = sortedPrices[0].price;
+              const maxPrice = sortedPrices[sortedPrices.length - 1].price;
+              savings = maxPrice - minPrice;
+              savingsPercent = Math.round((savings / maxPrice) * 100);
+            }
+            return { ...product, sortedPrices, savings, savingsPercent };
+          });
+        });
+      }
+    } catch (error) {
+      console.error("Error en live search:", error);
+      // MOSTRAR ERROR EN PANTALLA PARA DEPURAR
+      setBackendErrors(prev => [...prev, { error: true, pharmacy: { name: 'Vercel API (' + error.message + ')' } }]);
+    } finally {
+      setIsLiveSearching(false);
     }
   };
 
-  useEffect(() => {
-    let active = true;
-
-    const fetchSuggestions = async () => {
-      if (searchTerm.length < 2) {
-        if (active) setLiveSuggestions([]);
-        return;
-      }
-      
-      const term = searchTerm.toLowerCase();
-      const suggestions = [];
-
-      // Buscar drogas genéricas
-      drugDictionary.forEach(cat => {
-        cat.drugs.forEach(d => {
-          if (d.name.toLowerCase().includes(term) && suggestions.length < 6) {
-            if (!suggestions.find(s => s.title === d.name)) {
-              suggestions.push({ type: 'drug', title: d.name, subtitle: 'Principio Activo', original: d.name });
-            }
-          }
-        });
-      });
-
-      // Si no tenemos suficientes sugerencias, consultamos rápido a Supabase
-      if (suggestions.length < 5) {
-        try {
-          const { data, error } = await supabase
-            .from('medicamentos_cache')
-            .select('commercial_name, composition')
-            .ilike('commercial_name', `%${term}%`)
-            .limit(10);
-            
-          if (!error && data && active) {
-            data.forEach(p => {
-              const title = `${p.commercial_name} ${p.composition || ''}`.trim();
-              if (!suggestions.find(s => s.original.toLowerCase() === p.commercial_name.toLowerCase())) {
-                suggestions.push({ type: 'brand', title, subtitle: p.composition || 'Medicamento en farmacias', original: p.commercial_name });
-              }
-            });
-          }
-        } catch (err) {
-          console.error("Error en autocomplete supabase", err);
-        }
-      }
-
-      if (active) {
-        setLiveSuggestions(suggestions.slice(0, 7));
-      }
-    };
-
-    const timer = setTimeout(() => {
-      fetchSuggestions();
-    }, 250);
-
-    return () => {
-      active = false;
-      clearTimeout(timer);
-    };
-  }, [searchTerm, drugDictionary]);
-
-  const handleSuggestionClick = (suggestion) => {
-    setSearchTerm(suggestion.original);
-    setShowSuggestions(false);
-    executeSearch(suggestion.original);
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    if (e.target.value.trim() === '') {
+      handleClearSearch();
+    }
   };
 
   const handleTagClick = (tag) => {
@@ -611,19 +676,7 @@ function App() {
 
   const quickTags = ['Paracetamol', 'Ibuprofeno', 'Loratadina', 'Losartán', 'Alergia', 'Fuerte'];
 
-  const currentSearchTokens = searchTerm.trim().toLowerCase().split(/\s+/).filter(Boolean);
-  const scoringTokens = currentSearchTokens.filter(t => !['mg', 'ml', 'gr', 'g', 'mcg', 'ui'].includes(t));
-  
-  const scoredResults = results.map(product => {
-     let missingTokens = 0;
-     const name = product.commercialName.toLowerCase();
-     scoringTokens.forEach(t => {
-        if (!name.includes(t)) missingTokens++;
-     });
-     return { ...product, relevanceScore: 1 + missingTokens };
-  });
-
-  const sortedResults = [...scoredResults].sort((a, b) => {
+  const sortedResults = [...results].sort((a, b) => {
     // 1. PRIORIDAD ABSOLUTA: Puntuación de Relevancia (1 a 4)
     if (a.relevanceScore !== b.relevanceScore) {
       return a.relevanceScore - b.relevanceScore;
@@ -650,12 +703,7 @@ function App() {
       const availB = b.sortedPrices.length;
       if (availA !== availB) return availB - availA;
       
-      // 3. Penalizar productos que parecen snacks/accesorios si no hay otra forma de desempatar
-      const isJunkA = /barra|snack|chicle|caramelo|cereal|galleta|chocolate|toallita|cepillo/i.test(a.commercialName) ? 1 : 0;
-      const isJunkB = /barra|snack|chicle|caramelo|cereal|galleta|chocolate|toallita|cepillo/i.test(b.commercialName) ? 1 : 0;
-      if (isJunkA !== isJunkB) return isJunkA - isJunkB; // Los junk (1) van abajo (positivo significa A va después que B)
-
-      // 4. Marca reconocida
+      // 3. Marca reconocida
       const hasLabA = a.laboratory !== 'Desconocido' ? 1 : 0;
       const hasLabB = b.laboratory !== 'Desconocido' ? 1 : 0;
       if (hasLabA !== hasLabB) return hasLabB - hasLabA;
@@ -804,25 +852,25 @@ function App() {
             Kura <span className="logo-tag">PY</span>
           </div>
           
-          <nav className="header-nav" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+          <nav className="header-nav" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
             <button 
               onClick={() => setActiveTab('inicio')} 
-              style={{ background: 'none', border: 'none', padding: '0.8rem 1rem', cursor: 'pointer', fontWeight: 700, fontSize: '1.1rem', color: activeTab === 'inicio' ? 'var(--primary)' : 'var(--text)', borderBottom: activeTab === 'inicio' ? '4px solid var(--primary)' : '4px solid transparent', transition: 'all 0.2s' }}>
+              style={{ background: 'none', border: 'none', padding: '0.8rem 1.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '1.2rem', color: activeTab === 'inicio' ? 'var(--primary)' : 'var(--text)', borderBottom: activeTab === 'inicio' ? '4px solid var(--primary)' : '4px solid transparent', transition: 'all 0.2s' }}>
               Inicio
             </button>
             <button 
               onClick={() => setActiveTab('farmacias')} 
-              style={{ background: 'none', border: 'none', padding: '0.8rem 1rem', cursor: 'pointer', fontWeight: 700, fontSize: '1.1rem', color: activeTab === 'farmacias' ? 'var(--primary)' : 'var(--text)', borderBottom: activeTab === 'farmacias' ? '4px solid var(--primary)' : '4px solid transparent', transition: 'all 0.2s' }}>
+              style={{ background: 'none', border: 'none', padding: '0.8rem 1.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '1.2rem', color: activeTab === 'farmacias' ? 'var(--primary)' : 'var(--text)', borderBottom: activeTab === 'farmacias' ? '4px solid var(--primary)' : '4px solid transparent', transition: 'all 0.2s' }}>
               Farmacias
             </button>
             <button 
               onClick={() => setActiveTab('principios')} 
-              style={{ background: 'none', border: 'none', padding: '0.8rem 1rem', cursor: 'pointer', fontWeight: 700, fontSize: '1.1rem', color: activeTab === 'principios' ? 'var(--primary)' : 'var(--text)', borderBottom: activeTab === 'principios' ? '4px solid var(--primary)' : '4px solid transparent', transition: 'all 0.2s' }}>
+              style={{ background: 'none', border: 'none', padding: '0.8rem 1.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '1.2rem', color: activeTab === 'principios' ? 'var(--primary)' : 'var(--text)', borderBottom: activeTab === 'principios' ? '4px solid var(--primary)' : '4px solid transparent', transition: 'all 0.2s' }}>
               Principios Activos
             </button>
             <button 
               onClick={() => setActiveTab('ofertas')} 
-              style={{ background: 'none', border: 'none', padding: '0.8rem 1rem', cursor: 'pointer', fontWeight: 700, fontSize: '1.1rem', color: activeTab === 'ofertas' ? 'var(--primary)' : 'var(--text)', borderBottom: activeTab === 'ofertas' ? '4px solid var(--primary)' : '4px solid transparent', transition: 'all 0.2s' }}>
+              style={{ background: 'none', border: 'none', padding: '0.8rem 1.5rem', cursor: 'pointer', fontWeight: 700, fontSize: '1.2rem', color: activeTab === 'ofertas' ? 'var(--primary)' : 'var(--text)', borderBottom: activeTab === 'ofertas' ? '4px solid var(--primary)' : '4px solid transparent', transition: 'all 0.2s' }}>
               Ofertas
             </button>
           </nav>
@@ -837,127 +885,46 @@ function App() {
         {activeTab === 'inicio' && (
           <>
             {!hasSearched && (
-          <div className="hero-v2-container">
-            <div className="hero-v2-bg-blob"></div>
-            
-            <div className="hero-v2-content">
-              <div className="hero-v2-badge">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                Tu buscador de precios de medicamentos
-              </div>
-
-              <h1 className="hero-v2-title">
-                Compará precios.<br/>
-                Elegí mejor.<br/>
-                <span>Ahorrá en tus medicamentos.</span>
-              </h1>
-
-              <p className="hero-v2-subtitle">
-                Buscá un medicamento y compará su precio en diferentes farmacias de Paraguay.
-              </p>
-
-              <div style={{ position: 'relative', width: '100%', maxWidth: '650px', marginBottom: '2.5rem' }}>
-                <form onSubmit={handleSearchSubmit} className="hero-v2-search" style={{ marginBottom: 0 }}>
-                  <svg style={{color: '#94a3b8'}} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                  <input 
-                    type="text" 
-                    placeholder="¿Qué medicamento estás buscando?" 
-                    className="hero-v2-input"
+          <div className="hero-section">
+            <div className="hero-content">
+              <h1 className="hero-title">Encontrá tu bienestar<br/>al mejor precio</h1>
+              <p className="hero-subtitle">Buscá y compará medicamentos en las mejores farmacias del país, sin salir de tu casa.</p>
+              
+              <div className="search-container" style={{ margin: 0, width: '100%', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
+                <form onSubmit={handleSearchSubmit} className="search-input-wrapper">
+                  <svg className="search-icon" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                  <textarea 
+                    className="search-input multiline-search" 
+                    placeholder="Decime en palabras qué querés encontrar, escribí la composición o marca, o bien, hace click en..." 
                     value={searchTerm}
                     onChange={handleSearchChange}
-                    onFocus={() => { if(searchTerm.trim() !== '') setShowSuggestions(true); }}
-                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSearchSubmit(e);
+                      }
+                    }}
+                    rows={3}
                   />
-                  <button type="submit" className="hero-v2-button">
-                    Buscar
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                  </button>
+                  {searchTerm && (
+                    <button type="button" onClick={handleClearSearch} className="clear-search-btn" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem', color: 'var(--text-muted)', position: 'absolute', right: '110px', top: '50%', transform: 'translateY(-50%)' }}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                  )}
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'nowrap', flexShrink: 0 }}>
+                    <button type="submit" className="search-button">Buscar</button>
+                  </div>
                 </form>
 
-                {showSuggestions && liveSuggestions.length > 0 && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '100%',
-                    left: 0,
-                    right: 0,
-                    backgroundColor: 'white',
-                    borderRadius: '16px',
-                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
-                    marginTop: '0.5rem',
-                    zIndex: 50,
-                    overflow: 'hidden',
-                    border: '1px solid #f1f5f9'
-                  }}>
-                    <div style={{ padding: '0.75rem 1rem', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', backgroundColor: '#f8fafc', borderBottom: '1px solid #f1f5f9' }}>
-                      Resultados para: <span style={{ color: '#0d9488' }}>{searchTerm}</span>
-                    </div>
-                    <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-                      {liveSuggestions.map((sug, idx) => (
-                        <li 
-                          key={idx} 
-                          onClick={() => handleSuggestionClick(sug)}
-                          style={{
-                            padding: '0.75rem 1rem',
-                            borderBottom: idx < liveSuggestions.length - 1 ? '1px solid #f1f5f9' : 'none',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.75rem',
-                            transition: 'background-color 0.2s'
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f0fdfa'}
-                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                        >
-                          <div style={{
-                            width: '32px', height: '32px', borderRadius: '8px', 
-                            backgroundColor: sug.type === 'brand' ? '#eff6ff' : '#f0fdfa',
-                            color: sug.type === 'brand' ? '#3b82f6' : '#0d9488',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center'
-                          }}>
-                            {sug.type === 'brand' ? '📦' : '🔬'}
-                          </div>
-                          <div>
-                            <p style={{ margin: 0, fontSize: '0.875rem', fontWeight: 600, color: '#0f172a' }}>{sug.title}</p>
-                            <p style={{ margin: 0, fontSize: '0.75rem', color: '#64748b' }}>{sug.subtitle}</p>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-
-              <div className="hero-v2-features">
-                <div className="hero-v2-feature">
-                  <div className="hero-v2-feature-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  </div>
-                  <div className="hero-v2-feature-text">
-                    Precios actualizados
-                    <span>Hoy, 08:30 hs</span>
-                  </div>
-                </div>
-                
-                <div className="hero-v2-feature">
-                  <div className="hero-v2-feature-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                  </div>
-                  <div className="hero-v2-feature-text">
-                    Comparación<br/>entre farmacias
-                  </div>
-                </div>
-
-                <div className="hero-v2-feature">
-                  <div className="hero-v2-feature-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-                  </div>
-                  <div className="hero-v2-feature-text">
-                    Encontrá el<br/>mejor precio
-                  </div>
-                </div>
+              <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "10px", fontSize: "0.9rem", color: "var(--text-main)", cursor: "pointer", userSelect: "none", width: "fit-content" }}>
+                <input type="checkbox" checked={exactMatch} onChange={(e) => setExactMatch(e.target.checked)} style={{ cursor: "pointer" }} />
+                Buscar coincidencia exacta
+              </label>
               </div>
             </div>
-
+            <div className="hero-image-container">
+              <img src="/hero-image.png" alt="Farmacéutica Kura" className="hero-image" />
+            </div>
           </div>
         )}
 
@@ -977,15 +944,14 @@ function App() {
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>
                   )}
-              <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'nowrap', flexShrink: 0 }}>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'nowrap', flexShrink: 0 }}>
                 <button type="submit" className="search-button">Buscar</button>
                 </div>
               </form>
 
-              <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "10px", fontSize: "0.9rem", color: "var(--text-main)", cursor: "pointer", userSelect: "none", width: "fit-content" }} title="Activa esta opción si las farmacias te muestran productos mezclados o que no corresponden a tu búsqueda.">
+              <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "10px", fontSize: "0.9rem", color: "var(--text-main)", cursor: "pointer", userSelect: "none", width: "fit-content" }}>
                 <input type="checkbox" checked={exactMatch} onChange={(e) => setExactMatch(e.target.checked)} style={{ cursor: "pointer" }} />
                 Buscar coincidencia exacta
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.6 }}><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
               </label>
 
               <div className="advanced-search-toggle" style={{ textAlign: 'right', marginTop: '0.5rem' }}>
@@ -1000,7 +966,7 @@ function App() {
             </div>
 
             {showAdvanced && (
-              <div className="advanced-search-panel" style={{ background: 'var(--surface)', padding: '1rem', borderRadius: '0.5rem', marginTop: '0.5rem', border: '1px solid var(--border)', display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+              <div className="advanced-search-panel" style={{ background: 'var(--surface)', padding: '1rem', borderRadius: '0.5rem', marginTop: '0.5rem', border: '1px solid var(--border)', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                 <div style={{ flex: 1, minWidth: '200px' }}>
                   <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.25rem', fontWeight: 500 }}>Tipo de Búsqueda</label>
                   <select 
@@ -1100,10 +1066,10 @@ function App() {
 
           {!hasSearched && (
             <div className="bank-promos-section" style={{ marginTop: '2rem', maxWidth: '700px', margin: '2rem auto 0' }}>
-              <h3 className="section-title" style={{ fontSize: '1.25rem', color: 'var(--text)', marginBottom: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+              <h3 className="section-title" style={{ fontSize: '1.25rem', color: 'var(--text)', marginBottom: '1rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 💳 Promociones del Día
               </h3>
-              <div className="promos-grid" style={{ display: 'flex', gap: '1.5rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+              <div className="promos-grid" style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
                 {(() => {
                   const today = new Date().getDay();
                   const promosHoy = alianzasDescuentos.filter(o => o.category === 'bancos' && o.dayIds.includes(today)).slice(0, 3);
@@ -1128,7 +1094,7 @@ function App() {
 
         {hasSearched && (
           <section className="results-section">
-            <div className="breadcrumbs" style={{ marginBottom: '1.5rem', fontSize: '1.15rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+            <div className="breadcrumbs" style={{ marginBottom: '1.5rem', fontSize: '1.15rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <button 
                 onClick={handleClearSearch}
                 style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', padding: 0, fontWeight: 600, fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
@@ -1140,30 +1106,15 @@ function App() {
               <span style={{ fontWeight: 500, color: 'var(--text)', fontSize: '1.15rem' }}>Resultados para "{searchTerm}"</span>
             </div>
 
-            {/* Smart tip for fuzzy searches */}
-            {!exactMatch && hasSearched && searchTerm && !/\d/.test(searchTerm) && sortedResults.length > 3 && (
-              <div style={{ backgroundColor: '#fff8e1', border: '1px solid #ffe082', borderRadius: '8px', padding: '0.75rem 1rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
-                <span style={{ fontSize: '1.2rem' }}>💡</span>
-                <p style={{ margin: 0, fontSize: '0.9rem', color: '#8f6e00', lineHeight: 1.4 }}>
-                  <strong>¿Ves resultados que no tienen nada que ver?</strong> Las farmacias a veces devuelven listas mezcladas. Activa la casilla de <strong>Coincidencia exacta</strong> arriba para limpiar la lista.
-                </p>
-              </div>
-            )}
-
-            <div className="results-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem', marginBottom: '1.5rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+            <div className="results-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                 <h2 className="results-title" style={{ margin: 0 }}>Resultados de búsqueda</h2>
                 {!isLoading && (
                   <>
                     <span className="results-count" style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--primary-dark)', background: 'var(--primary-light)', padding: '0.25rem 0.75rem', borderRadius: '1rem', border: '1px solid var(--primary)' }}>
-                      {isLiveSearchPending && results.length === 0 ? 'Buscando resultados...' : `${results.length} productos encontrados`}
+                      {results.length} productos encontrados
                     </span>
-                    {isLiveSearchPending && results.length > 0 && (
-                      <span style={{ fontSize: '1.1rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                        <svg className="spinner" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite' }}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-                        Buscando más...
-                      </span>
-                    )}
+                    
                   </>
                 )}
               </div>
@@ -1172,7 +1123,7 @@ function App() {
                 <div className="sort-container" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'var(--surface)', padding: '0.5rem 1rem', borderRadius: '0.5rem', border: '1px solid var(--border)', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
                   <div style={{display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--primary)'}}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 5h10"/><path d="M11 9h7"/><path d="M11 13h4"/><path d="M3 17l3 3 3-3"/><path d="M6 18V4"/></svg>
-                    <label style={{ fontSize: '1.1rem', fontWeight: 600 }}>Ordenar:</label>
+                    <label style={{ fontSize: '0.9rem', fontWeight: 600 }}>Ordenar:</label>
                   </div>
                   <select 
                     value={sortBy}
@@ -1181,7 +1132,7 @@ function App() {
                   >
                     <option value="price_asc">Menor precio primero</option>
                     <option value="price_desc">Mayor precio primero</option>
-                    <option value="popularity_desc">Relevancia (Recomendado)</option>
+                    <option value="popularity_desc">Mayor popularidad</option>
                     <option value="name_asc">Orden alfabético (A-Z)</option>
                     <option value="content_desc">Mayor contenido (mg/ml/comp)</option>
                     <option value="pharmacy">Cadena de Farmacia (Ganadora)</option>
@@ -1190,30 +1141,31 @@ function App() {
               )}
             </div>
 
-            {isLoading && (
+            {isLoading ? (
               <div className="loading-container" style={{ textAlign: 'center', padding: '4rem', color: 'var(--primary)' }}>
                 <svg className="spinner" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite', marginBottom: '1.5rem' }}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: 'var(--text-dark)', marginBottom: '1rem' }}>
-                  Consultando punto de venta {scannedPharmacies || 1}...
+                  {loadingMessage}
                 </h3>
                 
                 <div style={{ position: 'relative', height: '60px', marginBottom: '1.5rem', width: '100%', overflow: 'hidden' }}>
-                  <p className="animated-loading-text">
+                  <p className={`animated-loading-text ${loadingMessageIdx === 0 ? 'visible' : 'hidden'}`}>
                     Nos estamos tomando tiempo para buscar los mejores precios en las mejores farmacias.
+                  </p>
+                  <p className={`animated-loading-text ${loadingMessageIdx === 1 ? 'visible' : 'hidden'}`}>
+                    Sos nuestro visitante número {visitCount} a nuestra página en la semana. ¡Gracias!
                   </p>
                 </div>
 
                 <div style={{ background: 'var(--background)', borderRadius: '999px', height: '10px', width: '250px', margin: '0 auto', overflow: 'hidden', border: '1px solid var(--border)' }}>
                   <div style={{ height: '100%', background: 'var(--primary)', width: `${(scannedPharmacies / 5) * 100}%`, transition: 'width 0.8s ease-in-out', borderRadius: '999px' }}></div>
                 </div>
-                <p style={{ marginTop: '0.75rem', fontSize: '1.1rem', fontWeight: 600, color: 'var(--primary-dark)' }}>
+                <p style={{ marginTop: '0.75rem', fontSize: '1rem', fontWeight: 600, color: 'var(--primary-dark)' }}>
                   Analizando... {scannedPharmacies} farmacias listas
                 </p>
                 <style>{`@keyframes spin { 100% { transform: rotate(360deg); } }`}</style>
               </div>
-            )}
-            
-            {!isLoading && results.length > 0 && (
+            ) : results.length > 0 ? (
               <>
                 {backendErrors.length > 0 && (
                   <div className="error-banner" style={{ background: '#fee2e2', color: '#991b1b', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1.5rem', border: '1px solid #fca5a5' }}>
@@ -1226,87 +1178,116 @@ function App() {
                   </div>
                 )}
 
+                {isLiveSearching && (
+                  <div style={{ background: '#e0f2fe', color: '#0369a1', padding: '0.75rem 1rem', borderRadius: '0.5rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid #bae6fd' }}>
+                    <div style={{ width: '20px', height: '20px', border: '2px solid #0369a1', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                    <span style={{ fontWeight: '500' }}>{liveLoadingMessage}</span>
+                  </div>
+                )}
                 
-                
-                <div className="results-container-v2">
+                <div className="results-grid">
                   {(() => {
                     const exactMatches = sortedResults.filter(p => p.relevanceScore === 1);
                     const relatedMatches = sortedResults.filter(p => p.relevanceScore > 1);
                     const hasExactMatches = exactMatches.length > 0;
                     
-                    const renderProductCard = (product) => {
-                      return product.sortedPrices.map((priceEntry, idx) => {
-                        const isBestPrice = idx === 0;
-                        const domains = {
-                          'punto_farma': 'https://www.puntofarma.com.py/buscar?q=',
-                          'farmacenter': 'https://www.farmacenter.com.py/catalogo?q=',
-                          'catedral': 'https://www.farmaciacatedral.com.py/buscador?q=',
-                          'farmaoliva': 'https://www.farmaoliva.com.py/catalogo?q=',
-                          'farmatotal': 'https://www.farmatotal.com.py/?post_type=product&s='
-                        };
-                        const baseUrl = domains[priceEntry.pharmacy.id] || 'https://';
-                        const mockUrl = `${baseUrl}${encodeURIComponent(product.commercialName)}`;
-                        const finalUrl = priceEntry.url || mockUrl;
-
-                        return (
-                          <div key={product.id + '-' + priceEntry.pharmacy.id + '-' + idx} className="result-card-v2">
-                            <div className="result-image-v2">
-                              {product.imageUrl ? (
-                                <img src={product.imageUrl} alt={product.commercialName} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '10px' }} onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.parentElement.innerHTML = '💊'; }} />
-                              ) : '💊'}
-                            </div>
-
-                            <div className="result-content-v2">
-                              <div>
-                                <span className="result-badge-stock">
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                                  En stock
-                                </span>
+                    const renderProductCard = (product) => (
+                      <div key={product.id} className="product-card">
+                        <div className="card-header" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                          <div className="product-image-container" style={{ flexShrink: 0, width: '80px', height: '80px', backgroundColor: 'var(--surface)', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.25rem' }}>
+                            {product.imageUrl ? (
+                              <img src={product.imageUrl} alt={product.commercialName} style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; e.target.parentElement.innerHTML = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>'; }} />
+                            ) : (
+                              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--border)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.5 20.5 7 17l5-5-3.5-3.5L12 5l7 7-3.5 3.5Z"/><path d="M14 9.5 9.5 14"/></svg>
+                            )}
+                          </div>
+                          <div className="product-info-wrapper">
+                            {product.laboratory && !product.laboratory.toLowerCase().includes('esconocido') && !product.laboratory.toLowerCase().includes('genérico') && (
+                              <span className="laboratory-name">{product.laboratory}</span>
+                            )}
+                            <h3 className="product-title">{product.commercialName}</h3>
+                            <p className="product-subtitle">{product.composition}</p>
+                            
+                            {product.savings > 0 && (
+                              <div className="savings-pill">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20"/><path d="m17 19-5 5-5-5"/><path d="m17 5-5-5-5 5"/></svg>
+                                Ahorra {product.savingsPercent}% (hasta {formatGs(product.savings)})
                               </div>
-                              
-                              <h2 className="result-title-main">{product.commercialName}</h2>
-                              <h3 className="result-title-sub">{product.details || 'Presentación no especificada'}</h3>
-                              <p className="result-text-active">Principio activo: {product.composition}</p>
-
-                              <div className="result-spacer"></div>
-
-                              <div className="result-icons-row">
-                                <div className="result-icon-item">
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                  <div className="result-icon-text-block">
-                                    <span className="result-icon-title">Actualizado hoy,</span>
-                                    <span className="result-icon-sub">08:30 hs</span>
-                                  </div>
-                                </div>
-                              </div>
+                            )}
+                            <div style={{ marginTop: '0.75rem' }}>
+                              <button 
+                                className="btn-add-cart"
+                                onClick={() => addToCart(product)}
+                                disabled={cart.some(item => item.id === product.id)}
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                                {cart.some(item => item.id === product.id) ? 'Añadido' : 'Añadir a la Canasta'}
+                              </button>
                             </div>
-
-                            <div className="result-price-card">
-                              <div className="result-pharmacy-header">
-                                <div className="result-pharmacy-name">
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                          </div>
+                        </div>
+                        
+                        <div className="price-table-container">
+                        {product.sortedPrices.map((priceEntry, idx) => {
+                          const isBestPrice = idx === 0;
+                          const domains = {
+                            'punto-farma': 'https://www.puntofarma.com.py/buscar?q=',
+                            'farmacenter': 'https://www.farmacenter.com.py/catalogo?q=',
+                            'catedral': 'https://www.farmaciacatedral.com.py/buscador?q=',
+                            'farmaoliva': 'https://www.farmaoliva.com.py/catalogo?q=',
+                            'farmatotal': 'https://www.farmatotal.com.py/?post_type=product&s='
+                          };
+                          const baseUrl = domains[priceEntry.pharmacy.id] || 'https://';
+                          const mockUrl = `${baseUrl}${encodeURIComponent(product.commercialName)}`;
+                          const finalUrl = priceEntry.url || mockUrl;
+                          
+                          return (
+                            <a 
+                              key={priceEntry.pharmacy.id + idx} 
+                              href={finalUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`pharmacy-row ${priceEntry.pharmacy.class} ${isBestPrice ? 'best-price' : ''}`}
+                              onClick={() => handleProductClick(product.commercialName, product)}
+                            >
+                              <div className="row-pharmacy-info" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                                <span style={{ fontWeight: '600', fontSize: '0.95rem', color: 'var(--text-main)', textAlign: 'center', letterSpacing: '-0.01em' }}>
                                   {priceEntry.pharmacy.name}
-                                </div>
-                                {isBestPrice && (
-                                  <span className="result-badge-best">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-                                    Mejor precio
+                                </span>
+                                {priceEntry.originalName && (
+                                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '0.4rem', maxWidth: '180px', lineHeight: '1.2' }}>
+                                    {priceEntry.originalName}
                                   </span>
                                 )}
                               </div>
-                              <div className="result-price-main">{formatGs(priceEntry.price)}</div>
-                              <div>
-                                <span className="result-badge-pill">Precio por presentación</span>
+                              <div className="row-price-info" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.2rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                  {isBestPrice && (
+                                    <svg className="best-price-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                                  )}
+                                  <span className="price-text" style={{color: isBestPrice ? 'var(--primary-dark)' : 'inherit'}}>
+                                    {formatGs(priceEntry.price)}
+                                  </span>
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{color: 'var(--text-muted)', marginLeft: '0.25rem'}}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                </div>
+                                {priceEntry.specialPrice && (
+                                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginTop: '-0.2rem' }}>
+                                    <span style={{ fontSize: '0.9rem', fontWeight: '700', color: '#0288d1', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                                      {formatGs(priceEntry.specialPrice)}
+                                    </span>
+                                    <span style={{ fontSize: '0.65rem', color: '#0288d1', fontWeight: '600', textTransform: 'uppercase' }}>
+                                      {priceEntry.specialMethod}
+                                    </span>
+                                  </div>
+                                )}
                               </div>
-                              <a href={finalUrl} target="_blank" rel="noopener noreferrer" className="result-btn-action" style={{ textDecoration: 'none' }} onClick={() => handleProductClick(product.commercialName, product)}>
-                                Ir a la farmacia
-                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-                              </a>
-                            </div>
-                          </div>
-                        );
-                      });
-                    };
+                            </a>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    );
 
                     return (
                       <>
@@ -1325,7 +1306,7 @@ function App() {
                                 <button 
                                   onClick={() => setShowAllVariants(!showAllVariants)} 
                                   className="tag-btn"
-                                  style={{ padding: '0.75rem 2rem', fontWeight: 600, fontSize: '1.1rem' }}
+                                  style={{ padding: '0.75rem 2rem', fontWeight: 600, fontSize: '1rem' }}
                                 >
                                   {showAllVariants ? 'Ocultar presentaciones' : `Ver ${relatedMatches.length - 4} presentaciones más`}
                                 </button>
@@ -1338,9 +1319,7 @@ function App() {
                   })()}
                 </div>
               </>
-            )}
-            
-            {!isLoading && results.length === 0 && hasSearched && (
+            ) : (
               <div className="no-results" style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-muted)' }}>
                 {backendErrors.length > 0 && (
                   <div className="error-banner" style={{ background: '#fee2e2', color: '#991b1b', padding: '1rem', borderRadius: '0.5rem', marginBottom: '1.5rem', border: '1px solid #fca5a5', textAlign: 'left' }}>
@@ -1353,22 +1332,20 @@ function App() {
                   </div>
                 )}
                 
-                {isLiveSearchPending ? (
-                  <div style={{ marginBottom: '2rem' }}>
-                    <svg className="spinner" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite', color: 'var(--primary)', marginBottom: '1rem' }}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-                    <p style={{ fontSize: '1.1rem', color: 'var(--text-main)', fontWeight: '600' }}>Sincronizando con los sistemas de las farmacias...<br/><span style={{ fontSize: '1.1rem', color: 'var(--text-muted)', fontWeight: 'normal' }}>Esto puede tomar unos segundos adicionales</span></p>
-                  </div>
-                ) : (
-                  <div style={{ marginBottom: '2rem' }}>
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--border)', marginBottom: '1rem' }}>
-                      <circle cx="11" cy="11" r="8"></circle>
-                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                    </svg>
-                    <p style={{ fontSize: '1.1rem', color: 'var(--text-main)', fontWeight: '600' }}>No encontramos "{searchTerm}" en ninguna farmacia.</p>
+                <div style={{ marginBottom: '2rem' }}>
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--border)', marginBottom: '1rem' }}>
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                  <p style={{ fontSize: '1.2rem', color: 'var(--text-main)', fontWeight: '600' }}>No encontramos "{searchTerm}" en nuestra base rápida.</p>
+                </div>
+                
+                {isLiveSearching && (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{ width: '40px', height: '40px', border: '3px solid var(--border)', borderTopColor: 'var(--primary)', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                    <p style={{ fontWeight: '600', color: 'var(--primary-dark)' }}>{liveLoadingMessage}</p>
                   </div>
                 )}
-                
-                
               </div>
             )}
           </section>
@@ -1422,12 +1399,12 @@ function App() {
                   onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-8px)'; e.currentTarget.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.2)'; }}
                   onMouseOut={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.1)'; }}
                 >
-                  <div style={{ position: 'absolute', top: '10px', right: '15px', display: 'flex', alignItems: 'center', gap: '1.5rem', backgroundColor: 'rgba(255,255,255,0.2)', padding: '0.3rem 0.8rem', borderRadius: '2rem' }}>
+                  <div style={{ position: 'absolute', top: '10px', right: '15px', display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'rgba(255,255,255,0.2)', padding: '0.3rem 0.8rem', borderRadius: '2rem' }}>
                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#4ade80', boxShadow: '0 0 10px #4ade80' }}></div>
                     <span style={{ color: 'white', fontSize: '0.8rem', fontWeight: 600 }}>{pharma.status}</span>
                   </div>
                   <h3 style={{ margin: 0, fontSize: '2.5rem', color: pharma.textColor, fontWeight: 900, textAlign: 'center', letterSpacing: '-0.5px' }}>{pharma.name}</h3>
-                  <p style={{ margin: '1rem 0 0 0', color: 'rgba(255,255,255,0.8)', fontSize: '1.1rem', fontWeight: 500 }}>Toca para ver información ➔</p>
+                  <p style={{ margin: '1rem 0 0 0', color: 'rgba(255,255,255,0.8)', fontSize: '1rem', fontWeight: 500 }}>Toca para ver información ➔</p>
                 </div>
               ))}
             </div>
@@ -1451,7 +1428,7 @@ function App() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
                   
                   <div style={{ padding: '1.5rem', backgroundColor: '#f8fafc', borderRadius: '1rem', borderLeft: `4px solid ${selectedPharmacy.themeColor}` }}>
-                    <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                    <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={selectedPharmacy.themeColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 18H3c-.6 0-1-.4-1-1V7c0-.6.4-1 1-1h10c.6 0 1 .4 1 1v11"/><path d="M14 9h4l4 4v5c0 .6-.4 1-1 1h-2"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
                       Delivery
                     </h4>
@@ -1459,7 +1436,7 @@ function App() {
                   </div>
 
                   <div style={{ padding: '1.5rem', backgroundColor: '#f8fafc', borderRadius: '1rem', borderLeft: `4px solid ${selectedPharmacy.themeColor}` }}>
-                    <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                    <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={selectedPharmacy.themeColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                       Horarios de Atención
                     </h4>
@@ -1467,7 +1444,7 @@ function App() {
                   </div>
 
                   <div style={{ padding: '1.5rem', backgroundColor: '#f8fafc', borderRadius: '1rem', borderLeft: `4px solid ${selectedPharmacy.themeColor}` }}>
-                    <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                    <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={selectedPharmacy.themeColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                       Métodos de Pago
                     </h4>
@@ -1475,7 +1452,7 @@ function App() {
                   </div>
 
                   <div style={{ padding: '1.5rem', backgroundColor: '#f8fafc', borderRadius: '1rem', borderLeft: `4px solid ${selectedPharmacy.themeColor}` }}>
-                    <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                    <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={selectedPharmacy.themeColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                       Seguros Médicos Asociados
                     </h4>
@@ -1483,7 +1460,7 @@ function App() {
                   </div>
 
                   <div style={{ padding: '1.5rem', backgroundColor: '#f8fafc', borderRadius: '1rem', borderLeft: `4px solid ${selectedPharmacy.themeColor}` }}>
-                    <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                    <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={selectedPharmacy.themeColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                       Contacto WhatsApp
                     </h4>
@@ -1495,7 +1472,7 @@ function App() {
                   href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedPharmacy.data.mapsQuery)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ width: '100%', padding: '1.5rem', backgroundColor: '#4285F4', color: 'white', borderRadius: '1rem', border: 'none', fontSize: '1.1rem', fontWeight: 700, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.8rem', boxShadow: '0 4px 15px rgba(66, 133, 244, 0.3)', textDecoration: 'none', transition: 'background-color 0.2s', marginTop: 'auto' }}
+                  style={{ width: '100%', padding: '1.5rem', backgroundColor: '#4285F4', color: 'white', borderRadius: '1rem', border: 'none', fontSize: '1.2rem', fontWeight: 700, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.8rem', boxShadow: '0 4px 15px rgba(66, 133, 244, 0.3)', textDecoration: 'none', transition: 'background-color 0.2s', marginTop: 'auto' }}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                   Ver sucursal más cercana en Google Maps
@@ -1598,8 +1575,8 @@ function App() {
                   </div>
                 ) : !selectedDrugDetails ? (
                   // VISTA 1: Lista de medicamentos de la zona anatómica
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', animation: 'fadeIn 0.3s' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)', marginBottom: '1rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', animation: 'fadeIn 0.3s' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border)', marginBottom: '1rem' }}>
                       <div style={{ backgroundColor: `${selectedCategory.colorHex}`, padding: '1rem', borderRadius: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <img src={selectedCategory.iconPath} alt={selectedCategory.name} style={{ width: '32px', height: '32px' }} onError={(e) => e.target.style.display = 'none'} />
                       </div>
@@ -1628,7 +1605,7 @@ function App() {
                   <div style={{ overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column' }}>
                     <button 
                       onClick={() => setSelectedDrugDetails(null)} 
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '1.5rem', color: 'var(--text-muted)', fontSize: '1.1rem', fontWeight: 600, padding: 0, marginBottom: '2rem', transition: 'color 0.2s' }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-muted)', fontSize: '1.1rem', fontWeight: 600, padding: 0, marginBottom: '2rem', transition: 'color 0.2s' }}
                       onMouseOver={e => e.currentTarget.style.color = selectedCategory.iconColor}
                       onMouseOut={e => e.currentTarget.style.color = 'var(--text-muted)'}
                     >
@@ -1640,7 +1617,7 @@ function App() {
                     
                     <div style={{ display: 'grid', gap: '1.5rem', marginBottom: '3rem' }}>
                       <div style={{ padding: '1.5rem', backgroundColor: '#f8fafc', borderRadius: '1rem', borderLeft: `4px solid ${selectedCategory.iconColor}` }}>
-                        <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                        <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={selectedCategory.iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
                           Acción Terapéutica
                         </h4>
@@ -1648,7 +1625,7 @@ function App() {
                       </div>
 
                       <div style={{ padding: '1.5rem', backgroundColor: '#f8fafc', borderRadius: '1rem', borderLeft: `4px solid ${selectedCategory.iconColor}` }}>
-                        <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                        <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={selectedCategory.iconColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
                           Indicaciones
                         </h4>
@@ -1657,7 +1634,7 @@ function App() {
 
                       {selectedDrugDetails.efectos && (
                         <div style={{ padding: '1.5rem', backgroundColor: '#f8fafc', borderRadius: '1rem', borderLeft: '4px solid #f59e0b' }}>
-                          <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                          <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
                             Efectos Secundarios Comunes
                           </h4>
@@ -1667,7 +1644,7 @@ function App() {
 
                       {selectedDrugDetails.contraindicaciones && (
                         <div style={{ padding: '1.5rem', backgroundColor: '#fff1f2', borderRadius: '1rem', borderLeft: '4px solid #e11d48' }}>
-                          <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                          <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e11d48" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
                             Contraindicaciones
                           </h4>
@@ -1677,7 +1654,7 @@ function App() {
 
                       {selectedDrugDetails.embarazo && (
                         <div style={{ padding: '1.5rem', backgroundColor: '#f0fdf4', borderRadius: '1rem', borderLeft: '4px solid #10b981' }}>
-                          <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                          <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text)', fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
                             Embarazo y Lactancia
                           </h4>
@@ -1694,7 +1671,7 @@ function App() {
                         setSelectedCategory(null);
                         setTimeout(() => handleSearchSubmit({ preventDefault: () => {} }), 100);
                       }}
-                      style={{ width: '100%', padding: '1.5rem', backgroundColor: 'var(--primary)', color: 'white', borderRadius: '1rem', border: 'none', fontSize: '1.1rem', fontWeight: 700, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1.5rem', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)', transition: 'background-color 0.2s', marginTop: 'auto' }}
+                      style={{ width: '100%', padding: '1.5rem', backgroundColor: 'var(--primary)', color: 'white', borderRadius: '1rem', border: 'none', fontSize: '1.2rem', fontWeight: 700, cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)', transition: 'background-color 0.2s', marginTop: 'auto' }}
                       onMouseOver={e => e.currentTarget.style.backgroundColor = 'var(--primary-dark)'}
                       onMouseOut={e => e.currentTarget.style.backgroundColor = 'var(--primary)'}
                     >
@@ -1733,16 +1710,16 @@ function App() {
                   >
                     <div style={{ position: 'absolute', top: 0, right: 0, width: '120px', height: '120px', backgroundColor: category.iconColor, opacity: 0.05, borderBottomLeftRadius: '100%', pointerEvents: 'none' }}></div>
                     
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
                       <div style={{ backgroundColor: `${category.colorHex}`, padding: '1rem', borderRadius: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <img src={category.iconPath} alt={category.name} style={{ width: '32px', height: '32px' }} onError={(e) => { e.target.style.display = 'none' }} />
                       </div>
                       <h3 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--text)', fontWeight: 800 }}>{category.name}</h3>
                     </div>
                     
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                       {topDrugs.map((drug, idx) => (
-                        <div key={idx} style={{ backgroundColor: 'var(--background)', padding: '0.75rem 1rem', borderRadius: '0.75rem', fontSize: '1.1rem', color: 'var(--text)', fontWeight: 600, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--border)' }}>
+                        <div key={idx} style={{ backgroundColor: 'var(--background)', padding: '0.75rem 1rem', borderRadius: '0.75rem', fontSize: '0.9rem', color: 'var(--text)', fontWeight: 600, display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid var(--border)' }}>
                           {drug.name}
                         </div>
                       ))}
@@ -1768,7 +1745,7 @@ function App() {
             </div>
 
             {/* Filtros de Categoría (Perfil de Ahorro) - Glassmorphism */}
-            <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', marginBottom: '2rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginBottom: '2rem', flexWrap: 'wrap' }}>
               <button
                 onClick={() => setOfferCategory('bancos')}
                 style={{
@@ -1875,10 +1852,10 @@ function App() {
                       key={dia.id}
                       onClick={() => setSelectedDay(dia.id)}
                       style={{
-                        padding: '0.8rem 1rem',
+                        padding: '0.8rem 1.5rem',
                         borderRadius: '2rem',
                         border: 'none',
-                        fontSize: '1.1rem',
+                        fontSize: '1rem',
                         fontWeight: 700,
                         cursor: 'pointer',
                         transition: 'all 0.2s',
@@ -1904,7 +1881,7 @@ function App() {
               {alianzasDescuentos.filter(oferta => oferta.category === offerCategory && ((offerCategory !== 'bancos' && offerCategory !== 'eventos') || oferta.dayIds.includes(selectedDay))).length === 0 ? (
                 <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '4rem', color: 'var(--text-muted)', backgroundColor: 'var(--surface)', borderRadius: '1.5rem' }}>
                   <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.3, marginBottom: '1rem' }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                  <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>No hay alianzas registradas para este día</h3>
+                  <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>No hay alianzas registradas para este día</h3>
                   <p>Seleccioná otro día de la semana para ver más descuentos.</p>
                 </div>
               ) : (
@@ -1931,23 +1908,23 @@ function App() {
                     >
                       <div style={{ position: 'absolute', top: 0, right: 0, width: '150px', height: '150px', backgroundColor: oferta.bankHighlight || '#ffffff', opacity: 0.2, borderBottomLeftRadius: '100%', pointerEvents: 'none' }}></div>
                       
-                      <div style={{ padding: '2.5rem 2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', flex: 1, zIndex: 1 }}>
+                      <div style={{ padding: '2.5rem 2rem', display: 'flex', flexDirection: 'column', gap: '1rem', flex: 1, zIndex: 1 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ backgroundColor: 'white', color: oferta.bankColor, padding: '0.4rem 1rem', borderRadius: '2rem', fontWeight: 900, fontSize: '1.1rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                          <span style={{ backgroundColor: 'white', color: oferta.bankColor, padding: '0.4rem 1rem', borderRadius: '2rem', fontWeight: 900, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
                             {oferta.bank}
                           </span>
                         </div>
                         
                         <div>
                           <h3 style={{ color: 'white', fontSize: isLongDiscount ? '2.8rem' : '3.5rem', fontWeight: 900, margin: '1rem 0 0 0', lineHeight: 1 }}>{oferta.discount}</h3>
-                          <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '1.1rem', fontWeight: 600 }}>de ahorro</span>
+                          <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '1.2rem', fontWeight: 600 }}>de ahorro</span>
                         </div>
 
-                        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1.1rem', margin: 0 }}>Válido pagando con:<br/><strong style={{ color: 'white' }}>{oferta.type}</strong></p>
+                        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '1rem', margin: 0 }}>Válido pagando con:<br/><strong style={{ color: 'white' }}>{oferta.type}</strong></p>
                       </div>
 
                       <div style={{ backgroundColor: oferta.pharmacyColor, padding: '1.5rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ color: 'white', fontSize: '1.1rem', opacity: 0.8 }}>Exclusivo en:</span>
+                        <span style={{ color: 'white', fontSize: '1rem', opacity: 0.8 }}>Exclusivo en:</span>
                         <h4 style={{ color: 'white', margin: 0, fontSize: '1.5rem', fontWeight: 900 }}>{oferta.pharmacy}</h4>
                       </div>
                     </div>
@@ -1985,7 +1962,7 @@ function App() {
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                   <div className="cart-items-list">
-                    <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Medicamentos ({cart.length})</h3>
+                    <h3 style={{ fontSize: '1rem', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>Medicamentos ({cart.length})</h3>
                     {cart.map(item => (
                       <div key={item.id} className="cart-item">
                         <div style={{ flex: 1 }}>
@@ -2000,11 +1977,11 @@ function App() {
                   </div>
                   
                   <div className="cart-totals">
-                    <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', color: 'var(--primary)' }}>Comparativa Total</h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: 'var(--primary)' }}>Comparativa Total</h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                       {calculateCartTotals().map((pharma, idx) => (
                         <div key={pharma.id} className={`cart-total-row ${idx === 0 && pharma.missingItems === 0 ? 'winner' : ''} ${pharma.missingItems > 0 ? 'incomplete' : ''}`}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             {idx === 0 && pharma.missingItems === 0 && (
                               <svg style={{ color: 'var(--warning)' }} xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
                             )}
@@ -2012,9 +1989,9 @@ function App() {
                           </div>
                           <div style={{ textAlign: 'right' }}>
                             {pharma.missingItems > 0 ? (
-                              <span style={{ color: '#ef4444', fontSize: '1.1rem', fontWeight: 500 }}>Faltan {pharma.missingItems} item(s)</span>
+                              <span style={{ color: '#ef4444', fontSize: '0.9rem', fontWeight: 500 }}>Faltan {pharma.missingItems} item(s)</span>
                             ) : (
-                              <span style={{ fontSize: '1.1rem', fontWeight: 700, color: idx === 0 ? 'var(--primary-dark)' : 'inherit' }}>{formatGs(pharma.total)}</span>
+                              <span style={{ fontSize: '1.2rem', fontWeight: 700, color: idx === 0 ? 'var(--primary-dark)' : 'inherit' }}>{formatGs(pharma.total)}</span>
                             )}
                           </div>
                         </div>
@@ -2062,7 +2039,7 @@ function App() {
       {/* Footer / Disclaimer */}
       <footer className="app-footer" style={{ marginTop: '5rem', padding: '3rem 0', backgroundColor: '#0f172a', color: '#94a3b8' }}>
         <div className="container" style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
-          <p style={{ fontSize: '1.1rem', lineHeight: '1.7', margin: 0 }}>
+          <p style={{ fontSize: '0.9rem', lineHeight: '1.7', margin: 0 }}>
             <span style={{ color: '#f8fafc', fontWeight: 600 }}>El objetivo de Kura es contribuir al ahorro en tus gastos de salud. </span> 
             Somos una plataforma de búsqueda y comparación de precios, no una farmacia ni un proveedor médico. Los precios y la disponibilidad mostrados son estimaciones basadas en información pública y pueden no reflejar actualizaciones en tiempo real. El precio final y el stock real están sujetos a variaciones en el mostrador dependiendo de la sucursal, políticas internas o la presentación exacta del medicamento. Te recomendamos verificar el precio directamente con la farmacia antes de tu compra.
           </p>
