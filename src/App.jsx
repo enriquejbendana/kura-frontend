@@ -545,37 +545,75 @@ function App() {
   };
 
   useEffect(() => {
-    if (searchTerm.length < 2) {
-      setLiveSuggestions([]);
-      return;
-    }
-    const term = searchTerm.toLowerCase();
-    const suggestions = [];
+    let active = true;
 
-    // Buscar marcas en MOCK_PRODUCTS
-    MOCK_PRODUCTS.forEach(p => {
-      const brand = p.commercialName.toLowerCase();
-      const comp = p.composition.toLowerCase();
-      if ((brand.includes(term) || comp.includes(term)) && suggestions.length < 4) {
-        const title = `${p.commercialName} ${p.composition}`;
-        if (!suggestions.find(s => s.title === title)) {
-          suggestions.push({ type: 'brand', title, subtitle: p.details, original: p.commercialName });
-        }
+    const fetchSuggestions = async () => {
+      if (searchTerm.length < 2) {
+        if (active) setLiveSuggestions([]);
+        return;
       }
-    });
+      
+      const term = searchTerm.toLowerCase();
+      const suggestions = [];
 
-    // Buscar drogas genéricas
-    drugDictionary.forEach(cat => {
-      cat.drugs.forEach(d => {
-        if (d.name.toLowerCase().includes(term) && suggestions.length < 6) {
-          if (!suggestions.find(s => s.title === d.name)) {
-            suggestions.push({ type: 'drug', title: d.name, subtitle: 'Principio Activo', original: d.name });
+      // Buscar marcas en MOCK_PRODUCTS local (rápido)
+      MOCK_PRODUCTS.forEach(p => {
+        const brand = p.commercialName.toLowerCase();
+        const comp = p.composition.toLowerCase();
+        if ((brand.includes(term) || comp.includes(term)) && suggestions.length < 4) {
+          const title = `${p.commercialName} ${p.composition}`;
+          if (!suggestions.find(s => s.title === title)) {
+            suggestions.push({ type: 'brand', title, subtitle: p.details, original: p.commercialName });
           }
         }
       });
-    });
 
-    setLiveSuggestions(suggestions);
+      // Buscar drogas genéricas
+      drugDictionary.forEach(cat => {
+        cat.drugs.forEach(d => {
+          if (d.name.toLowerCase().includes(term) && suggestions.length < 6) {
+            if (!suggestions.find(s => s.title === d.name)) {
+              suggestions.push({ type: 'drug', title: d.name, subtitle: 'Principio Activo', original: d.name });
+            }
+          }
+        });
+      });
+
+      // Si no tenemos suficientes sugerencias, consultamos rápido a Supabase
+      if (suggestions.length < 5) {
+        try {
+          const { data, error } = await supabase
+            .from('medicamentos_cache')
+            .select('commercial_name, composition')
+            .ilike('commercial_name', `%${term}%`)
+            .limit(10);
+            
+          if (!error && data && active) {
+            data.forEach(p => {
+              const title = `${p.commercial_name} ${p.composition || ''}`.trim();
+              if (!suggestions.find(s => s.original.toLowerCase() === p.commercial_name.toLowerCase())) {
+                suggestions.push({ type: 'brand', title, subtitle: p.composition || 'Medicamento en farmacias', original: p.commercial_name });
+              }
+            });
+          }
+        } catch (err) {
+          console.error("Error en autocomplete supabase", err);
+        }
+      }
+
+      if (active) {
+        setLiveSuggestions(suggestions.slice(0, 7));
+      }
+    };
+
+    const timer = setTimeout(() => {
+      fetchSuggestions();
+    }, 250);
+
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
   }, [searchTerm, drugDictionary]);
 
   const handleSuggestionClick = (suggestion) => {
