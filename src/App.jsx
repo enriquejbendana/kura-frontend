@@ -529,57 +529,7 @@ function App() {
     }
   };
 
-  useEffect(() => {
-    let active = true;
-
-    const fetchSuggestions = async () => {
-      if (searchTerm.length < 2) {
-        if (active) setLiveSuggestions([]);
-        return;
-      }
-      
-      const term = searchTerm.toLowerCase();
-      const suggestions = [];
-
-      // Buscar drogas genéricas
-      drugDictionary.forEach(cat => {
-        cat.drugs.forEach(d => {
-          if (d.name.toLowerCase().includes(term) && suggestions.length < 6) {
-            if (!suggestions.find(s => s.title === d.name)) {
-              suggestions.push({ type: 'drug', title: d.name, subtitle: 'Principio Activo', original: d.name });
-            }
-          }
-        });
-      });
-
-      // Buscar en nuestro catálogo semilla curado (Marcas Limpias)
-      MARCAS_LIMPIAS.forEach(brand => {
-        if (brand.name.toLowerCase().includes(term) || brand.active.toLowerCase().includes(term)) {
-          if (!suggestions.find(s => s.original.toLowerCase() === brand.name.toLowerCase())) {
-            suggestions.push({ 
-              type: 'brand', 
-              title: brand.name, 
-              subtitle: 'Marca', 
-              original: brand.name 
-            });
-          }
-        }
-      });
-
-      if (active) {
-        setLiveSuggestions(suggestions.slice(0, 7));
-      }
-    };
-
-    const timer = setTimeout(() => {
-      fetchSuggestions();
-    }, 250);
-
-    return () => {
-      active = false;
-      clearTimeout(timer);
-    };
-  }, [searchTerm, drugDictionary]);
+  
 
   const handleSuggestionClick = (suggestion) => {
     setSearchTerm(suggestion.original);
