@@ -559,7 +559,7 @@ function App() {
             suggestions.push({ 
               type: 'brand', 
               title: brand.name, 
-              subtitle: brand.active, 
+              subtitle: 'Marca', 
               original: brand.name 
             });
           }

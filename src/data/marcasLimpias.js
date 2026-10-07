@@ -1,6 +1,6 @@
 export const MARCAS_LIMPIAS = [
   // Analgésicos y Antiinflamatorios
-  { name: 'Kitadol', active: 'Paracetamol', type: 'brand' },
+  { name: 'Kitadol', active: 'Ibuprofeno', type: 'brand' },
   { name: 'Z-mol', active: 'Paracetamol', type: 'brand' },
   { name: 'Tylenol', active: 'Paracetamol', type: 'brand' },
   { name: 'Dolanet', active: 'Dipirona', type: 'brand' },
