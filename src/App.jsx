@@ -556,15 +556,15 @@ function App() {
         try {
           const { data, error } = await supabase
             .from('medicamentos_cache')
-            .select('commercial_name, composition')
+            .select('commercial_name')
             .ilike('commercial_name', `%${term}%`)
             .limit(10);
             
           if (!error && data && active) {
             data.forEach(p => {
-              const title = `${p.commercial_name} ${p.composition || ''}`.trim();
+              const title = p.commercial_name.trim();
               if (!suggestions.find(s => s.original.toLowerCase() === p.commercial_name.toLowerCase())) {
-                suggestions.push({ type: 'brand', title, subtitle: p.composition || 'Medicamento en farmacias', original: p.commercial_name });
+                suggestions.push({ type: 'brand', title, subtitle: 'Medicamento en farmacias', original: p.commercial_name });
               }
             });
           }
