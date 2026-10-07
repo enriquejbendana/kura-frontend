@@ -7,6 +7,43 @@ export const PHARMACIES = {
 };
 
 export const MOCK_PRODUCTS = [
+  // Dolanet
+  {
+    id: 'dolanet-1',
+    composition: 'Ketorolac 10mg',
+    commercialName: 'Dolanet',
+    laboratory: 'Indufar',
+    details: 'Caja x 10 comprimidos recubiertos',
+    prices: [
+      { pharmacy: PHARMACIES.PUNTO_FARMA, price: 21500 },
+      { pharmacy: PHARMACIES.CATEDRAL, price: 22000 },
+      { pharmacy: PHARMACIES.FARMACENTER, price: 21000 },
+    ]
+  },
+  {
+    id: 'dolanet-2',
+    composition: 'Ketorolac 20mg',
+    commercialName: 'Dolanet',
+    laboratory: 'Indufar',
+    details: 'Caja x 10 comprimidos recubiertos',
+    prices: [
+      { pharmacy: PHARMACIES.PUNTO_FARMA, price: 34500 },
+      { pharmacy: PHARMACIES.CATEDRAL, price: 35000 },
+      { pharmacy: PHARMACIES.FARMAOLIVA, price: 33000 },
+    ]
+  },
+  {
+    id: 'dolanet-3',
+    composition: 'Dipirona + Ergotamina',
+    commercialName: 'Ergo Dolanet Plus',
+    laboratory: 'Indufar',
+    details: 'Blíster de 4 comprimidos',
+    prices: [
+      { pharmacy: PHARMACIES.PUNTO_FARMA, price: 5172 },
+      { pharmacy: PHARMACIES.FARMACENTER, price: 5800 },
+      { pharmacy: PHARMACIES.FARMAOLIVA, price: 6412 },
+    ]
+  },
   // Paracetamol
   {
     id: 1,
