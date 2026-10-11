@@ -1,11 +1,18 @@
 /* NEW RESULTS CARD UI */
 .results-container-v2 {
   width: 100%;
-  max-width: 850px;
-  display: flex;
-  flex-direction: column;
+  max-width: 1350px;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 16px;
   margin: 0 auto;
+}
+
+@media (min-width: 900px) {
+  .results-container-v2 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
 }
 
 .result-card-v2 {
@@ -45,8 +52,8 @@
 }
 @media (min-width: 768px) {
   .result-image-v2 {
-    width: 140px;
-    height: 140px;
+    width: 120px;
+    height: 120px;
   }
 }
 
@@ -139,7 +146,8 @@
 }
 @media (min-width: 768px) {
   .result-price-card {
-    width: 260px;
+    width: 215px;
+    padding: 12px;
   }
 }
 
@@ -154,15 +162,16 @@
 .result-pharmacy-name {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   color: #163a7a;
-  font-weight: 800;
-  font-size: 24px;
-  line-height: 1;
+  font-weight: 700;
+  font-size: 19px;
+  line-height: 1.1;
 }
 .result-pharmacy-name svg {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
 }
 
 .result-badge-best {
@@ -178,7 +187,7 @@
 }
 
 .result-price-main {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 800;
   color: #163a7a;
   line-height: 1;

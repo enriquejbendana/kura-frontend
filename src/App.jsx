@@ -342,11 +342,22 @@ function App() {
                  prices: []
               };
            }
+           const phMap = {
+             'punto_farma': 'Punto Farma',
+             'punto-farma': 'Punto Farma',
+             'farmacenter': 'Farmacenter',
+             'catedral': 'Farmacias Catedral',
+             'farmaoliva': 'Farmaoliva',
+             'farmatotal': 'Farmatotal'
+           };
+           const pidKey = (p.pharmacy_id || '').toLowerCase().replace('-', '_');
+           const cleanPhName = phMap[pidKey] || p.pharmacy_id;
+
            grouped[p.commercial_name].prices.push({
                pharmacy: {
-                 id: p.pharmacy_id,
-                 name: p.pharmacy_id,
-                 class: p.pharmacy_id
+                 id: pidKey,
+                 name: cleanPhName,
+                 class: pidKey
                },
                price: p.price,
                originalName: p.commercial_name,
@@ -1228,7 +1239,15 @@ function App() {
                               <div className="result-pharmacy-header">
                                 <div className="result-pharmacy-name">
                                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                                  {priceEntry.pharmacy.name}
+                                  {(() => {
+                                    const raw = (priceEntry.pharmacy.name || priceEntry.pharmacy.id || '').toLowerCase().replace('-', '_');
+                                    if (raw.includes('punto')) return 'Punto Farma';
+                                    if (raw.includes('farmacenter')) return 'Farmacenter';
+                                    if (raw.includes('catedral')) return 'Farmacias Catedral';
+                                    if (raw.includes('oliva')) return 'Farmaoliva';
+                                    if (raw.includes('total')) return 'Farmatotal';
+                                    return priceEntry.pharmacy.name;
+                                  })()}
                                 </div>
                                 {isBestPrice && (
                                   <span className="result-badge-best">
