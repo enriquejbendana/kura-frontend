@@ -1096,11 +1096,75 @@ function App() {
 
             {/* Smart tip for fuzzy searches */}
             {!exactMatch && hasSearched && searchTerm && !/\d/.test(searchTerm) && sortedResults.length > 3 && (
-              <div style={{ backgroundColor: '#fff8e1', border: '1px solid #ffe082', borderRadius: '8px', padding: '0.75rem 1rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
-                <span style={{ fontSize: '1.2rem' }}>💡</span>
-                <p style={{ margin: 0, fontSize: '0.9rem', color: '#8f6e00', lineHeight: 1.4 }}>
-                  <strong>¿Ves resultados que no tienen nada que ver?</strong> Las farmacias a veces devuelven listas mezcladas. Activa la casilla de <strong>Coincidencia exacta</strong> arriba para limpiar la lista.
-                </p>
+              <div style={{
+                backgroundColor: '#f0f7ff',
+                border: '1px solid #bae6fd',
+                borderRadius: '12px',
+                padding: '0.85rem 1.25rem',
+                marginBottom: '1.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '1rem',
+                boxShadow: '0 2px 6px rgba(2, 132, 199, 0.04)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, minWidth: '260px' }}>
+                  <div style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
+                    backgroundColor: '#e0f2fe',
+                    color: '#0284c7',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0
+                  }}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="11" cy="11" r="8"/>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                      <line x1="11" y1="8" x2="11" y2="14"/>
+                      <line x1="8" y1="11" x2="14" y2="11"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 style={{ margin: '0 0 2px 0', fontSize: '0.95rem', fontWeight: 700, color: '#0369a1' }}>
+                      ¿Buscás resultados más específicos?
+                    </h4>
+                    <p style={{ margin: 0, fontSize: '0.85rem', color: '#0c4a6e', lineHeight: 1.3 }}>
+                      Filtrá únicamente las coincidencias exactas para este medicamento.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setExactMatch(true);
+                    executeSearch(searchTerm);
+                  }}
+                  style={{
+                    backgroundColor: '#0284c7',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '50px',
+                    padding: '8px 18px',
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 2px 4px rgba(2, 132, 199, 0.2)',
+                    transition: 'background-color 0.2s',
+                    whiteSpace: 'nowrap'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#0369a1'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#0284c7'}
+                >
+                  Activar coincidencia exacta
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
               </div>
             )}
 
