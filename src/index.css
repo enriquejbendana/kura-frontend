@@ -81,12 +81,12 @@ input {
 /* Layout */
 .app-header {
   padding: 1rem 0;
-  background-color: var(--surface-color);
+  background-color: #ffffff;
   position: sticky;
   top: 0;
-  z-index: 10;
-  box-shadow: var(--shadow-sm-outset);
-  border: none;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .header-content {
