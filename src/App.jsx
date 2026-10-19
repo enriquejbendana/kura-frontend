@@ -43,6 +43,30 @@ const formatUpdateDate = (dateString) => {
   }
 };
 
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
+const isPriceRecent = (dateString) => {
+  if (!dateString) return false;
+  const d = new Date(dateString);
+  if (isNaN(d.getTime())) return false;
+  return (Date.now() - d.getTime()) <= SEVEN_DAYS_MS;
+};
+
+const sortPricesByRecencyAndAmount = (pricesList) => {
+  const recent = [];
+  const reference = [];
+  pricesList.forEach(p => {
+    if (isPriceRecent(p.updatedAt)) {
+      recent.push(p);
+    } else {
+      reference.push(p);
+    }
+  });
+  recent.sort((a, b) => a.price - b.price);
+  reference.sort((a, b) => a.price - b.price);
+  return [...recent, ...reference];
+};
+
 function App() {
   // Estados de Base de Datos
   const [cadenasFarmacias, setCadenasFarmacias] = useState(localCadenasFarmacias);
@@ -486,7 +510,7 @@ function App() {
                  uniquePrices[pid] = { ...p, pharmacy: { ...p.pharmacy, id: pid, class: pid } };
              }
           });
-          const sortedPrices = Object.values(uniquePrices).sort((a, b) => a.price - b.price);
+          const sortedPrices = sortPricesByRecencyAndAmount(Object.values(uniquePrices));
           return { ...product, sortedPrices };
         });
 
@@ -498,7 +522,7 @@ function App() {
 
       // 1. Mostrar de inmediato los resultados de Supabase (~1.5s) sin retardos artificiales
       let initialResults = Object.values(existingGrouped).map(product => {
-        const sortedPrices = [...product.sortedPrices].sort((a, b) => a.price - b.price);
+        const sortedPrices = sortPricesByRecencyAndAmount(product.sortedPrices);
         return { ...product, sortedPrices };
       }).filter(product => {
           const name = product.commercialName.toLowerCase();
@@ -1282,7 +1306,8 @@ function App() {
                     
                     const renderProductCard = (product) => {
                       return product.sortedPrices.map((priceEntry, idx) => {
-                        const isBestPrice = idx === 0;
+                        const isRecent = isPriceRecent(priceEntry.updatedAt);
+                        const isBestPrice = isRecent && idx === 0;
                         const domains = {
                           'punto_farma': 'https://www.puntofarma.com.py/buscar?s=',
                           'punto-farma': 'https://www.puntofarma.com.py/buscar?s=',
@@ -1346,10 +1371,21 @@ function App() {
                                     Mejor precio
                                   </span>
                                 )}
+                                {!isRecent && (
+                                  <span className="result-badge-ref" style={{ background: '#fef3c7', color: '#92400e', border: '1px solid #fde68a', borderRadius: '4px', padding: '2px 6px', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '4px', fontWeight: 500 }}>
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                    Precio de referencia
+                                  </span>
+                                )}
                               </div>
                               <div className="result-price-main">{formatGs(priceEntry.price)}</div>
                               <div>
                                 <span className="result-badge-pill">Precio por presentación</span>
+                                {!isRecent && (
+                                  <span style={{ display: 'block', fontSize: '11px', color: '#b45309', marginTop: '4px', fontStyle: 'italic' }}>
+                                    Precio de referencia, puede haber cambiado
+                                  </span>
+                                )}
                               </div>
                               <a href={finalUrl} target="_blank" rel="noopener noreferrer" className="result-btn-action" style={{ textDecoration: 'none' }} onClick={() => handleProductClick(product.commercialName, product)}>
                                 Ir a la farmacia
