@@ -462,9 +462,8 @@ function App() {
         });
       };
 
-      // --- CARGA GRADUAL "REALISTA" POR FARMACIA ---
-      const simulatedChains = ['punto_farma', 'farmacenter', 'catedral', 'farmaoliva', 'farmatotal'];
-      let latestFinalResults = Object.values(existingGrouped).map(product => {
+      // 1. Mostrar de inmediato los resultados de Supabase (~1.5s) sin retardos artificiales
+      let initialResults = Object.values(existingGrouped).map(product => {
         const sortedPrices = [...product.sortedPrices].sort((a, b) => a.price - b.price);
         return { ...product, sortedPrices };
       }).filter(product => {
@@ -472,40 +471,35 @@ function App() {
           return requiredTokens.every(req => name.includes(req));
       });
 
-      for (let i = 1; i <= 5; i++) {
-        setScannedPharmacies(i);
-        setLoadingMessageIdx(prev => prev === 0 ? 1 : 0);
-        
-        if (resolvedLiveData && resolvedLiveData.results) {
-           latestFinalResults = mergeLiveDataToResults(resolvedLiveData.results);
-           resolvedLiveData.results = null; // Evitar mezclar múltiples veces
-           setIsLiveSearchPending(false);
-        }
-        
-        const currentResults = latestFinalResults.map(product => {
-          const revealedSortedPrices = product.sortedPrices.filter(p => {
-             const idx = simulatedChains.indexOf(p.pharmacy.id);
-             if (idx === -1) return i === 5;
-             return idx < i;
-          });
-          return { ...product, sortedPrices: revealedSortedPrices };
-        }).filter(product => product.sortedPrices.length > 0);
-        
-        setResults(currentResults);
-        await new Promise(r => setTimeout(r, 1000));
+      if (initialResults.length > 0) {
+        setResults(initialResults);
+        setIsLoading(false); // <--- Los resultados se ven INMEDIATAMENTE!
       }
 
-      if (!resolvedLiveData) {
-         liveSearchPromise.then(liveData => {
-            if (liveData && liveData.results && liveData.results.length > 0) {
-               setResults(mergeLiveDataToResults(liveData.results));
-            }
-         }).finally(() => setIsLiveSearchPending(false));
-      } else if (resolvedLiveData && resolvedLiveData.results) {
-         setResults(mergeLiveDataToResults(resolvedLiveData.results));
-         setIsLiveSearchPending(false);
-      } else {
-         setIsLiveSearchPending(false);
+      // 2. En segundo plano: esperar la búsqueda en vivo de Catedral, Farmaoliva y Farmatotal
+      liveSearchPromise.then(liveData => {
+        if (liveData && liveData.results && liveData.results.length > 0) {
+          const merged = mergeLiveDataToResults(liveData.results);
+          if (merged && merged.length > 0) {
+            setResults(merged);
+          }
+        }
+      }).catch(err => {
+        console.warn("Live search background error:", err);
+      }).finally(() => {
+        setIsLiveSearchPending(false);
+        setIsLoading(false);
+      });
+
+      // Si no había ningún producto en Supabase, esperar a que termine el live search antes de apagar isLoading
+      if (initialResults.length === 0) {
+        const liveData = await liveSearchPromise;
+        if (liveData && liveData.results && liveData.results.length > 0) {
+          const merged = mergeLiveDataToResults(liveData.results);
+          setResults(merged);
+        }
+        setIsLoading(false);
+        setIsLiveSearchPending(false);
       }
       
     } catch (error) {
@@ -1177,9 +1171,9 @@ function App() {
                       {isLiveSearchPending && results.length === 0 ? 'Buscando resultados...' : `${results.length} productos encontrados`}
                     </span>
                     {isLiveSearchPending && results.length > 0 && (
-                      <span style={{ fontSize: '1.1rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                        <svg className="spinner" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite' }}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-                        Buscando más...
+                      <span style={{ fontSize: '0.9rem', color: 'var(--primary-dark)', background: 'var(--primary-light)', padding: '0.2rem 0.65rem', borderRadius: '1rem', border: '1px solid var(--primary)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontWeight: 500 }}>
+                        <svg className="spinner" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ animation: 'spin 1s linear infinite' }}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                        Actualizando precios de 3 farmacias...
                       </span>
                     )}
                   </>
