@@ -11,6 +11,38 @@ import './App.css'; // This is empty now
 
 // normalizeProductName removido para evitar agrupación agresiva de marcas
 
+const formatUpdateDate = (dateString) => {
+  if (!dateString) return { title: 'Actualizado', sub: 'hace un tiempo' };
+  const d = new Date(dateString);
+  if (isNaN(d.getTime())) return { title: 'Actualizado', sub: 'hace un tiempo' };
+
+  const now = new Date();
+  const isToday = d.getFullYear() === now.getFullYear() &&
+                  d.getMonth() === now.getMonth() &&
+                  d.getDate() === now.getDate();
+
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const isYesterday = d.getFullYear() === yesterday.getFullYear() &&
+                      d.getMonth() === yesterday.getMonth() &&
+                      d.getDate() === yesterday.getDate();
+
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+
+  if (isToday) {
+    return { title: 'Actualizado hoy,', sub: `${hours}:${minutes} hs` };
+  } else if (isYesterday) {
+    return { title: 'Actualizado ayer,', sub: `${hours}:${minutes} hs` };
+  } else {
+    const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+    const day = d.getDate();
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    return { title: 'Actualizado el', sub: `${day} ${month} ${year}` };
+  }
+};
+
 function App() {
   // Estados de Base de Datos
   const [cadenasFarmacias, setCadenasFarmacias] = useState(localCadenasFarmacias);
@@ -361,7 +393,8 @@ function App() {
                },
                price: p.price,
                originalName: p.commercial_name,
-               url: null
+               url: null,
+                updatedAt: p.updated_at
            });
         });
         rawData = Object.values(grouped);
@@ -411,7 +444,8 @@ function App() {
               pharmacy: { id: pharmacyId, name: phName, class: pharmacyId },
               price: price,
               originalName: item.commercialName,
-              url: priceObj.url || null
+              url: priceObj.url || null,
+              updatedAt: priceObj.updatedAt || new Date().toISOString()
             };
 
             const key = (item.commercialName).toLowerCase();
@@ -1250,7 +1284,8 @@ function App() {
                       return product.sortedPrices.map((priceEntry, idx) => {
                         const isBestPrice = idx === 0;
                         const domains = {
-                          'punto_farma': 'https://www.puntofarma.com.py/buscar?q=',
+                          'punto_farma': 'https://www.puntofarma.com.py/buscar?s=',
+                          'punto-farma': 'https://www.puntofarma.com.py/buscar?s=',
                           'farmacenter': 'https://www.farmacenter.com.py/catalogo?q=',
                           'catedral': 'https://www.farmaciacatedral.com.py/buscador?q=',
                           'farmaoliva': 'https://www.farmaoliva.com.py/catalogo?q=',
@@ -1278,10 +1313,15 @@ function App() {
                               <div className="result-icons-row">
                                 <div className="result-icon-item">
                                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                  <div className="result-icon-text-block">
-                                    <span className="result-icon-title">Actualizado hoy,</span>
-                                    <span className="result-icon-sub">08:30 hs</span>
-                                  </div>
+                                  {(() => {
+                                    const dateInfo = formatUpdateDate(priceEntry.updatedAt);
+                                    return (
+                                      <div className="result-icon-text-block">
+                                        <span className="result-icon-title">{dateInfo.title}</span>
+                                        <span className="result-icon-sub">{dateInfo.sub}</span>
+                                      </div>
+                                    );
+                                  })()}
                                 </div>
                               </div>
                             </div>
